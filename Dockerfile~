@@ -1,0 +1,14 @@
+FROM node:argon
+
+# Create chat directory
+RUN mkdir -p /app
+WORKDIR /app
+
+RUN chmod +x run.sh
+
+# Bundle chat source
+COPY . /app
+
+CMD ./run.sh
+
+

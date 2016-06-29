@@ -88,7 +88,7 @@ io.on('connection',function(socket){
             socket.emit('chat message',"You don't have a connection with user");
           else {
 
-            var message_insert_data   = '{"objects":[{"from_user":'+user.from+',"to_user":'+user.to+',"message":"'+msg+'"}]}';
+            var message_insert_data   = '{"objects":[{"from_user":'+user.from+',"to_user":'+user.to+',"text":"'+msg+'"}]}';
 
             var message_insert_options  = {
               host  : 'data.earthly58.hasura-app.io',
