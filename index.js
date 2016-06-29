@@ -43,27 +43,36 @@ io.on('connection',function(socket){
   console.log('User connected'+socket.id);
   var user = null;
 
-  //sockets[socket.handshake.headers['x-hasura-user-id']]=socket;
+  if (socket.handshake.headers['x-hasura-user-role']=='anonymous'){
+     // send 403 message
+     return;	
+  }
+  var user_id = socket.handshake.headers['x-hasura-user-id'];
+  sockets[user_id] = socket;
 
-  socket.on('init', function(params){
-    console.log(params);
-    try{
-      params = JSON.parse(params);
-      sockets[params.from]=socket;
-    }
-    catch (e){
-      console.log("Some error in User credentials");
-    }
-    
-  });
+  //socket.on('init', function(params){
+  //  console.log(params);
+  //  try{
+  //    params = JSON.parse(params);
+  //    sockets[params.from]=socket;
+  //  }
+  //  catch (e){
+  //    console.log("Some error in User credentials");
+  //  }   
+  //});
 
   socket.on('chat message',function(params){
-    try{
-      params=JSON.parse(params);
-      var msg=params.message;
-      user={from:params.from,to:params.to};
+    // DEBUG
+    console.log(socket.handshake.headers);
+    
+    try {
+      params = JSON.parse(params);
+      params.from = user_id;
 
-      var connection_check_data   = '{"columns":["*"],"where":{"$or":[{"$and":[{"user1":'+user.from+'},{"user2":'+
+      var msg = params.message;
+      user = {from: params.from, to: params.to};
+
+      var connection_check_data = '{"columns":["*"],"where":{"$or":[{"$and":[{"user1":'+user.from+'},{"user2":'+
       user.to+'}]},{"$and":[{"user1":'+user.to+'},{"user2":'+user.from+'} ]}]}}'
 
       var connection_check_options  = {
@@ -122,10 +131,7 @@ io.on('connection',function(socket){
              toSocket.emit('chat message','{"message":"'+msg+'"}');
             }
             catch(e) {
-
-
               var receiver_token = null;
-
               var token_data   = '{"columns":["device_token"],"where":{"id":'+user.to+'}}'
 
               //console.log('connection_check_data : '+connection_check_data);
