@@ -67,7 +67,7 @@ io.on('connection',function(socket){
     
     try {
       params = JSON.parse(params);
-      params.from = user_id;
+      params.from = parseInt(user_id, 10);
 
       var msg = params.message;
       user = {from: params.from, to: params.to};
@@ -99,13 +99,13 @@ io.on('connection',function(socket){
 
             var user1 = (user.from < user.to) ? user.from : user.to;
             var user2 = (user.from < user.to) ? user.to : user.from;
-            var message_insert_data = {objects:[{
+            var message_insert_data = JSON.stringify({objects:[{
               user1: user1,
               user2: user2,
               sender: user.from,
               text: msg,
               timestamp: (new Date()).toISOString()
-            }]};
+            }]});
 
             var message_insert_options  = {
               host  : 'data.earthly58.hasura-app.io',
@@ -126,7 +126,7 @@ io.on('connection',function(socket){
               });
             });
 
-            message_insert_req.write(JSON.stringify(message_insert_data));
+            message_insert_req.write(message_insert_data);
             message_insert_req.end();
 
             console.log('message :'+msg);
