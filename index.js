@@ -93,11 +93,19 @@ io.on('connection',function(socket){
           chunk=JSON.parse(chunk);
           var flag = chunk.length;
 
-          if(flag==0)
+          if (flag==0) {
             socket.emit('chat message',"You don't have a connection with user");
-          else {
+          } else {
 
-            var message_insert_data   = '{"objects":[{"from_user":'+user.from+',"to_user":'+user.to+',"text":"'+msg+'"}]}';
+            var user1 = (user.from < user.to) ? user.from : user.to;
+            var user2 = (user.from < user.to) ? user.to : user.from;
+            var message_insert_data = {objects:[{
+              user1: user1,
+              user2: user2,
+              sender: user.from,
+              text: msg,
+              timestamp: (new Date()).toISOString()
+            }]};
 
             var message_insert_options  = {
               host  : 'data.earthly58.hasura-app.io',
@@ -108,7 +116,7 @@ io.on('connection',function(socket){
                 'Content-Type'  : 'application/json',
                 'Content-Length': Buffer.byteLength(message_insert_data),
                 'Authorization' : 'Hasura '+auth_data.auth_token
-              } 
+              }
             };
 
             var message_insert_req  = httpm.request(message_insert_options,function(res){
@@ -118,7 +126,7 @@ io.on('connection',function(socket){
               });
             });
 
-            message_insert_req.write(message_insert_data);
+            message_insert_req.write(JSON.stringify(message_insert_data));
             message_insert_req.end();
 
             console.log('message :'+msg);
