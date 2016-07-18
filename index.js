@@ -8,7 +8,7 @@ var util    = require('util');
 
 var sockets     = {};
 var auth_data   = null;
-var serverKey   = 'AIzaSyCW80WyGYgJwOKJ1ztfRgMx-P7lPi-ZdUo';
+var serverKey   = 'AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0';
 var fcm         = new FCM(serverKey);
 
 var authentication_data   = '{"username":"admin","password":"assertively-scofflaw-elucidation"}';
