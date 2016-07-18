@@ -140,7 +140,7 @@ io.on('connection',function(socket){
             }
             catch(e) {
               var receiver_token = null;
-              var token_data   = '{"columns":["device_token"],"where":{"id":'+user.to+'}}'
+              var token_data   = '{"columns":["device_token","name"],"where":{"id":'+user.to+'}}'
 
               //console.log('connection_check_data : '+connection_check_data);
 
@@ -169,6 +169,7 @@ io.on('connection',function(socket){
                     collapse_key : 'my_collapse_key',
                     data : {
                       from_user : user.from,
+                      from_username : receiver_token.name,
                       message : msg,
                       type : "chat-notif"
                     }
