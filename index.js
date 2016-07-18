@@ -170,11 +170,11 @@ io.on('connection',function(socket){
                     data : {
                       from_user : user.from,
                       message : msg
-                    },
-                    notification : {
-                      title: 'Levo',
-                      body : user.from+':'+msg
                     }
+                    //notification : {
+                      //title: 'Levo',
+                      //body : user.from+':'+msg
+                    //}
                   };
                   
                   console.log(message.to);
