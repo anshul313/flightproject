@@ -69,6 +69,7 @@ io.on('connection',function(socket){
       params = JSON.parse(params);
       params.from = parseInt(user_id, 10);
 
+      var sender_username = params.from_username;
       var msg = params.message;
       user = {from: params.from, to: params.to};
 
@@ -140,7 +141,7 @@ io.on('connection',function(socket){
             }
             catch(e) {
               var receiver_token = null;
-              var token_data   = '{"columns":["device_token","name"],"where":{"id":'+user.to+'}}'
+              var token_data   = '{"columns":["device_token"],"where":{"id":'+user.to+'}}'
 
               //console.log('connection_check_data : '+connection_check_data);
 
@@ -169,7 +170,7 @@ io.on('connection',function(socket){
                     collapse_key : 'my_collapse_key',
                     data : {
                       from_user : user.from,
-                      from_username : "Vedant",
+                      from_username : sender_username,
                       message : msg,
                       type : "chat-notif"
                     }
@@ -221,3 +222,13 @@ io.on('connection',function(socket){
 http.listen(3000,function(){
   console.log('Listening on *:3000');
 });
+
+
+
+
+
+
+
+
+
+	
