@@ -169,7 +169,8 @@ io.on('connection',function(socket){
                     collapse_key : 'my_collapse_key',
                     data : {
                       from_user : user.from,
-                      message : msg
+                      message : msg,
+                      type : "chat-notif"
                     }
                     //notification : {
                       //title: 'Levo',
