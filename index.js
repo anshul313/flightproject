@@ -169,7 +169,7 @@ io.on('connection',function(socket){
                     collapse_key : 'my_collapse_key',
                     data : {
                       from_user : user.from,
-                      from_username : receiver_token.name,
+                      from_username : "Vedant",
                       message : msg,
                       type : "chat-notif"
                     }
