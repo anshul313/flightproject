@@ -38,6 +38,175 @@ app.get('/',function(req,res){
   res.sendFile(__dirname+'/index.html');
 });
 
+app.post('/like',function(req,res){
+
+	var user = null;
+	req.on('data',function(chunk){
+		chunk=JSON.parse(chunk);
+		user={from: chunk.from_user, to: chunk.to_user, from_username: chunk.from_username, to_username: chunk.to_username};
+
+		var like_insert_data = JSON.stringify({objects:[{
+	        user1: user.from,
+	        user2: user.to,
+	        is_liked: true
+	    }]});
+
+	    var like_insert_options = {
+	    	host : 'data.earthly58.hasura-app.io',
+	    	port : '80',
+	    	path : '/api/1/table/like/insert',
+	    	method: 'POST',
+	    	headers : {
+	    		'Content-Type' : 'application/json',
+	    		'Content-Length': Buffer.byteLength(like_insert_data),
+	    		'Authorization' : 'Hasura '+auth_data.auth_token
+	    	}
+	    }
+
+	    var like_insert_req = httpm.request(like_insert_options,function(res){
+	    	res.setEncoding('utf8');
+	    	res.on('data',function(chunk){
+	    		console.log('like_insert_response: '+chunk);
+	    	});
+	    });
+
+	    like_insert_req.write(like_insert_data);
+	    like_insert_req.end();
+
+		var two_way_connection_check_data   = '{"columns":["is_liked"],"where":{"$and":[{"user1":'+user.to+'},{"user2":'+user.from+'}]}}';
+
+		console.log(two_way_connection_check_data);
+
+		var two_way_connection_check_options = {
+			host : 'data.earthly58.hasura-app.io',
+			port : '80',
+			path : '/api/1/table/like/select',
+			method: 'POST',
+			headers : {
+				'Content-Type' : 'application/json',
+	    		'Content-Length': Buffer.byteLength(two_way_connection_check_data),
+	    		'Authorization' : 'Hasura '+auth_data.auth_token
+	    	}
+		};
+
+		var two_way_connection_check_req = httpm.request(two_way_connection_check_options,function(res){
+			res.setEncoding('utf8');
+			res.on('data',function(chunk){
+				console.log("check : "+chunk);
+				chunk=JSON.parse(chunk);
+				var notification_type="";
+				if(chunk.length==0) {
+					notification_type = "conn_req";
+				}
+				else if (chunk[0].is_liked){
+					notification_type = "conn_estd";
+				}
+				else {
+					notification_type = "conn_req";
+				}
+
+				var receiver_token = null;
+				var notification_data = '{"columns":["device_token"],"where":{"id":'+user.to+'}}';
+
+				var notification_options = {
+					host : 'data.earthly58.hasura-app.io',
+					port : '80',
+					path : '/api/1/table/user/select',
+					method: 'POST',
+					headers : {
+						'Content-Type' : 'application/json',
+						'Content-Length': Buffer.byteLength(notification_data),
+						'Authorization' : 'Hasura '+auth_data.auth_token
+					}
+				};
+
+				var notification_req = httpm.request(notification_options,function(res){
+					res.setEncoding('utf8');
+					res.on('data',function(chunk){
+						chunk=JSON.parse(chunk);
+						receiver_token=chunk[0];
+
+						var message = {
+							to : receiver_token.device_token,
+							collapse_key : 'my_collapse_key',
+							data : {
+								from_user : user.from,
+								from_username : user.from_username,
+								type : notification_type
+							}
+						};
+
+						fcm.send(message,function(err,res){
+							if(err){
+								console.log('err : ',err);
+								console.log('res : ',res);
+							} else {
+								console.log('Successfully sent notification with response : '+res+'to : '+receiver_token.device_token);
+							}
+						});
+					});
+				});
+
+				notification_req.write(notification_data);
+				notification_req.end();
+
+				if(notification_type=="conn_estd") {
+
+					var receiver2_token=null;
+					var notification2_data = '{"columns":["device_token"],"where":{"id":'+user.from+'}}';
+
+					var notification2_options = {
+						host : 'data.earthly58.hasura-app.io',
+						port : '80',
+						path : '/api/1/table/user/select',
+						method: 'POST',
+						headers : {
+							'Content-Type' : 'application/json',
+							'Content-Length': Buffer.byteLength(notification2_data),
+							'Authorization' : 'Hasura '+auth_data.auth_token
+						}
+					};
+
+					var notification2_req = httpm.request(notification2_options,function(res){
+						res.setEncoding('utf8');
+						res.on('data',function(chunk){
+							chunk=JSON.parse(chunk);
+							receiver2_token=chunk[0];
+
+							var message = {
+								to : receiver2_token.device_token,
+								collapse_key : 'my_collapse_key',
+								data : {
+									from_user : user.to,
+									from_username : user.to_username,
+									type : notification_type
+								}
+							};
+
+							fcm.send(message,function(err,res){
+								if(err){
+									console.log('err : ',err);
+									console.log('res : ',res);
+								} else {
+									console.log('Successfully sent notification with response : '+res+'to : '+receiver2_token.device_token);
+								}
+							});
+						});
+					});
+
+					notification2_req.write(notification2_data);
+					notification2_req.end();
+				}
+			});
+		});
+
+		two_way_connection_check_req.write(two_way_connection_check_data);
+		two_way_connection_check_req.end();
+	});
+
+	res.send("Successfully Executed :)");
+});
+
 
 io.on('connection',function(socket){
   console.log('User connected'+socket.id);
@@ -157,6 +326,8 @@ io.on('connection',function(socket){
                 } 
               };
 
+              //console.log("shdgfks:"+sender_username);
+
               var token_req  = httpm.request(token_options,function(res){
                 res.setEncoding('utf8');
                 res.on('data', function(chunk){
@@ -212,11 +383,10 @@ io.on('connection',function(socket){
 
   socket.on('disconnect',function(){
     if(user){
-      sockets[user.from]=null;
+      sockets[user_id]=null;
       console.log("User "+user.me+" disconnected");
     }
   });
-
 });
 
 http.listen(3000,function(){
