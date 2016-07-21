@@ -38,6 +38,82 @@ app.get('/',function(req,res){
   res.sendFile(__dirname+'/index.html');
 });
 
+
+app.post('/checkin',function(req,res){
+
+	req.on('data',function(chunk){
+
+		chunk=JSON.parse(chunk);
+		
+		var user1 = (chunk.from < chunk.to) ? chunk.from : chunk.to;
+		var user2 = (chunk.from < chunk.to) ? chunk.to : chunk.from;
+        var initiator = chunk.from;
+        var flight = chunk.flight_id;
+        var flight_time = chunk.flight_time;
+
+        var flight_number = "";
+
+        var get_flight_number_data = '{"columns":["number"],"where":{"id":'+flight+'}}';
+        var get_flight_number_options = {
+	       	host : 'data.earthly58.hasura-app.io',
+	       	port : '80',
+	       	path : '/api/1/table/flight/select',
+	       	method : 'POST',
+	       	headers : {
+	       		'Content-Type' : 'application/json',
+	       		'Content-Length' : Buffer.byteLength(get_flight_number_data),
+	       		'Authorization' : 'Hasura '+auth_data.auth_token
+	       	}	
+        };
+
+        var get_flight_number_req = httpm.request(get_flight_number_options,function(res){
+        	res.setEncoding('utf8');
+        	res.on('data',function(chunk){
+        		chunk=JSON.parse(chunk);
+        		if(chunk.length>0){
+        			flight_number += chunk[0].number;
+        		}
+
+				var checkin_insert_data = JSON.stringify({objects:[{
+		        	user1 : user1,
+		        	user2 : user2,
+		        	initiator : initiator,
+		        	flight : flight,
+		        	flight_number : flight_number,
+		        	created : (new Date()).toISOString(),
+		        	flight_time : flight_time
+		        }]});
+
+		        var checkin_insert_options = {
+		        	host : 'data.earthly58.hasura-app.io',
+		        	port : '80',
+		        	path : '/api/1/table/checkin/insert',
+		        	method : 'POST',
+		        	headers : {
+		        		'Content-Type' : 'application/json',
+		        		'Content-Length' : Buffer.byteLength(checkin_insert_data),
+		        		'Authorization' : 'Hasura '+auth_data.auth_token
+		        	}
+		        };
+
+		        var checkin_insert_req = httpm.request(checkin_insert_options,function(res) {
+		        	res.setEncoding('utf8');
+		        	res.on('data',function(chunk){
+		        		console.log('check-in insert response : ',chunk);
+		        	});
+		        });
+
+		        checkin_insert_req.write(checkin_insert_data);
+		        checkin_insert_req.end();
+       		});
+       	});
+
+       	get_flight_number_req.write(get_flight_number_data);
+       	get_flight_number_req.end(); 
+	});
+	res.send("Successfully Executed !");
+});
+
 app.post('/like',function(req,res){
 
 	var user = null;
@@ -106,7 +182,7 @@ app.post('/like',function(req,res){
 				}
 
 				var receiver_token = null;
-				var notification_data = '{"columns":["device_token"],"where":{"id":'+user.to+'}}';
+				var notification_data = '{"columns":["device_token","device_type"],"where":{"id":'+user.to+'}}';
 
 				var notification_options = {
 					host : 'data.earthly58.hasura-app.io',
@@ -136,14 +212,16 @@ app.post('/like',function(req,res){
 							}
 						};
 
-						fcm.send(message,function(err,res){
-							if(err){
-								console.log('err : ',err);
-								console.log('res : ',res);
-							} else {
-								console.log('Successfully sent notification with response : '+res+'to : '+receiver_token.device_token);
-							}
-						});
+						if(receiver_token.device_type!="ios"){
+							fcm.send(message,function(err,res){
+								if(err){
+									console.log('err : ',err);
+									console.log('res : ',res);
+								} else {
+									console.log('Successfully sent notification with response : '+res+'to : '+receiver_token.device_token);
+								}
+							});	
+						}
 					});
 				});
 
@@ -153,7 +231,7 @@ app.post('/like',function(req,res){
 				if(notification_type=="conn_estd") {
 
 					var receiver2_token=null;
-					var notification2_data = '{"columns":["device_token"],"where":{"id":'+user.from+'}}';
+					var notification2_data = '{"columns":["device_token","device_type"],"where":{"id":'+user.from+'}}';
 
 					var notification2_options = {
 						host : 'data.earthly58.hasura-app.io',
@@ -183,14 +261,16 @@ app.post('/like',function(req,res){
 								}
 							};
 
-							fcm.send(message,function(err,res){
-								if(err){
-									console.log('err : ',err);
-									console.log('res : ',res);
-								} else {
-									console.log('Successfully sent notification with response : '+res+'to : '+receiver2_token.device_token);
-								}
-							});
+							if(receiver2_token.device_type!="ios"){
+								fcm.send(message,function(err,res){
+									if(err){
+										console.log('err : ',err);
+										console.log('res : ',res);
+									} else {
+										console.log('Successfully sent notification with response : '+res+'to : '+receiver2_token.device_token);
+									}
+								});
+							}
 						});
 					});
 
@@ -310,7 +390,7 @@ io.on('connection',function(socket){
             }
             catch(e) {
               var receiver_token = null;
-              var token_data   = '{"columns":["device_token"],"where":{"id":'+user.to+'}}'
+              var token_data   = '{"columns":["device_token","device_type"],"where":{"id":'+user.to+'}}'
 
               //console.log('connection_check_data : '+connection_check_data);
 
@@ -352,15 +432,17 @@ io.on('connection',function(socket){
                   };
                   
                   console.log(message.to);
-                  fcm.send(message,function(err,res){
-                    if(err){
-                      console.log('err : ',err);
-                      console.log('res : ',res);
-                      console.log('Something has gone wrong !');
-                    } else {
-                      console.log('Successfully sent with response : ',res);
-                    }
-                  }); 
+                  if(receiver_token.device_type!="ios"){
+                  	fcm.send(message,function(err,res){
+                  		if(err){
+                  			console.log('err : ',err);
+                  			console.log('res : ',res);
+                  			console.log('Something has gone wrong !');
+                  		} else {
+                  			console.log('Successfully sent with response : ',res);
+                  		}
+                  	});	
+                  } 
                 });
               });
 
