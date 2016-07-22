@@ -51,6 +51,7 @@ app.post('/checkin',function(req,res){
         var receiver = chunk.to;
         var flight = chunk.flight_id;
         var flight_time = chunk.flight_time;
+        var initiator_username = chunk.from_username;
 
         var flight_number = "";
 
@@ -114,6 +115,8 @@ app.post('/checkin',function(req,res){
 
 		var receiver_token = null;
 		var notification_data = '{"columns":["device_token","device_type"],"where":{"id":'+receiver+'}}';
+
+		console.log("notification_data :",notification_data);
 				
 		var notification_options = {
 			host : 'data.earthly58.hasura-app.io',
@@ -137,8 +140,8 @@ app.post('/checkin',function(req,res){
 					to : receiver_token.device_token,
 					collapse_key : 'my_collapse_key',
 					data : {
-						from_user : user.from,
-						from_username : user.from_username,
+						from_user : initiator,
+						from_username : initiator_username,
 						type : "checkin_req"
 					}
 				};
