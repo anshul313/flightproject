@@ -52,115 +52,159 @@ app.post('/checkin',function(req,res){
         var flight = chunk.flight_id;
         var flight_time = chunk.flight_time;
         var initiator_username = chunk.from_username;
+        var request_type = chunk.request_type;
 
-        var flight_number = "";
+        if(request_type=="checkin_req"){
 
-        var get_flight_number_data = '{"columns":["number"],"where":{"id":'+flight+'}}';
-        var get_flight_number_options = {
-	       	host : 'data.earthly58.hasura-app.io',
-	       	port : '80',
-	       	path : '/api/1/table/flight/select',
-	       	method : 'POST',
-	       	headers : {
-	       		'Content-Type' : 'application/json',
-	       		'Content-Length' : Buffer.byteLength(get_flight_number_data),
-	       		'Authorization' : 'Hasura '+auth_data.auth_token
-	       	}	
-        };
+	        var flight_number = "";
 
-        var get_flight_number_req = httpm.request(get_flight_number_options,function(res){
-        	res.setEncoding('utf8');
-        	res.on('data',function(chunk){
-        		chunk=JSON.parse(chunk);
-        		if(chunk.length>0){
-        			flight_number += chunk[0].number;
-        		}
+	        var get_flight_number_data = '{"columns":["number"],"where":{"id":'+flight+'}}';
+	        var get_flight_number_options = {
+		       	host : 'data.earthly58.hasura-app.io',
+		       	port : '80',
+		       	path : '/api/1/table/flight/select',
+		       	method : 'POST',
+		       	headers : {
+		       		'Content-Type' : 'application/json',
+		       		'Content-Length' : Buffer.byteLength(get_flight_number_data),
+		       		'Authorization' : 'Hasura '+auth_data.auth_token
+		       	}	
+	        };
 
-				var checkin_insert_data = JSON.stringify({objects:[{
-		        	user1 : user1,
-		        	user2 : user2,
-		        	initiator : initiator,
-		        	flight : flight,
-		        	flight_number : flight_number,
-		        	created : (new Date()).toISOString(),
-		        	flight_time : flight_time
-		        }]});
+	        var get_flight_number_req = httpm.request(get_flight_number_options,function(res){
+	        	res.setEncoding('utf8');
+	        	res.on('data',function(chunk){
+	        		chunk=JSON.parse(chunk);
+	        		if(chunk.length>0){
+	        			flight_number += chunk[0].number;
+	        		}
 
-		        var checkin_insert_options = {
-		        	host : 'data.earthly58.hasura-app.io',
-		        	port : '80',
-		        	path : '/api/1/table/checkin/insert',
-		        	method : 'POST',
-		        	headers : {
-		        		'Content-Type' : 'application/json',
-		        		'Content-Length' : Buffer.byteLength(checkin_insert_data),
-		        		'Authorization' : 'Hasura '+auth_data.auth_token
-		        	}
-		        };
+					var checkin_insert_data = JSON.stringify({objects:[{
+			        	user1 : user1,
+			        	user2 : user2,
+			        	initiator : initiator,
+			        	flight : flight,
+			        	flight_number : flight_number,
+			        	created : (new Date()).toISOString(),
+			        	flight_time : flight_time
+			        }]});
 
-		        var checkin_insert_req = httpm.request(checkin_insert_options,function(res) {
-		        	res.setEncoding('utf8');
-		        	res.on('data',function(chunk){
-		        		console.log('check-in insert response : ',chunk);
-		        	});
-		        });
+			        var checkin_insert_options = {
+			        	host : 'data.earthly58.hasura-app.io',
+			        	port : '80',
+			        	path : '/api/1/table/checkin/insert',
+			        	method : 'POST',
+			        	headers : {
+			        		'Content-Type' : 'application/json',
+			        		'Content-Length' : Buffer.byteLength(checkin_insert_data),
+			        		'Authorization' : 'Hasura '+auth_data.auth_token
+			        	}
+			        };
 
-		        checkin_insert_req.write(checkin_insert_data);
-		        checkin_insert_req.end();
-       		});
-       	});
+			        var checkin_insert_req = httpm.request(checkin_insert_options,function(res) {
+			        	res.setEncoding('utf8');
+			        	res.on('data',function(chunk){
+			        		console.log('check-in insert response : ',chunk);
+			        	});
+			        });
 
-       	get_flight_number_req.write(get_flight_number_data);
-       	get_flight_number_req.end();
+			        checkin_insert_req.write(checkin_insert_data);
+			        checkin_insert_req.end();
+	       		});
+	       	});
 
-		var receiver_token = null;
-		var notification_data = '{"columns":["device_token","device_type"],"where":{"id":'+receiver+'}}';
+	       	get_flight_number_req.write(get_flight_number_data);
+	       	get_flight_number_req.end();
 
-		console.log("notification_data :",notification_data);
-				
-		var notification_options = {
-			host : 'data.earthly58.hasura-app.io',
-			port : '80',
-			path : '/api/1/table/user/select',
-			method: 'POST',
-			headers : {
-				'Content-Type' : 'application/json',
-				'Content-Length': Buffer.byteLength(notification_data),
-				'Authorization' : 'Hasura '+auth_data.auth_token
-			}
-		};
+			var receiver_token = null;
+			var notification_data = '{"columns":["device_token","device_type"],"where":{"id":'+receiver+'}}';
 
-		var notification_req = httpm.request(notification_options,function(res){
-			res.setEncoding('utf8');
-			res.on('data',function(chunk){
-				chunk=JSON.parse(chunk);
-				receiver_token=chunk[0];
-
-				var message = {
-					to : receiver_token.device_token,
-					collapse_key : 'my_collapse_key',
-					data : {
-						from_user : initiator,
-						from_username : initiator_username,
-						type : "checkin_req"
-					}
-				};
-
-				if(receiver_token.device_type!="ios"){
-					fcm.send(message,function(err,res){
-						if(err){
-							console.log('err : ',err);
-							console.log('res : ',res);
-						} else {
-							console.log('Successfully sent notification with response : '+res+'to : '+receiver_token.device_token);
-						}
-					});	
+			console.log("notification_data :",notification_data);
+					
+			var notification_options = {
+				host : 'data.earthly58.hasura-app.io',
+				port : '80',
+				path : '/api/1/table/user/select',
+				method: 'POST',
+				headers : {
+					'Content-Type' : 'application/json',
+					'Content-Length': Buffer.byteLength(notification_data),
+					'Authorization' : 'Hasura '+auth_data.auth_token
 				}
-			});
-		});
+			};
 
-		notification_req.write(notification_data);
-		notification_req.end();
+			var notification_req = httpm.request(notification_options,function(res){
+				res.setEncoding('utf8');
+				res.on('data',function(chunk){
+					chunk=JSON.parse(chunk);
+					receiver_token=chunk[0];
+
+					var message = {
+						to : receiver_token.device_token,
+						collapse_key : 'my_collapse_key',
+						data : {
+							from_user : initiator,
+							from_username : initiator_username,
+							type : "checkin_req"
+						}
+					};
+
+					if(receiver_token.device_type!="ios"){
+						fcm.send(message,function(err,res){
+							if(err){
+								console.log('err : ',err);
+								console.log('res : ',res);
+							} else {
+								console.log('Successfully sent notification with response : '+res+'to : '+receiver_token.device_token);
+							}
+						});	
+					}
+				});
+			});
+
+			notification_req.write(notification_data);
+			notification_req.end();
+        } else {
+        	var accept_status=false;
+        	if(request_type=="accepted"){
+        		accept_status=true;
+        	}
+
+        	var update_data = JSON.stringify({
+        		values : {
+        			accepted : accept_status
+        		},
+        		where : {
+        			user1 : user1,
+        			user2 : user2,
+        			initiator : initiator,
+        			flight : flight,
+        			flight_time : flight_time
+        		}
+        	});
+
+        	var update_options = {
+        		host : 'data.earthly58.hasura-app.io',
+				port : '80',
+				path : '/api/1/table/checkin/update',
+				method: 'POST',
+				headers : {
+					'Content-Type' : 'application/json',
+					'Content-Length': Buffer.byteLength(update_data),
+					'Authorization' : 'Hasura '+auth_data.auth_token
+				}
+        	};
+
+        	var update_req = httpm.request(update_options,function(res){
+        		res.setEncoding('utf8');
+        		res.on('data',function(chunk){
+        			console.log(chunk);
+        		});
+        	});
+        	update_req.write(update_data);
+        	update_req.end();
+
+        }
 	});
 	res.send("Successfully Executed !");
 });
