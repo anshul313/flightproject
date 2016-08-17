@@ -1,0 +1,10 @@
+{
+  "name": "meanjs",
+  "description": "Fullstack JavaScript with MongoDB, Express, AngularJS, and Node.js.",
+  "homepage": "http://meanjs.org/",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "overrides": {
+  }
+}
