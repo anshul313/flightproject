@@ -8,4 +8,6 @@ module.exports = function(app) {
 
   app.route('/tripmanager/login')
     .post(devices.login);
+  app.route('/tripmanager/data')
+    .post(devices.data);
 };

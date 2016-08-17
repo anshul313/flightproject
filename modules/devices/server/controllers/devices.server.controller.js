@@ -21,32 +21,39 @@ var mongo = require('mongodb');
 exports.data = function(req, res) {
   if (!(req.body.deviceId)) {
     return res.status(400).send({
-      message: 'deviceId invalid'
+      message: 'deviceId required'
     });
   }
-  db.collection('User').findOne({
-    deviceId: req.body.deviceId
-  }, function(err, docs) {
-    if (err) {
+  req.body.dateCreated = Date.now();
+  db.collection('userdata').insert(req.body, function(error, success) {
+    if (error) {
       return res.status(400).send({
         message: 'error occured'
       });
-    } else if (docs) {
-      return res.status(400).send({
-        message: 'deviceId exists'
-      });
-    } else {
-      db.collection('User').insert(req.body, function(error, succcess) {
-        if (error) {
-          return res.status(400).send({
-            message: 'error occured'
-          });
-        }
-        res.json({
-          error: false,
-          message: "user created successfully"
-        });
-      })
     }
+    res.json({
+      error: false,
+      message: "data saved"
+    });
+  });
+};
+
+exports.login = function(req, res) {
+  if (!(req.body.deviceId)) {
+    return res.status(400).send({
+      message: 'deviceId invalid'
+    });
+  }
+  req.body.dateCreated = Date.now();
+  db.collection('user').insert(req.body, function(error, success) {
+    if (error) {
+      return res.status(400).send({
+        message: 'error occured'
+      });
+    }
+    res.json({
+      error: false,
+      message: "user created successfully"
+    });
   });
 };
