@@ -53,7 +53,6 @@ exports.login = function(req, res) {
         message: 'error occured'
       });
     }
-    console.log('');
     if (user) {
       res.json({
         error: false,

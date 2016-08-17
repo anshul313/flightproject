@@ -1,10 +1,10 @@
 {
-  "name": "meanjs",
+  "name": "TripManager",
   "description": "Full-Stack JavaScript with MongoDB, Express, AngularJS, and Node.js.",
   "version": "0.5.0-beta",
   "meanjs-version": "0.5.0-beta",
   "private": false,
-  "author": "Anshul Sharma, Navneet Kaur, Shweta Singh",
+  "author": "Anshul Sharma",
   "license": "MIT",
   "repository": {
     "type": "git",
