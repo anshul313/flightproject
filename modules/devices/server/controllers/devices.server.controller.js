@@ -18,7 +18,7 @@ var path = require('path'),
 //   'qykly-micro.kfrrkn.0001.apse1.cache.amazonaws.com');
 var mongo = require('mongodb');
 
-exports.login = function(req, res) {
+exports.data = function(req, res) {
   if (!(req.body.deviceId)) {
     return res.status(400).send({
       message: 'deviceId invalid'

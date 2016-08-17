@@ -6,6 +6,6 @@ var util = require('../../../../config/lib/util.js');
 
 module.exports = function(app) {
 
-  app.route('/api2/login')
+  app.route('/tripmanager/login')
     .post(devices.login);
 };
