@@ -45,15 +45,27 @@ exports.login = function(req, res) {
     });
   }
   req.body.dateCreated = Date.now();
-  db.collection('user').insert(req.body, function(error, success) {
+  db.collection('user').findOne({
+    deviceId: req.body.deviceId
+  }, function(error, user) {
     if (error) {
       return res.status(400).send({
         message: 'error occured'
       });
     }
-    res.json({
-      error: false,
-      message: "user created successfully"
-    });
+    if (user) {
+      res.json({
+        error: false,
+        user: user,
+        message: "user created successfully"
+      });
+    } else {
+      db.collection('user').insert(req.body, function(error, success) {
+        res.json({
+          error: false,
+          message: "user created successfully"
+        });
+      });
+    }
   });
 };
