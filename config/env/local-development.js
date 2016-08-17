@@ -12,7 +12,7 @@ module.exports = {
   db: {
 
 
-    uri: 'mongodb://localhost:27017/flightproject',
+    uri: 'mongodb://localhost:27017/tripmanager',
 
     options: {
       user: '',
