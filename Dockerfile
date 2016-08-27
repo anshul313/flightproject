@@ -1,8 +1,8 @@
-FROM node:4.4.4
+FROM mhart/alpine-node:4
 
 COPY app/node_modules /app/node_modules
 COPY app/bin /app/bin
-COPY app/static /app/static
+#COPY app/static /app/static
 COPY app/hasuraconfig.js /app/hasuraconfig.js
 COPY app/package.json /app/package.json
 COPY app/runserver.sh /app/runserver.sh

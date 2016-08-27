@@ -21,6 +21,7 @@ else
 
 // Parse JSON bodies
 app.use(bodyParser.json());
+app.use('/static', Express.static('static'));
 
 const headers = {'Content-Type': 'application/json'};
 let url = 'http://data.default';
@@ -109,24 +110,24 @@ app.post('/checkin/request', (req, res) => {
 
       request(notificationUrl, notificationOpts, res, (rdata) => {
         const receiver = rdata[0];
-        const message = {
-          to: receiver.device_token,
-          collapse_key: 'my_collapse_key',
-          data: {
-            from_user: initiator,
-            from_username: initiatorUsername,
-            type: 'checkin_req'
-          }
-        };
 
         if (receiver.device_type !== 'ios') {
-          fcm.send(message, (err, res) => {
+          const message = {
+            to: receiver.device_token,
+            collapse_key: 'my_collapse_key',
+            data: {
+              from_user: initiator,
+              from_username: initiatorUsername,
+              type: 'checkin_req'
+            }
+          };
+          fcm.send(message, (err, res_) => {
             if (err) {
               console.log('err: ', err);
-              console.log('res: ', res);
+              console.log('res: ', res_);
               res.status(500).send('Push notification failed');
             } else {
-              console.log('Successfully sent notification with response: ' + res + ' to: ' + receiver.device_token);
+              console.log('Successfully sent notification with response: ' + res_ + ' to: ' + receiver.device_token);
               res.send('All done!');
             }
           });
@@ -143,19 +144,17 @@ app.post('/checkin/update', (req, res) => {
   const chunk = req.body;
   const user1 = (chunk.from < chunk.to) ? chunk.from : chunk.to;
   const user2 = (chunk.from < chunk.to) ? chunk.to : chunk.from;
-  const initiator = chunk.from;
   const flight = chunk.flight_id;
   const flightTime = chunk.flight_time;
   const acceptStatus = (chunk.request_type === 'accepted');
 
   const updateData = JSON.stringify({
-    values: {
+    $set: {
       accepted: acceptStatus
     },
     where: {
       user1,
       user2,
-      initiator,
       flight,
       flight_time: flightTime
     }
@@ -168,7 +167,8 @@ app.post('/checkin/update', (req, res) => {
     headers
   };
 
-  request(updateUrl, updateOpts, res, () => {
+  request(updateUrl, updateOpts, res, (d) => {
+    console.log(d);
     console.log('Check-in request: ' + acceptStatus.toString());
     res.send('Check-in request: ' + acceptStatus.toString());
   });
@@ -197,12 +197,12 @@ app.post('/like', (req, res) => {
 
   request(insertUrl, insertOpts, res, () => {
     const twoWayConnectionCheck = JSON.stringify({
-      columns: ['is_liked'],
+      columns: ['is_liked', 'timestamp'],
       where: {$and: [
         {user1: user.to},
         {user2: user.from}]
       },
-      order_by: {column: 'timestamp', order: 'desc', nulls: 'last'},
+      order_by: [{column: 'timestamp', order: 'desc', nulls: 'last'}],
       limit: 1
     });
 
