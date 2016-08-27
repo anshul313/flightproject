@@ -2,6 +2,7 @@
 
 import requests
 import json
+import os
 
 url = 'http://localhost:3000'
 headers = {'Content-Type': 'application/json'}
@@ -38,6 +39,14 @@ def t3():
     print(response.status_code)
     print(response.text)
 
+def t4():
+    accessToken = os.environ['LINKEDIN'] #The linkedin access token set on the env var to prevent it getting added to the git repo
+    response = requests.get(url + '/linkedin-profile/' + accessToken, headers = headers)
+    print(response.status_code)
+    print(response.text)
+
+
 #t1()
 #t2()
-t3()
+#t3()
+t4()

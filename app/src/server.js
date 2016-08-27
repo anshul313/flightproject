@@ -303,6 +303,19 @@ app.post('/like', (req, res) => {
 });
 
 
+app.get('/linkedin-profile/:token', (req, res) => {
+  const profileUrl = 'https://api.linkedin.com/v1/people/~:(positions,email-address,formatted-name,phone-numbers,picture-urls::(original))?format=json';
+  const profileOpts = {
+    method: 'GET',
+    headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + req.params.token}
+  };
+  request(profileUrl, profileOpts, res, (data) => {
+    res.set('Content-Type', 'application/json');
+    res.send(JSON.stringify(data));
+  });
+});
+
+
 const sockets = {};
 io.on('connection', (socket) => {
   console.log('User connected: ' + socket.id);
