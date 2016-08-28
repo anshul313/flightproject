@@ -28,6 +28,9 @@ let url = 'http://data.default';
 if (global.__DEVELOPMENT__) {
   headers.Authorization = 'Hasura ' + process.env.API_TOKEN;
   url = 'http://data.earthly58.hasura-app.io';
+} else {
+  headers['X-Hasura-Role'] = 'admin';
+  headers['X-Hasura-User-Id'] = 1;
 }
 
 const request = (url, options, res, cb) => {
