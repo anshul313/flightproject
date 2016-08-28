@@ -4,7 +4,8 @@ import requests
 import json
 import os
 
-url = 'http://localhost:3000'
+#url = 'http://localhost:3000'
+url = 'http://api.earthly58.hasura-app.io'
 headers = {'Content-Type': 'application/json'}
 
 def t1():
