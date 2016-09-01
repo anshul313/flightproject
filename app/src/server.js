@@ -40,19 +40,19 @@ const request = (url, options, res, cb) => {
         response.json().then(d => (cb(d)));
         return;
       }
-      console.error(response.status, response.statusText);
+      console.error(url, response.status, response.statusText);
       response.text().then(t => (console.log(t)));
       if (res) {
         res.status(500).send('Internal error');
       }
     },
     (e) => {
-      console.error(e);
+      console.error(url, e);
       if (res) {
         res.status(500).send('Internal error');
       }
     }).catch(e => {
-      console.error(e);
+      console.error(url, e);
       console.error(e.stack);
       if (res) {
         res.status(500).send('Internal error');
@@ -79,7 +79,7 @@ app.post('/checkin/request', (req, res) => {
 
   request(getUrl, getFlightOpts, res, (resData) => {
     if (resData.length !== 1) {
-      console.error('Invalid response: ', resData);
+      console.error(getUrl, 'Invalid response: ', resData);
       res.status(500).send('Could not fetch flights. Internal error');
       return;
     }
@@ -186,120 +186,152 @@ app.post('/like', (req, res) => {
     to_username: chunk.to_username
   };
 
-  const likeInsert = JSON.stringify({objects:[{
-    user1: user.from,
-    user2: user.to,
-    is_liked: true
-  }]});
-  const insertUrl = url + '/api/1/table/like/insert';
-  const insertOpts = {
+  const checkAlreadyLiked = JSON.stringify({
+    columns: ['id', 'is_liked', 'timestamp'],
+    where: {$and: [
+      {user1: user.from},
+      {user2: user.to}]
+    },
+    order_by: [{column: 'timestamp', order: 'desc', nulls: 'last'}],
+    limit: 1
+  });
+  const checkAlreadyLikedUrl = url + '/api/1/table/like/select';
+  const checkAlreadyLikedOpts = {
     method: 'POST',
     headers,
-    body: likeInsert
+    body: checkAlreadyLiked
   };
 
-  request(insertUrl, insertOpts, res, () => {
-    const twoWayConnectionCheck = JSON.stringify({
-      columns: ['is_liked', 'timestamp'],
-      where: {$and: [
-        {user1: user.to},
-        {user2: user.from}]
-      },
-      order_by: [{column: 'timestamp', order: 'desc', nulls: 'last'}],
-      limit: 1
-    });
+  request(checkAlreadyLikedUrl, checkAlreadyLikedOpts, res, (alreadyLikedResult) => {
+    let upsertUrl;
+    let likeUpsert;
 
-    console.log(twoWayConnectionCheck);
-    const twoWayConnectionCheckUrl = url + '/api/1/table/like/select';
-    const twoWayConnectionCheckOpts = {
+    if (alreadyLikedResult.length === 0) {
+      console.log('inserting...');
+      upsertUrl = url + '/api/1/table/like/insert';
+      likeUpsert = JSON.stringify({objects:[{
+        user1: user.from,
+        user2: user.to,
+        is_liked: true
+      }]});
+    } else {
+      console.log('updating...');
+      upsertUrl = url + '/api/1/table/like/update';
+      likeUpsert = JSON.stringify({
+        $set: {is_liked: true},
+        where: {id: alreadyLikedResult[0].id}
+      });
+    }
+
+    const upsertOpts = {
       method: 'POST',
       headers,
-      body: twoWayConnectionCheck
+      body: likeUpsert
     };
 
-    request(twoWayConnectionCheckUrl, twoWayConnectionCheckOpts, res, (twoWayResult) => {
-      let notificationType;
+    request(upsertUrl, upsertOpts, res, () => {
+      const twoWayConnectionCheck = JSON.stringify({
+        columns: ['is_liked', 'timestamp'],
+        where: {$and: [
+          {user1: user.to},
+          {user2: user.from}]
+        },
+        order_by: [{column: 'timestamp', order: 'desc', nulls: 'last'}],
+        limit: 1
+      });
 
-      if (twoWayResult.length === 0) {
-        notificationType = 'conn_req';
-      } else if (twoWayResult[0].is_liked) {
-        notificationType = 'conn_estd';
-      } else {
-        notificationType = 'conn_req';
-      }
-
-      const notificationData = {
-        columns: ['device_token', 'device_type'],
-        where: {id: user.to}
-      };
-
-      const notificationUrl = url + '/api/1/table/user/select';
-      const notificationOpts = {
+      console.log(twoWayConnectionCheck);
+      const twoWayConnectionCheckUrl = url + '/api/1/table/like/select';
+      const twoWayConnectionCheckOpts = {
         method: 'POST',
         headers,
-        body: JSON.stringify(notificationData)
+        body: twoWayConnectionCheck
       };
 
-      request(notificationUrl, notificationOpts, res, (notificationRes) => {
-        const receiver = notificationRes[0];
-        const message = {
-          to: receiver.device_token,
-          collapse_key: 'my_collapse_key',
-          data: {
-            from_user: user.from,
-            from_username: user.from_username,
-            type: notificationType
-          }
+      request(twoWayConnectionCheckUrl, twoWayConnectionCheckOpts, res, (twoWayResult) => {
+        let notificationType;
+
+        if (twoWayResult.length === 0) {
+          notificationType = 'conn_req';
+        } else if (twoWayResult[0].is_liked) {
+          notificationType = 'conn_estd';
+        } else {
+          notificationType = 'conn_req';
+        }
+
+        const notificationData = {
+          columns: ['device_token', 'device_type'],
+          where: {id: user.to}
         };
 
-        if (receiver.device_type !== 'ios') {
-          fcm.send(message, (err, result) => {
-            if (err) {
-              console.log('err: ', err);
-              console.log('res: ', result);
-              res.status(500).send('Internal error');
-              return;
+        const notificationUrl = url + '/api/1/table/user/select';
+        const notificationOpts = {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(notificationData)
+        };
+
+        request(notificationUrl, notificationOpts, res, (notificationRes) => {
+          const receiver = notificationRes[0];
+          const message = {
+            to: receiver.device_token,
+            collapse_key: 'my_collapse_key',
+            data: {
+              from_user: user.from,
+              from_username: user.from_username,
+              type: notificationType
             }
-            console.log('Successfully sent notification with response: ' + res + 'to: ' + receiver.device_token);
-          });
-        } else {
-          console.log('Did not send iOS notification');
-        }
+          };
 
-        if (notificationType === 'conn_estd') {
-          notificationData.where.id = user.from;
-          notificationOpts.body = JSON.stringify(notificationData);
-
-          request(notificationUrl, notificationOpts, res, (notification2Res) => {
-            const receiver2 = notification2Res[0];
-            const message2 = {
-              to: receiver2.device_token,
-              collapse_key: 'my_collapse_key',
-              data: {
-                from_user: user.to,
-                from_username: user.to_username,
-                type: notificationType
+          if (receiver.device_type !== 'ios') {
+            fcm.send(message, (err, result) => {
+              if (err) {
+                console.log('err: ', err);
+                console.log('res: ', result);
+                res.status(500).send('Internal error');
+                return;
               }
-            };
+              console.log('Successfully sent notification with response: ' + res + 'to: ' + receiver.device_token);
+            });
+          } else {
+            console.log('Did not send iOS notification');
+          }
 
-            if (receiver2.device_type !== 'ios') {
-              fcm.send(message2, (err, res) => {
-                if (err) {
-                  console.log('err: ', err);
-                  console.log('res: ', res);
-                  res.status(500).send('Internal error');
-                  return;
+          if (notificationType === 'conn_estd') {
+            notificationData.where.id = user.from;
+            notificationOpts.body = JSON.stringify(notificationData);
+
+            request(notificationUrl, notificationOpts, res, (notification2Res) => {
+              const receiver2 = notification2Res[0];
+              const message2 = {
+                to: receiver2.device_token,
+                collapse_key: 'my_collapse_key',
+                data: {
+                  from_user: user.to,
+                  from_username: user.to_username,
+                  type: notificationType
                 }
-                res.send('Succesfully send notifications!');
-              });
-            } else {
-              console.log('User on iOS device: ' + user.from);
-              res.send('Did not send iOS notification');
-            }
-          });
-        } else {
-          res.send('Notifications sent!');
-        }
+              };
+
+              if (receiver2.device_type !== 'ios') {
+                fcm.send(message2, (err, res) => {
+                  if (err) {
+                    console.log('err: ', err);
+                    console.log('res: ', res);
+                    res.status(500).send('Internal error');
+                    return;
+                  }
+                  res.send('Succesfully send notifications!');
+                });
+              } else {
+                console.log('User on iOS device: ' + user.from);
+                res.send('Did not send iOS notification');
+              }
+            });
+          } else {
+            res.send('Notifications sent!');
+          }
+        });
       });
     });
   });
