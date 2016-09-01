@@ -4,8 +4,8 @@ import requests
 import json
 import os
 
-#url = 'http://localhost:3000'
-url = 'http://api.earthly58.hasura-app.io'
+url = 'http://localhost:3000'
+#url = 'http://api.earthly58.hasura-app.io'
 headers = {'Content-Type': 'application/json'}
 
 def t1():
@@ -46,8 +46,18 @@ def t4():
     print(response.status_code)
     print(response.text)
 
+def t5():
+    accessToken = os.environ['FB'] #The linkedin access token set on the env var to prevent it getting added to the git repo
+    response = requests.post(url + '/mutual-friends', headers = headers, data=json.dumps(
+        {
+            'myToken': accessToken,
+            'otherId': '100001410587055' #This is a string, not an integer
+        }))
+    print(response.status_code)
+    print(response.text)
+
 
 #t1()
 #t2()
-t3()
-t4()
+#t3()
+t5()

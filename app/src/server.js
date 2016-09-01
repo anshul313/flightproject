@@ -305,7 +305,6 @@ app.post('/like', (req, res) => {
   });
 });
 
-
 app.get('/linkedin-profile/:token', (req, res) => {
   const profileUrl = 'https://api.linkedin.com/v1/people/~:(positions,email-address,formatted-name,phone-numbers,picture-urls::(original))?format=json';
   const profileOpts = {
@@ -318,6 +317,22 @@ app.get('/linkedin-profile/:token', (req, res) => {
   });
 });
 
+app.post('/mutual-friends', (req, res) => {
+  const input = req.body;
+  const url = `https://graph.facebook.com/v2.7/${input.otherId}?fields=context.fields%28mutual_friends%29`;
+  const options = {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + input.myToken
+    }
+  };
+
+  request(url, options, res, (data) => {
+    res.set('Content-Type', 'application/json');
+    res.send(JSON.stringify(data));
+  });
+});
 
 const sockets = {};
 io.on('connection', (socket) => {
