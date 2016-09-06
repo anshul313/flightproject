@@ -205,8 +205,8 @@ app.post('/like', (req, res) => {
   request(checkAlreadyLikedUrl, checkAlreadyLikedOpts, res, (alreadyLikedResult) => {
     let upsertUrl;
     let likeUpsert;
-
-    if (alreadyLikedResult.length === 0) {
+    const alreadyLiked = (alreadyLikedResult.length !== 0) ? (alreadyLikedResult[0].is_liked) : false;
+    if (alreadyLiked) {
       console.log('inserting...');
       upsertUrl = url + '/api/1/table/like/insert';
       likeUpsert = JSON.stringify({objects:[{
@@ -227,7 +227,7 @@ app.post('/like', (req, res) => {
       method: 'POST',
       headers,
       body: likeUpsert
-    };
+     };
 
     request(upsertUrl, upsertOpts, res, () => {
       const twoWayConnectionCheck = JSON.stringify({
@@ -254,7 +254,11 @@ app.post('/like', (req, res) => {
         if (twoWayResult.length === 0) {
           notificationType = 'conn_req';
         } else if (twoWayResult[0].is_liked) {
-          notificationType = 'conn_estd';
+          if (alreadyLiked) {
+            notificationType = 'conn_req_existing';
+          } else {
+            notificationType = 'conn_estd';
+          }
         } else {
           notificationType = 'conn_req';
         }
