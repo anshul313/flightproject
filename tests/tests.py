@@ -4,8 +4,8 @@ import requests
 import json
 import os
 
-#url = 'http://localhost:3000'
-url = 'http://api.earthly58.hasura-app.io'
+url = 'http://localhost:3000'
+#url = 'http://api.earthly58.hasura-app.io'
 headers = {'Content-Type': 'application/json'}
 
 def t1():
@@ -32,10 +32,10 @@ def t2():
 
 def t3():
     response = requests.post(url + '/like', headers = headers, data = json.dumps({
-        'from_user': 25,
-        'to_user': 21,
-        'from_username': 'rahul',
-        'to_username': 'jaison'
+        'from_user': 39,
+        'to_user': 35,
+        'from_username': 'jaison',
+        'to_username': 'rahul'
     }))
     print(response.status_code)
     print(response.text)

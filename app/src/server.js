@@ -34,24 +34,33 @@ if (global.__DEVELOPMENT__) {
 }
 
 const request = (url, options, res, cb) => {
-  fetch(url, options).then(
-    (response) => {
-      if (response.ok) {
-        response.json().then(d => (cb(d)));
-        return;
-      }
-      console.error(url, response.status, response.statusText);
-      response.text().then(t => (console.log(t)));
-      if (res) {
-        res.status(500).send('Internal error');
-      }
-    },
-    (e) => {
-      console.error(url, e);
-      if (res) {
-        res.status(500).send('Internal error');
-      }
-    }).catch(e => {
+  fetch(url, options)
+    .then(
+      (response) => {
+        if (response.ok) {
+          response
+            .text()
+            .then(d => (cb(JSON.parse(d))))
+            .catch(e => {
+              console.error(url, response.status, response.statusText);
+              console.error(e, e.stack);
+              res.status(500).send('Internal error');
+            });
+          return;
+        }
+        console.error(url, response.status, response.statusText);
+        response.text().then(t => (console.log(t)));
+        if (res) {
+          res.status(500).send('Internal error');
+        }
+      },
+      (e) => {
+        console.error(url, e);
+        if (res) {
+          res.status(500).send('Internal error');
+        }
+      })
+    .catch(e => {
       console.error(url, e);
       console.error(e.stack);
       if (res) {
@@ -206,7 +215,8 @@ app.post('/like', (req, res) => {
     let upsertUrl;
     let likeUpsert;
     const alreadyLiked = (alreadyLikedResult.length !== 0) ? (alreadyLikedResult[0].is_liked) : false;
-    if (alreadyLiked) {
+    console.log('alreadyLikedResult: ', alreadyLikedResult);
+    if (alreadyLikedResult.length === 0) {
       console.log('inserting...');
       upsertUrl = url + '/api/1/table/like/insert';
       likeUpsert = JSON.stringify({objects:[{
@@ -227,7 +237,7 @@ app.post('/like', (req, res) => {
       method: 'POST',
       headers,
       body: likeUpsert
-     };
+    };
 
     request(upsertUrl, upsertOpts, res, () => {
       const twoWayConnectionCheck = JSON.stringify({
@@ -290,9 +300,10 @@ app.post('/like', (req, res) => {
           if (receiver.device_type !== 'ios') {
             fcm.send(message, (err, result) => {
               if (err) {
-                console.log('err: ', err);
+                console.log('Error in sending FCM notification: ', err);
+                console.log('Message to be sent: ', JSON.stringify(message));
                 console.log('res: ', result);
-                res.status(500).send('Internal error');
+                // res.status(500).send('Internal error');
                 return;
               }
               console.log('Successfully sent notification with response: ' + res + 'to: ' + receiver.device_token);
@@ -318,14 +329,15 @@ app.post('/like', (req, res) => {
               };
 
               if (receiver2.device_type !== 'ios') {
-                fcm.send(message2, (err, res) => {
+                fcm.send(message2, (err, result) => {
                   if (err) {
-                    console.log('err: ', err);
-                    console.log('res: ', res);
+                    console.log('Error in sending FCM notification: ', err);
+                    console.log('Message to be sent: ', JSON.stringify(message2));
+                    console.log('res: ', result);
                     res.status(500).send('Internal error');
                     return;
                   }
-                  res.send('Succesfully send notifications!');
+                  res.send('Succesfully sent notifications!');
                 });
               } else {
                 console.log('User on iOS device: ' + user.from);
