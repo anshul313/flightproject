@@ -137,7 +137,8 @@ app.post('/checkin/request', (req, res) => {
             if (err) {
               console.log('err: ', err);
               console.log('res: ', res_);
-              res.status(500).send('Push notification failed');
+              console.log('Data updated, but push notification failed');
+              res.status(200).send('Data updated, but push notification failed');
             } else {
               console.log('Successfully sent notification with response: ' + res_ + ' to: ' + receiver.device_token);
               res.send('All done!');
