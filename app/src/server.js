@@ -228,7 +228,7 @@ app.post('/like', (req, res) => {
       console.log('updating...');
       upsertUrl = url + '/api/1/table/like/update';
       likeUpsert = JSON.stringify({
-        $set: {is_liked: true},
+        $set: {is_liked: true, timestamp: (new Date()).toISOString()},
         where: {id: alreadyLikedResult[0].id}
       });
     }
