@@ -11,7 +11,13 @@
     c.user2_time,
     l12.is_liked AS liked_12,
     l21.is_liked AS liked_21,
+    (CASE WHEN l12.timestamp IS NULL THEN l21.timestamp
+          WHEN l21.timestamp IS NULL THEN l12.timestamp
+          WHEN l12.timestamp > l21.timestamp THEN l12.timestamp
+          ELSE l21.timestamp
+    END) AS like_timestamp,
     user2.name AS user2_name,
+    user2.facebook_id AS user2_facebook_id,
     user2.city AS user2_city,
     user2.designation AS user2_designation,
     user2.profile_pic AS user2_profile_pic,
@@ -29,7 +35,7 @@
             b."time" AS user2_time
            FROM arrival_cum_departure a,
             arrival_cum_departure b
-          WHERE ((a.user_id <> b.user_id) AND (a.city = b.city) AND ((a."time" < (b."time" + '02:00:00'::interval)) OR (b."time" < (a."time" + '02:00:00'::interval))))) c
+          WHERE ((a.user_id <> b.user_id) AND (a.city = b.city) AND ((a."time" - b."time") > '-02:00:00'::interval) AND ((a."time" - b."time") < '02:00:00'::interval))) c
      LEFT JOIN "like" l12 ON (((c.user1 = l12.user1) AND (c.user2 = l12.user2))))
      LEFT JOIN "like" l21 ON (((c.user1 = l21.user2) AND (c.user2 = l21.user1))))
      LEFT JOIN "user" user2 ON ((c.user2 = user2.id)))
