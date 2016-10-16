@@ -6,13 +6,15 @@ import os
 
 url = 'http://localhost:3000'
 #url = 'http://api.earthly58.hasura-app.io'
-headers = {'Content-Type': 'application/json'}
+headers = {'Content-Type': 'application/json',
+           'X-Hasura-Role': 'user',
+           'X-Hasura-User-Id': 59 }
 
 def t1():
     response = requests.post(url + '/checkin/request', headers = headers, data = json.dumps({
-        'from': 21,
-        'from_username': 'rahul',
-        'to': 25,
+        'from': 59,
+        'from_username': 'mamidi',
+        'to': 58,
         'flight_id': 9774,
         'flight_time': '2016-09-23T12:00:00Z'
     }))
@@ -21,8 +23,8 @@ def t1():
 
 def t2():
     response = requests.post(url + '/checkin/update', headers = headers, data = json.dumps({
-        'from': 25,
-        'to': 21,
+        'from': 58,
+        'to': 59,
         'flight_id': 9774,
         'flight_time': '2016-09-23T12:00:00Z',
         'request_type': 'accepted'
@@ -56,8 +58,38 @@ def t5():
     print(response.status_code)
     print(response.text)
 
+## test for checked in request
+def t6():
+    response = requests.post(url + '/checkin/request', headers = headers, data = json.dumps({
+        'from': 59,
+        'from_username': 'anil',
+        'to': 60,
+        'flight_id': 9774,
+        'flight_time': '2016-10-04T12:00:00Z'
+    }))
+    print(response.status_code)
+    print(response.text)
+def feedbackmailtest():
+    response = requests.post(url + '/send-feedback', headers = headers, data = json.dumps({
+        'usermail': 'mamidianilkumar@gmail.com',
+        'feedback_msg': 'Hi this is a test message',
+        'user_id': 46,
+    }))
+    print(response.status_code)
+    print(response.text)
 
-#t1()
-#t2()
-t3()
+def forceupdate():
+    response = requests.post(url + '/appversion', headers = headers, data = json.dumps({
+	'version': '1.0'
+}))
+
+    print(response.status_code)
+    print(response.text)
+
+t1()
+t2()
+#t3()
 #t5()
+#t6()
+#feedbackmailtest()
+#forceupdate()

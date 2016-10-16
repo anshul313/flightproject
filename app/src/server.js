@@ -5,13 +5,15 @@ import fetch from 'node-fetch';
 import FCM from 'fcm-push';
 import bodyParser from 'body-parser';
 import _io from 'socket.io';
-
 import config from './config';
+import mail  from './mail.js';
 
 const fcm = new FCM(process.env.FCM_KEY);
 const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
+
+let authUserId = '0';
 
 // Express Logging Middleware
 if (global.__DEVELOPMENT__)
@@ -68,6 +70,25 @@ const request = (url, options, res, cb) => {
       }
     });
 };
+const validate = (req) => {
+  // Check if req.headers['X-Hasura-Role'] == 'user'
+  const authHeader = req.get('X-Hasura-Role');
+  authUserId = req.get('X-Hasura-User-Id');
+  console.log('user Id = ', authUserId);
+  if (authHeader === 'user') {
+    console.log('User role authorization done!');
+    return true;
+  }
+  return false;
+};
+
+app.use((req, res, next) => {
+  if (validate(req)) {
+    next();
+  } else {
+    res.status(403).send('invalid-role');
+  }
+});
 
 app.post('/checkin/request', (req, res) => {
   const chunk = req.body;
@@ -121,7 +142,9 @@ app.post('/checkin/request', (req, res) => {
       };
 
       request(notificationUrl, notificationOpts, res, (rdata) => {
+        console.log('rdata ', rdata[0]);
         const receiver = rdata[0];
+        console.log('receiver: ', receiver);
 
         if (receiver.device_type !== 'ios') {
           const message = {
@@ -159,6 +182,9 @@ app.post('/checkin/update', (req, res) => {
   const user2 = (chunk.from < chunk.to) ? chunk.to : chunk.from;
   const flight = chunk.flight_id;
   const flightTime = chunk.flight_time;
+  const from = chunk.from;
+  const to = chunk.to;
+  const initiatorUsername = chunk.from_username;
   const acceptStatus = (chunk.request_type === 'accepted');
 
   const updateData = JSON.stringify({
@@ -180,10 +206,45 @@ app.post('/checkin/update', (req, res) => {
     headers
   };
 
-  request(updateUrl, updateOpts, res, (d) => {
-    console.log(d);
+  request(updateUrl, updateOpts, res, () => {
     console.log('Check-in request: ' + acceptStatus.toString());
     res.send('Check-in request: ' + acceptStatus.toString());
+    const notificationUrl = url + '/api/1/table/user/select';
+    const notificationOpts = {
+      method: 'POST',
+      body: JSON.stringify({
+        columns: ['device_token', 'device_type'],
+        where: {id: to}
+      }),
+      headers
+    };
+
+    request(notificationUrl, notificationOpts, res, (d) => {
+      const receiver = d[0];
+      console.log('receiver data = ', receiver);
+      if (acceptStatus === true) {
+        const message = {
+          to: receiver.device_token,
+          collapse_key: 'my_collapse_key',
+          data: {
+            from_user: from,
+            from_username: initiatorUsername,
+            type: 'checkin_update'
+          }
+        };
+        fcm.send(message, (err, res_) => {
+          if (err) {
+            console.log('err: ', err);
+            console.log('res: ', res_);
+            console.log('Data updated, but push notification failed');
+            res.status(200).send('Data updated, but push notification failed');
+          } else {
+            console.log('Successfully sent notification with response: ' + res_ + ' to: ' + receiver.device_token);
+          }
+        });
+        console.log('All Done!');
+      }
+    });
   });
 });
 
@@ -383,6 +444,34 @@ app.post('/mutual-friends', (req, res) => {
   });
 });
 
+app.post('/send-feedback', (req, res) => {
+  const chunk = req.body;
+  // const userid = chunk.user_id;
+  const usermail = chunk.usermail;
+  const feedbackmsg = chunk.feedback_msg;
+  // console.log('response =', res);
+  res.send(mail.sendmail(usermail, feedbackmsg));
+});
+
+app.post('/appversion', (req, res) => {
+  const appcurrentversion = '1.0';
+  const version = req.body.version;
+  const message = 'OK';
+  console.log('version =', version);
+  const response = {
+    appversion: '1.0',
+    msg: message
+  };
+  if (version === appcurrentversion) {
+    res.set('Content-Type', 'application/json');
+    res.status(200).send(JSON.stringify(response));
+  } else {
+    response.msg = 'Force Update';
+    res.set('Content-Type', 'application/json');
+    res.status(200).send(JSON.stringify(response));
+  }
+});
+
 const sockets = {};
 io.on('connection', (socket) => {
   console.log('User connected: ' + socket.id);
@@ -404,6 +493,7 @@ io.on('connection', (socket) => {
       const senderUsername = params.from_username;
       const msg = params.message;
       const user = {from: params.from, to: params.to};
+      const chattimestamp = params.timeStamp;
 
       const connectionCheckData = {
         columns:['*'],
@@ -426,12 +516,13 @@ io.on('connection', (socket) => {
         } else {
           const user1 = (user.from < user.to) ? user.from : user.to;
           const user2 = (user.from < user.to) ? user.to : user.from;
+          // const chattimestamp = (new Date()).toISOString();
           const messageInsertData = JSON.stringify({objects:[{
             user1,
             user2,
             sender: user.from,
             text: msg,
-            timestamp: (new Date()).toISOString()
+            timestamp: chattimestamp
           }]});
 
           const messageInsertUrl = url + '/api/1/table/message/insert';
@@ -445,7 +536,7 @@ io.on('connection', (socket) => {
             console.log('message:' + msg);
             if (sockets[user.to]) {
               const toSocket = sockets[user.to];
-              toSocket.emit('chat message', JSON.stringify({message: msg}));
+              toSocket.emit('chat message', JSON.stringify({message: msg, timeStamp: chattimestamp}));
             } else { // No socket for the to user active at the moment
               const tokenData = {
                 columns: ['device_token', 'device_type'],
