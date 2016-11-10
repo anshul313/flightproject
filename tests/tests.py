@@ -8,7 +8,8 @@ url = 'http://localhost:3000'
 #url = 'http://api.earthly58.hasura-app.io'
 headers = {'Content-Type': 'application/json',
            'X-Hasura-Role': 'user',
-           'X-Hasura-User-Id': 59 }
+	   'X-Hasura-User-Id': 24
+           }
 
 def t1():
     response = requests.post(url + '/checkin/request', headers = headers, data = json.dumps({
@@ -34,10 +35,8 @@ def t2():
 
 def t3():
     response = requests.post(url + '/like', headers = headers, data = json.dumps({
-        'from_user': 39,
-        'to_user': 35,
-        'from_username': 'jaison',
-        'to_username': 'rahul'
+	'from_user': 24,
+        'to_user': 21,
     }))
     print(response.status_code)
     print(response.text)
@@ -80,16 +79,26 @@ def feedbackmailtest():
 
 def forceupdate():
     response = requests.post(url + '/appversion', headers = headers, data = json.dumps({
-	'version': '1.0'
+	'version': '1.1'
 }))
 
     print(response.status_code)
     print(response.text)
+def liketest():
+    response = requests.post(url + '/like', headers = headers, data = json.dumps({
+	'from_user': 24,
+	'to_user': 21,
+	'from_username': 'Levo The App',
+	'to_username': 'muthu'
+}))
+    print(response.status_code)
+    print(response.text)
 
-t1()
-t2()
+#t1()
+#t2()
 #t3()
 #t5()
 #t6()
 #feedbackmailtest()
 #forceupdate()
+liketest()

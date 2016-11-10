@@ -12,6 +12,7 @@ const fcm = new FCM(process.env.FCM_KEY);
 const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
+const androidversion = process.env.ANDROID_VERSION;
 
 let authUserId = '0';
 
@@ -28,8 +29,9 @@ app.use('/static', Express.static('static'));
 const headers = {'Content-Type': 'application/json'};
 let url = 'http://data.default';
 if (global.__DEVELOPMENT__) {
-  headers.Authorization = 'Hasura ' + process.env.API_TOKEN;
-  url = 'http://data.earthly58.hasura-app.io';
+  headers.Authorization = 'Bearer ' + process.env.API_TOKEN;
+  // url = 'http://data.earthly58.hasura-app.io';
+  url = 'https://console.guarani85.hasura-app.io';
 } else {
   headers['X-Hasura-Role'] = 'admin';
   headers['X-Hasura-User-Id'] = 1;
@@ -42,7 +44,7 @@ const request = (url, options, res, cb) => {
         if (response.ok) {
           response
             .text()
-            .then(d => (cb(JSON.parse(d))))
+            .then(d => {  (cb(JSON.parse(d))); })
             .catch(e => {
               console.error(url, response.status, response.statusText);
               console.error(e, e.stack);
@@ -150,6 +152,7 @@ app.post('/checkin/request', (req, res) => {
           const message = {
             to: receiver.device_token,
             collapse_key: 'my_collapse_key',
+            priority: 'high',
             data: {
               from_user: initiator,
               from_username: initiatorUsername,
@@ -226,6 +229,7 @@ app.post('/checkin/update', (req, res) => {
         const message = {
           to: receiver.device_token,
           collapse_key: 'my_collapse_key',
+          priority: 'high',
           data: {
             from_user: from,
             from_username: initiatorUsername,
@@ -352,6 +356,7 @@ app.post('/like', (req, res) => {
           const message = {
             to: receiver.device_token,
             collapse_key: 'my_collapse_key',
+            priority: 'high',
             data: {
               from_user: user.from,
               from_username: user.from_username,
@@ -365,7 +370,6 @@ app.post('/like', (req, res) => {
                 console.log('Error in sending FCM notification: ', err);
                 console.log('Message to be sent: ', JSON.stringify(message));
                 console.log('res: ', result);
-                // res.status(500).send('Internal error');
                 return;
               }
               console.log('Successfully sent notification with response: ' + res + 'to: ' + receiver.device_token);
@@ -383,6 +387,7 @@ app.post('/like', (req, res) => {
               const message2 = {
                 to: receiver2.device_token,
                 collapse_key: 'my_collapse_key',
+                priority: 'high',
                 data: {
                   from_user: user.to,
                   from_username: user.to_username,
@@ -454,7 +459,7 @@ app.post('/send-feedback', (req, res) => {
 });
 
 app.post('/appversion', (req, res) => {
-  const appcurrentversion = '1.0';
+  // const appcurrentversion = '1.0';
   const version = req.body.version;
   const message = 'OK';
   console.log('version =', version);
@@ -462,7 +467,7 @@ app.post('/appversion', (req, res) => {
     appversion: '1.0',
     msg: message
   };
-  if (version === appcurrentversion) {
+  if (version === androidversion) {
     res.set('Content-Type', 'application/json');
     res.status(200).send(JSON.stringify(response));
   } else {
@@ -554,6 +559,7 @@ io.on('connection', (socket) => {
                 const message = {
                   to: receiver.device_token,
                   collapse_key: 'my_collapse_key',
+                  priority: 'high',
                   data: {
                     from_user: user.from,
                     from_username: senderUsername,
