@@ -153,6 +153,10 @@ app.post('/checkin/request', (req, res) => {
             to: receiver.device_token,
             collapse_key: 'my_collapse_key',
             priority: 'high',
+            notification: {
+              title: initiatorUsername + ' has sent you a check-in request',
+              body: 'Click to view'
+            },
             data: {
               from_user: initiator,
               from_username: initiatorUsername,
@@ -230,6 +234,9 @@ app.post('/checkin/update', (req, res) => {
           to: receiver.device_token,
           collapse_key: 'my_collapse_key',
           priority: 'high',
+          notification: {
+            title: initiatorUsername + ' has accepted your check-in request.'
+          },
           data: {
             from_user: from,
             from_username: initiatorUsername,
@@ -327,13 +334,18 @@ app.post('/like', (req, res) => {
       request(twoWayConnectionCheckUrl, twoWayConnectionCheckOpts, res, (twoWayResult) => {
         let notificationType;
 
+        const notificationTitleBody = {body: 'Click here to view'};
+
         if (twoWayResult.length === 0) {
           notificationType = 'conn_req';
+          notificationTitleBody.title = user.from_username + ' has sent you a connection request.';
         } else if (twoWayResult[0].is_liked) {
           if (alreadyLiked) {
             notificationType = 'conn_req_existing';
           } else {
             notificationType = 'conn_estd';
+            notificationTitleBody.title = 'New connection!';
+            // body set where fcm.send is called
           }
         } else {
           notificationType = 'conn_req';
@@ -357,6 +369,7 @@ app.post('/like', (req, res) => {
             to: receiver.device_token,
             collapse_key: 'my_collapse_key',
             priority: 'high',
+            notification: notificationTitleBody,
             data: {
               from_user: user.from,
               from_username: user.from_username,
@@ -381,6 +394,7 @@ app.post('/like', (req, res) => {
           if (notificationType === 'conn_estd') {
             notificationData.where.id = user.from;
             notificationOpts.body = JSON.stringify(notificationData);
+            notificationTitleBody.title = user.to_username + ' is in the same flight/airport as you.';
 
             request(notificationUrl, notificationOpts, res, (notification2Res) => {
               const receiver2 = notification2Res[0];
@@ -388,6 +402,7 @@ app.post('/like', (req, res) => {
                 to: receiver2.device_token,
                 collapse_key: 'my_collapse_key',
                 priority: 'high',
+                notification: notificationTitleBody,
                 data: {
                   from_user: user.to,
                   from_username: user.to_username,
@@ -560,6 +575,10 @@ io.on('connection', (socket) => {
                   to: receiver.device_token,
                   collapse_key: 'my_collapse_key',
                   priority: 'high',
+                  notification: {
+                    title: 'Message from ' + senderUsername,
+                    body: msg
+                  },
                   data: {
                     from_user: user.from,
                     from_username: senderUsername,
