@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 app.use('/static', Express.static('static'));
 
 const headers = {'Content-Type': 'application/json'};
-let url = 'http://data.default';
+let url = 'http://data.hasura';
 if (global.__DEVELOPMENT__) {
   headers.Authorization = 'Bearer ' + process.env.API_TOKEN;
   // url = 'http://data.earthly58.hasura-app.io';
