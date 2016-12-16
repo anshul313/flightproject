@@ -78,7 +78,6 @@ const validate = (req) => {
   authUserId = req.get('X-Hasura-User-Id');
   console.log('user Id = ', authUserId);
   if (authHeader === 'user') {
-    console.log('User role authorization done!');
     return true;
   }
   return false;
@@ -99,10 +98,10 @@ app.post('/checkin/request', (req, res) => {
   const initiator = chunk.from;
   const receiver = chunk.to;
   const flight = chunk.flight_id;
-  const flightTime = chunk.flight_time;
+  // const flightTime = chunk.flight_time;
   const initiatorUsername = chunk.from_username;
 
-  const getUrl = url + '/api/1/table/flight/select';
+  const getUrl = url + '/api/1/table/flights/select';
   const getFlightOpts = {
     method: 'POST',
     body: JSON.stringify({columns: ['number'], where: {id: flight}}),
@@ -116,7 +115,7 @@ app.post('/checkin/request', (req, res) => {
       return;
     }
 
-    const flightNo = resData[0].number;
+    // const flightNo = resData[0].number;
     const insertUrl = url + '/api/1/table/checkin/insert';
     const insertOpts = {
       method: 'POST',
@@ -124,10 +123,9 @@ app.post('/checkin/request', (req, res) => {
         user1,
         user2,
         initiator,
-        flight,
-        flight_number: flightNo,
-        created: (new Date()).toISOString(),
-        flight_time: flightTime
+        flight_id: flight,
+        created: (new Date()).toISOString()
+        // ,flight_time: flightTime
       }]}),
       headers
     };
@@ -188,7 +186,7 @@ app.post('/checkin/update', (req, res) => {
   const user1 = (chunk.from < chunk.to) ? chunk.from : chunk.to;
   const user2 = (chunk.from < chunk.to) ? chunk.to : chunk.from;
   const flight = chunk.flight_id;
-  const flightTime = chunk.flight_time;
+  // const flightTime = chunk.flight_time;
   const from = chunk.from;
   const to = chunk.to;
   const initiatorUsername = chunk.from_username;
@@ -201,8 +199,8 @@ app.post('/checkin/update', (req, res) => {
     where: {
       user1,
       user2,
-      flight,
-      flight_time: flightTime
+      flight_id: flight
+      // ,flight_time: flightTime
     }
   });
 
@@ -502,10 +500,11 @@ io.on('connection', (socket) => {
 
   const userId = socket.handshake.headers['x-hasura-user-id'];
   sockets[userId] = socket;
+  console.log('Socket handshake accepted from: ' + userId.toString());
 
   socket.on('chat message', (_params) => {
     // DEBUG
-    console.log(socket.handshake.headers);
+    // console.log(socket.handshake.headers);
     try {
       const params = JSON.parse(_params);
       params.from = parseInt(userId, 10);
