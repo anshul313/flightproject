@@ -555,7 +555,12 @@ io.on('connection', (socket) => {
             console.log('message:' + msg);
             if (sockets[user.to]) {
               const toSocket = sockets[user.to];
-              toSocket.emit('chat message', JSON.stringify({message: msg, timeStamp: chattimestamp}));
+              toSocket.emit('chat message', JSON.stringify({
+                from_user: user.from,
+                from_username: senderUsername,
+                message: msg,
+                timeStamp: chattimestamp
+              }));
             } else { // No socket for the to user active at the moment
               const tokenData = {
                 columns: ['device_token', 'device_type'],
