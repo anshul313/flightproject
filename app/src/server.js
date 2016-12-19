@@ -151,10 +151,10 @@ app.post('/checkin/request', (req, res) => {
             to: receiver.device_token,
             collapse_key: 'my_collapse_key',
             priority: 'high',
-            notification: {
-              title: initiatorUsername + ' has sent you a check-in request',
-              body: 'Click to view'
-            },
+//            notification: {
+//              title: initiatorUsername + ' has sent you a check-in request',
+//              body: 'Click to view'
+//            },
             data: {
               from_user: initiator,
               from_username: initiatorUsername,
@@ -232,9 +232,9 @@ app.post('/checkin/update', (req, res) => {
           to: receiver.device_token,
           collapse_key: 'my_collapse_key',
           priority: 'high',
-          notification: {
-            title: initiatorUsername + ' has accepted your check-in request.'
-          },
+//          notification: {
+//            title: initiatorUsername + ' has accepted your check-in request.'
+//          },
           data: {
             from_user: from,
             from_username: initiatorUsername,
@@ -367,7 +367,7 @@ app.post('/like', (req, res) => {
             to: receiver.device_token,
             collapse_key: 'my_collapse_key',
             priority: 'high',
-            notification: notificationTitleBody,
+//            notification: notificationTitleBody,
             data: {
               from_user: user.from,
               from_username: user.from_username,
@@ -400,7 +400,7 @@ app.post('/like', (req, res) => {
                 to: receiver2.device_token,
                 collapse_key: 'my_collapse_key',
                 priority: 'high',
-                notification: notificationTitleBody,
+//                notification: notificationTitleBody,
                 data: {
                   from_user: user.to,
                   from_username: user.to_username,
@@ -579,10 +579,10 @@ io.on('connection', (socket) => {
                   to: receiver.device_token,
                   collapse_key: 'my_collapse_key',
                   priority: 'high',
-                  notification: {
-                    title: 'Message from ' + senderUsername,
-                    body: msg
-                  },
+//                  notification: {
+//                    title: 'Message from ' + senderUsername,
+//                    body: msg
+//                  },
                   data: {
                     from_user: user.from,
                     from_username: senderUsername,
