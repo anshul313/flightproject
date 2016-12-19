@@ -583,6 +583,7 @@ io.on('connection', (socket) => {
 //                    title: 'Message from ' + senderUsername,
 //                    body: msg
 //                  },
+                  content_available: true,
                   data: {
                     from_user: user.from,
                     from_username: senderUsername,
