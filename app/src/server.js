@@ -146,36 +146,33 @@ app.post('/checkin/request', (req, res) => {
         const receiver = rdata[0];
         console.log('receiver: ', receiver);
 
-        if (receiver.device_type !== 'ios') {
-          const message = {
-            to: receiver.device_token,
-            collapse_key: 'my_collapse_key',
-            priority: 'high',
-            notification: {
-              title: initiatorUsername + ' has sent you a check-in request',
-              body: 'Click to view'
-            },
-            data: {
-              from_user: initiator,
-              from_username: initiatorUsername,
-              type: 'checkin_req'
-            }
+        const message = {
+          to: receiver.device_token,
+          collapse_key: 'my_collapse_key',
+          priority: 'high',
+          data: {
+            from_user: initiator,
+            from_username: initiatorUsername,
+            type: 'checkin_req'
+          }
+        };
+        if (receiver.device_type === 'ios') {
+          message.notification = {
+            title: initiatorUsername + ' has sent you a check-in request',
+            body: 'Click to view'
           };
-          fcm.send(message, (err, res_) => {
-            if (err) {
-              console.log('err: ', err);
-              console.log('res: ', res_);
-              console.log('Data updated, but push notification failed');
-              res.status(200).send('Data updated, but push notification failed');
-            } else {
-              console.log('Successfully sent notification with response: ' + res_ + ' to: ' + receiver.device_token);
-              res.send('All done!');
-            }
-          });
-        } else {
-          console.log('No iOS notifications sent');
-          res.send('No iOS notifications sent');
         }
+        fcm.send(message, (err, res_) => {
+          if (err) {
+            console.log('err: ', err);
+            console.log('res: ', res_);
+            console.log('Data updated, but push notification failed');
+            res.status(200).send('Data updated, but push notification failed');
+          } else {
+            console.log('Successfully sent notification with response: ' + res_ + ' to: ' + receiver.device_token);
+            res.send('All done!');
+          }
+        });
       });
     });
   });
@@ -232,15 +229,17 @@ app.post('/checkin/update', (req, res) => {
           to: receiver.device_token,
           collapse_key: 'my_collapse_key',
           priority: 'high',
-          notification: {
-            title: initiatorUsername + ' has accepted your check-in request.'
-          },
           data: {
             from_user: from,
             from_username: initiatorUsername,
             type: 'checkin_update'
           }
         };
+        if (receiver.device_type === 'ios') {
+          message.notification = {
+            title: initiatorUsername + ' has accepted your check-in request.'
+          };
+        }
         fcm.send(message, (err, res_) => {
           if (err) {
             console.log('err: ', err);
@@ -367,7 +366,6 @@ app.post('/like', (req, res) => {
             to: receiver.device_token,
             collapse_key: 'my_collapse_key',
             priority: 'high',
-            notification: notificationTitleBody,
             data: {
               from_user: user.from,
               from_username: user.from_username,
@@ -375,19 +373,19 @@ app.post('/like', (req, res) => {
             }
           };
 
-          if (receiver.device_type !== 'ios') {
-            fcm.send(message, (err, result) => {
-              if (err) {
-                console.log('Error in sending FCM notification: ', err);
-                console.log('Message to be sent: ', JSON.stringify(message));
-                console.log('res: ', result);
-                return;
-              }
-              console.log('Successfully sent notification with response: ' + res + 'to: ' + receiver.device_token);
-            });
-          } else {
-            console.log('Did not send iOS notification');
+          if (receiver.device_type === 'ios') {
+            message.notification = notificationTitleBody;
           }
+
+          fcm.send(message, (err, result) => {
+            if (err) {
+              console.log('Error in sending FCM notification: ', err);
+              console.log('Message to be sent: ', JSON.stringify(message));
+              console.log('res: ', result);
+              return;
+            }
+            console.log('Successfully sent notification with response: ' + res + 'to: ' + receiver.device_token);
+          });
 
           if (notificationType === 'conn_estd') {
             notificationData.where.id = user.from;
@@ -400,7 +398,6 @@ app.post('/like', (req, res) => {
                 to: receiver2.device_token,
                 collapse_key: 'my_collapse_key',
                 priority: 'high',
-                notification: notificationTitleBody,
                 data: {
                   from_user: user.to,
                   from_username: user.to_username,
@@ -408,21 +405,20 @@ app.post('/like', (req, res) => {
                 }
               };
 
-              if (receiver2.device_type !== 'ios') {
-                fcm.send(message2, (err, result) => {
-                  if (err) {
-                    console.log('Error in sending FCM notification: ', err);
-                    console.log('Message to be sent: ', JSON.stringify(message2));
-                    console.log('res: ', result);
-                    res.status(500).send('Internal error');
-                    return;
-                  }
-                  res.send('Succesfully sent notifications!');
-                });
-              } else {
-                console.log('User on iOS device: ' + user.from);
-                res.send('Did not send iOS notification');
+              if (receiver2.device_type === 'ios') {
+                message.notification = notificationTitleBody;
               }
+
+              fcm.send(message2, (err, result) => {
+                if (err) {
+                  console.log('Error in sending FCM notification: ', err);
+                  console.log('Message to be sent: ', JSON.stringify(message2));
+                  console.log('res: ', result);
+                  res.status(500).send('Internal error');
+                  return;
+                }
+                res.send('Succesfully sent notifications!');
+              });
             });
           } else {
             res.send('Notifications sent!');
@@ -579,11 +575,6 @@ io.on('connection', (socket) => {
                   to: receiver.device_token,
                   collapse_key: 'my_collapse_key',
                   priority: 'high',
-                  notification: {
-                    title: 'Message from ' + senderUsername,
-                    body: msg
-                  },
-//                  content_available: true,
                   data: {
                     from_user: user.from,
                     from_username: senderUsername,
@@ -591,20 +582,22 @@ io.on('connection', (socket) => {
                     type: 'chat-notif'
                   }
                 };
-
-                if (receiver.device_type !== 'ios') {
-                  fcm.send(message, (err, res) => {
-                    if (err) {
-                      console.log('err: ', err);
-                      console.log('res: ', res);
-                      console.log('Something has gone wrong!');
-                    } else {
-                      console.log('Successfully sent with response: ', res);
-                    }
-                  });
-                } else {
-                  console.log('No notification sent for iOS user');
+                if (receiver.device_type === 'ios') {
+                  message.notification = {
+                    title: 'Message from ' + senderUsername,
+                    body: msg
+                  };
                 }
+
+                fcm.send(message, (err, res) => {
+                  if (err) {
+                    console.log('err: ', err);
+                    console.log('res: ', res);
+                    console.log('Something has gone wrong!');
+                  } else {
+                    console.log('Successfully sent with response: ', res);
+                  }
+                });
               });
             }
           });
