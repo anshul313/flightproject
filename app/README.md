@@ -2,8 +2,8 @@
 * Install nodejs 4.x
 * Run `npm install`, if not already.
 
-# Usage
-* For development environment, run the commands `npm run start-dev`.
-* For production environment, run the command `npm run start-prod`.
-* Development server will be running at localhost:3000
-* Production server will run at localhost:8080
+# Development
+* Copy ``rundevserver.sh.sample`` to ``rundevserver.sh``
+* Edit ``rundevserver.sh`` and add the FCM key and a Hasura admin token for API token
+* Make sure ``rundevserver.sh`` is not added to the git repo
+* ``./rundevserver.sh`` and your dev server + JSlinting is up
