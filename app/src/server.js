@@ -44,7 +44,9 @@ const request = (url, options, res, cb) => {
         if (response.ok) {
           response
             .text()
-            .then(d => {  (cb(JSON.parse(d))); })
+            .then(d => {
+              (cb(JSON.parse(d)));
+            })
             .catch(e => {
               console.error(url, response.status, response.statusText);
               console.error(e, e.stack);
@@ -119,14 +121,16 @@ app.post('/checkin/request', (req, res) => {
     const insertUrl = url + '/api/1/table/checkin/insert';
     const insertOpts = {
       method: 'POST',
-      body: JSON.stringify({objects:[{
-        user1,
-        user2,
-        initiator,
-        flight_id: flight,
-        created: (new Date()).toISOString()
-        // ,flight_time: flightTime
-      }]}),
+      body: JSON.stringify({
+        objects: [{
+          user1,
+          user2,
+          initiator,
+          flight_id: flight,
+          created: (new Date()).toISOString()
+          // ,flight_time: flightTime
+        }]
+      }),
       headers
     };
 
@@ -296,9 +300,10 @@ app.post('/like', (req, res) => {
 
   const checkAlreadyLiked = JSON.stringify({
     columns: ['id', 'is_liked', 'timestamp'],
-    where: {$and: [
-      {user1: user.from},
-      {user2: user.to}]
+    where: {
+      $and: [
+        {user1: user.from},
+        {user2: user.to}]
     },
     order_by: [{column: 'timestamp', order: 'desc', nulls: 'last'}],
     limit: 1
@@ -318,11 +323,13 @@ app.post('/like', (req, res) => {
     if (alreadyLikedResult.length === 0) {
       console.log('inserting...');
       upsertUrl = url + '/api/1/table/like/insert';
-      likeUpsert = JSON.stringify({objects:[{
-        user1: user.from,
-        user2: user.to,
-        is_liked: true
-      }]});
+      likeUpsert = JSON.stringify({
+        objects: [{
+          user1: user.from,
+          user2: user.to,
+          is_liked: true
+        }]
+      });
     } else {
       console.log('updating...');
       upsertUrl = url + '/api/1/table/like/update';
@@ -341,9 +348,10 @@ app.post('/like', (req, res) => {
     request(upsertUrl, upsertOpts, res, () => {
       const twoWayConnectionCheck = JSON.stringify({
         columns: ['is_liked', 'timestamp'],
-        where: {$and: [
-          {user1: user.to},
-          {user2: user.from}]
+        where: {
+          $and: [
+            {user1: user.to},
+            {user2: user.from}]
         },
         order_by: [{column: 'timestamp', order: 'desc', nulls: 'last'}],
         limit: 1
@@ -368,6 +376,7 @@ app.post('/like', (req, res) => {
         } else if (twoWayResult[0].is_liked) {
           if (alreadyLiked) {
             notificationType = 'conn_req_existing';
+            notificationTitleBody.title = user.to_username + ' is travelling the same time as you';
           } else {
             notificationType = 'conn_estd';
             notificationTitleBody.title = 'New connection!';
@@ -403,6 +412,9 @@ app.post('/like', (req, res) => {
           };
 
           if (receiver.device_type === 'ios') {
+            if (notificationType === 'conn_req_existing') {
+              notificationTitleBody.title = user.to_username + ' is travelling the same time as you';
+            }
             message.notification = notificationTitleBody;
           }
 
@@ -419,7 +431,7 @@ app.post('/like', (req, res) => {
           if (notificationType === 'conn_estd') {
             notificationData.where.id = user.from;
             notificationOpts.body = JSON.stringify(notificationData);
-            notificationTitleBody.title = user.to_username + ' is in the same flight/airport as you.';
+            notificationTitleBody.title = user.to_username + ' is travelling the same time as you';
 
             request(notificationUrl, notificationOpts, res, (notification2Res) => {
               const receiver2 = notification2Res[0];
@@ -540,11 +552,13 @@ io.on('connection', (socket) => {
       const chattimestamp = params.timeStamp;
 
       const connectionCheckData = {
-        columns:['*'],
-        where: {$or: [
-          {$and: [{user1: user.from}, {user2: user.to}]},
-          {$and: [{user1: user.to}, {user2: user.from}]}
-        ]}
+        columns: ['*'],
+        where: {
+          $or: [
+            {$and: [{user1: user.from}, {user2: user.to}]},
+            {$and: [{user1: user.to}, {user2: user.from}]}
+          ]
+        }
       };
 
       const connectionCheckUrl = url + '/api/1/table/connections/select';
@@ -561,13 +575,15 @@ io.on('connection', (socket) => {
           const user1 = (user.from < user.to) ? user.from : user.to;
           const user2 = (user.from < user.to) ? user.to : user.from;
           // const chattimestamp = (new Date()).toISOString();
-          const messageInsertData = JSON.stringify({objects:[{
-            user1,
-            user2,
-            sender: user.from,
-            text: msg,
-            timestamp: chattimestamp
-          }]});
+          const messageInsertData = JSON.stringify({
+            objects: [{
+              user1,
+              user2,
+              sender: user.from,
+              text: msg,
+              timestamp: chattimestamp
+            }]
+          });
 
           const messageInsertUrl = url + '/api/1/table/message/insert';
           const messageInsertOpts = {
