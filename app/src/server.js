@@ -251,6 +251,33 @@ app.post('/checkin/update', (req, res) => {
           }
         });
         console.log('All Done!');
+      } else {
+        const message = {
+          to: receiver.device_token,
+          collapse_key: 'my_collapse_key',
+          priority: 'high',
+          data: {
+            from_user: from,
+            from_username: initiatorUsername,
+            type: 'checkin_req_declined'
+          }
+        };
+        if (receiver.device_type === 'ios') {
+          message.notification = {
+            title: initiatorUsername + ' has declined your check-in request.'
+          };
+        }
+        fcm.send(message, (err, res_) => {
+          if (err) {
+            console.log('err: ', err);
+            console.log('res: ', res_);
+            console.log('Data updated, but push notification failed');
+            res.status(200).send('Data updated, but push notification failed');
+          } else {
+            console.log('Successfully sent notification with response: ' + res_ + ' to: ' + receiver.device_token);
+          }
+        });
+        console.log('All Done!');
       }
     });
   });
