@@ -376,7 +376,7 @@ app.post('/like', (req, res) => {
         } else if (twoWayResult[0].is_liked) {
           if (alreadyLiked) {
             notificationType = 'conn_req_existing';
-            notificationTitleBody.title = user.to_username + ' is travelling the same time as you';
+            notificationTitleBody.title = user.to_username + ' is travelling at the same time as you';
           } else {
             notificationType = 'conn_estd';
             notificationTitleBody.title = 'New connection!';
