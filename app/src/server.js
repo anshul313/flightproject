@@ -237,7 +237,8 @@ app.post('/checkin/update', (req, res) => {
         };
         if (receiver.device_type === 'ios') {
           message.notification = {
-            title: initiatorUsername + ' has accepted your check-in request.'
+            title: initiatorUsername + ' has accepted your check-in request.',
+            body: 'Click here to chat'
           };
         }
         fcm.send(message, (err, res_) => {
@@ -264,7 +265,8 @@ app.post('/checkin/update', (req, res) => {
         };
         if (receiver.device_type === 'ios') {
           message.notification = {
-            title: initiatorUsername + ' has declined your check-in request.'
+            title: initiatorUsername + ' has declined your check-in request.',
+            body: 'Ask them why'
           };
         }
         fcm.send(message, (err, res_) => {
