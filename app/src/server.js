@@ -14,7 +14,13 @@ const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
 const androidversion = process.env.ANDROID_VERSION;
-const transporter = nodemailer.createTransport('smtps://levotheapp%40gmail.com:levitate@smtp.gmail.com');
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: 'levotheapp@gmail.com', // Your email id
+    pass: 'levitate' // Your password
+  }
+});
 
 let authUserId = '0';
 
