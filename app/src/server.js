@@ -7,12 +7,14 @@ import bodyParser from 'body-parser';
 import _io from 'socket.io';
 import config from './config';
 import mail  from './mail.js';
+import nodemailer from 'nodemailer'
 
 const fcm = new FCM(process.env.FCM_KEY);
 const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
 const androidversion = process.env.ANDROID_VERSION;
+const transporter = nodemailer.createTransport('smtps://levotheapp%40gmail.com:levitate@smtp.gmail.com');
 
 let authUserId = '0';
 
@@ -225,6 +227,22 @@ app.post('/checkin/update', (req, res) => {
       headers
     };
 
+    if (acceptStatus === true) {
+      const mailOptions = {
+        from: '"Hasura" <levotheapp@gmail.com>', // sender address
+        to: 'checkin@getlevo.com', // list of receivers
+        subject: 'Checkin confirmed', // Subject line
+        text: 'User1: ' + user1 + ', User2: ' + user2 + ', FlightId: ' + flight, // plaintext body
+        html: '<b>Gz</b>' // html body
+      };
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          return console.log(error);
+        }
+        console.log('Email sent: ' + info.response);
+      });
+    }
+
     request(notificationUrl, notificationOpts, res, (d) => {
       const receiver = d[0];
       console.log('receiver data = ', receiver);
@@ -287,7 +305,8 @@ app.post('/checkin/update', (req, res) => {
       }
     });
   });
-});
+})
+;
 
 app.post('/like', (req, res) => {
   const chunk = req.body;
