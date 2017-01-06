@@ -239,7 +239,7 @@ app.post('/checkin/update', (req, res) => {
         to: 'checkin@getlevo.com', // list of receivers
         subject: 'Checkin confirmed', // Subject line
         text: 'User1: ' + user1 + ', User2: ' + user2 + ', FlightId: ' + flight, // plaintext body
-        html: '<b>Gz</b>' // html body
+        html: 'User1: ' + user1 + ', User2: ' + user2 + ', FlightId: ' + flight // html body
       };
       transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
