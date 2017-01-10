@@ -438,7 +438,7 @@ app.post('/like', (req, res) => {
 
           if (receiver.device_type === 'ios') {
             if (notificationType === 'conn_req_existing') {
-              notificationTitleBody.title = user.to_username + ' is travelling the same time as you';
+              notificationTitleBody.title = user.from_username + ' is travelling the same time as you';
             }
             message.notification = notificationTitleBody;
           }
@@ -456,7 +456,7 @@ app.post('/like', (req, res) => {
           if (notificationType === 'conn_estd') {
             notificationData.where.id = user.from;
             notificationOpts.body = JSON.stringify(notificationData);
-            notificationTitleBody.title = user.to_username + ' is travelling the same time as you';
+            notificationTitleBody.title = user.from_username + ' is travelling the same time as you';
 
             request(notificationUrl, notificationOpts, res, (notification2Res) => {
               const receiver2 = notification2Res[0];
