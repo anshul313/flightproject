@@ -158,8 +158,9 @@ app.post('/checkin/request', (req, res) => {
         };
         if (receiver.device_type === 'ios') {
           message.notification = {
-            title: initiatorUsername + ' has sent you a check-in request',
-            body: 'Click to view'
+            body: initiatorUsername + ' has sent you a check-in request',
+            sound: 'default',
+	    badge: 1
           };
         }
         fcm.send(message, (err, res_) => {
@@ -237,7 +238,9 @@ app.post('/checkin/update', (req, res) => {
         };
         if (receiver.device_type === 'ios') {
           message.notification = {
-            title: initiatorUsername + ' has accepted your check-in request.'
+            body: initiatorUsername + ' has accepted your check-in request.',
+	    sound: 'default',
+	    badge: 1
           };
         }
         fcm.send(message, (err, res_) => {
@@ -331,11 +334,11 @@ app.post('/like', (req, res) => {
       request(twoWayConnectionCheckUrl, twoWayConnectionCheckOpts, res, (twoWayResult) => {
         let notificationType;
 
-        const notificationTitleBody = {body: 'Click here to view'};
+        const notificationTitleBody = {body: 'Click here to view',sound: 'default',badge: 1};
 
         if (twoWayResult.length === 0) {
           notificationType = 'conn_req';
-          notificationTitleBody.title = user.from_username + ' has sent you a connection request.';
+          notificationTitleBody.body = user.from_username + ' has sent you a connection request.';
         } else if (twoWayResult[0].is_liked) {
           if (alreadyLiked) {
             notificationType = 'conn_req_existing';
@@ -390,7 +393,7 @@ app.post('/like', (req, res) => {
           if (notificationType === 'conn_estd') {
             notificationData.where.id = user.from;
             notificationOpts.body = JSON.stringify(notificationData);
-            notificationTitleBody.title = user.to_username + ' is in the same flight/airport as you.';
+            notificationTitleBody.body = user.to_username + ' is in the same flight/airport as you.';
 
             request(notificationUrl, notificationOpts, res, (notification2Res) => {
               const receiver2 = notification2Res[0];
@@ -585,7 +588,9 @@ io.on('connection', (socket) => {
                 if (receiver.device_type === 'ios') {
                   message.notification = {
                     title: 'Message from ' + senderUsername,
-                    body: msg
+                    body: msg,
+		    sound: 'default',
+		    badge: 1
                   };
                 }
 
