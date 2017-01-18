@@ -412,6 +412,7 @@ app.post('/like', (req, res) => {
           }
         } else {
           notificationType = 'conn_req';
+          notificationTitleBody.body = user.from_username + ' has sent you a connection request.';
         }
 
         const notificationData = {
