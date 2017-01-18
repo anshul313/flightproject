@@ -295,8 +295,9 @@ app.post('/checkin/update', (req, res) => {
         };
         if (receiver.device_type === 'ios') {
           message.notification = {
-            title: initiatorUsername + ' has declined your check-in request.',
-            body: 'Ask them why'
+            body: initiatorUsername + ' has declined your check-in request.',
+            sound: 'default',
+	    badge: 1
           };
         }
         fcm.send(message, (err, res_) => {
@@ -403,10 +404,10 @@ app.post('/like', (req, res) => {
         } else if (twoWayResult[0].is_liked) {
           if (alreadyLiked) {
             notificationType = 'conn_req_existing';
-            notificationTitleBody.title = user.from_username + ' is travelling at the same time as you';
+            notificationTitleBody.body = user.from_username + ' is travelling at the same time as you';
           } else {
             notificationType = 'conn_estd';
-            notificationTitleBody.title = 'New connection!';
+            notificationTitleBody.body = user.from_username _ ' is now a connection!';
             // body set where fcm.send is called
           }
         } else {
@@ -440,7 +441,7 @@ app.post('/like', (req, res) => {
 
           if (receiver.device_type === 'ios') {
             if (notificationType === 'conn_req_existing') {
-              notificationTitleBody.title = user.from_username + ' is travelling the same time as you';
+              notificationTitleBody.body = user.from_username + ' is travelling the same time as you';
             }
             message.notification = notificationTitleBody;
           }
@@ -656,7 +657,7 @@ io.on('connection', (socket) => {
                 };
                 if (receiver.device_type === 'ios') {
                   message.notification = {
-                    title: 'Message from ' + senderUsername,
+                    title:  senderUsername,
                     body: msg,
 		    sound: 'default',
 		    badge: 1
