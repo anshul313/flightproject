@@ -407,7 +407,7 @@ app.post('/like', (req, res) => {
             notificationTitleBody.body = user.from_username + ' is travelling at the same time as you';
           } else {
             notificationType = 'conn_estd';
-            notificationTitleBody.body = user.from_username _ ' is now a connection!';
+            notificationTitleBody.body = user.from_username + ' is now a connection!';
             // body set where fcm.send is called
           }
         } else {
