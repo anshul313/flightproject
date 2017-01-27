@@ -513,7 +513,7 @@ app.get('/linkedin-profile/:token', (req, res) => {
 
 app.post('/mutual-friends', (req, res) => {
   const input = req.body;
-  const url = `https://graph.facebook.com/v2.7/${input.otherId}?fields=context.fields%28mutual_friends%29`;
+  const url = `https://graph.facebook.com/v2.7/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29`;
   const options = {
     method: 'GET',
     headers: {
