@@ -513,7 +513,7 @@ app.get('/linkedin-profile/:token', (req, res) => {
 
 app.post('/mutual-friends', (req, res) => {
   const input = req.body;
-  const url = `https://graph.facebook.com/v2.7/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29`;
+  const url = `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29&access_token=${input.userToken}`;
   const options = {
     method: 'GET',
     headers: {
@@ -527,6 +527,24 @@ app.post('/mutual-friends', (req, res) => {
     res.send(JSON.stringify(data));
   });
 });
+
+
+app.post('/flight-stats', (req, res) => {
+  const input = req.body;
+  const url = `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${input.flightCode}/${input.flightNumber}/departing/${input.departYear}/${input.departMonth}/${input.departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8`;
+  const options = {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  request(url, options, res, (data) => {
+    res.set('Content-Type', 'application/json');
+    res.send(JSON.stringify(data));
+  });
+});
+
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
