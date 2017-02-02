@@ -516,6 +516,7 @@ app.post('/mutual-friends', (req, res) => {
   const url = `https://graph.facebook.com/v2.7/${input.otherId}?fields=context.fields%28mutual_friends%29`;
   const options = {
     method: 'GET',
+
     headers: {
       'Content-Type': 'application/json',
       Authorization: 'Bearer ' + input.myToken
