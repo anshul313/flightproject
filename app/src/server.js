@@ -34,12 +34,12 @@ else
 app.use(bodyParser.json());
 app.use('/static', Express.static('static'));
 
-const headers = { 'Content-Type': 'application/json' };
+const headers = { 'Content-Type': 'application/json'};
 let url = 'http://data.hasura';
 if (global.__DEVELOPMENT__) {
     headers.Authorization = 'Bearer ' + process.env.API_TOKEN;
     // url = 'http://data.earthly58.hasura-app.io';
-    url = 'https://console.stellar60.hasura-app.io/';
+    url = 'https://data.stellar60.hasura-app.io/';
 } else {
     headers['X-Hasura-Role'] = 'admin';
     headers['X-Hasura-User-Id'] = 1;
@@ -97,8 +97,8 @@ app.use((req, res, next) => {
     if (validate(req)) {
         next();
     } else {
-      next();
-        // res.status(403).send('invalid-role');
+      // next();
+        res.status(403).send('invalid-role');
     }
 });
 
@@ -534,13 +534,18 @@ app.post('/mutual-friends', (req, res) => {
 app.post('/flight-check', (req, res) => {
     const input = req.body;
     var flightNumber = input.flightCode + input.flightNumber;
-    const getUrl = url + `/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${flightNumber}`;
+    const getUrl = `http://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${today_date}&tomorrow_date=${tomorrow_date}&flight_number=${input.flightNumber}`
     const getFlightOpts = {
         method: 'GET',
-        headers
+         headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization' : 'Bearer dbdllkmd1qp2ihn1evc8kt4ycdzcs8iv',
+                    'X-Hasura-Role' : 'user'
+                }
     };
     request(getUrl, getFlightOpts, res, (resData) => {
-        if (resData.length !== 1) {
+
+        if (resData.length  < 1) {
             const url1 = `https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/tracks/${input.flightCode}/${input.flightNumber}/dep/${input.departYear}/${input.departMonth}/${input.departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8`;
             const options = {
                 method: 'GET',
@@ -549,6 +554,7 @@ app.post('/flight-check', (req, res) => {
                 }
             };
             request(url1, options, res, (data) => {
+
                 var airline = data.appendix.airlines[0];
                 var airports = data.appendix.airports;
                 var flights = data.flightTracks;
@@ -560,7 +566,7 @@ app.post('/flight-check', (req, res) => {
                 } else {
                     var arrCode = flights[flights.length - 1].arrivalAirportFsCode;
                 }
-                const insertUrl = url + '/api/1/table/flights/insert';
+                const insertUrl = 'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
                 const insertOpts = {
                     method: 'POST',
                     body: JSON.stringify({
@@ -574,10 +580,11 @@ app.post('/flight-check', (req, res) => {
                             destination:destination
                         }]
                     }),
-                    headers
+                       headers
                 };
 
                 request(insertUrl, insertOpts, res, (resData) => {
+                    console.log(resData);
                     res.send(JSON.stringify(resData));
                 });
 
