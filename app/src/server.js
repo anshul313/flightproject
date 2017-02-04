@@ -34,7 +34,7 @@ else
 app.use(bodyParser.json());
 app.use('/static', Express.static('static'));
 
-const headers = { 'Content-Type': 'application/json'};
+const headers = { 'Content-Type': 'application/json' };
 let url = 'http://data.hasura';
 if (global.__DEVELOPMENT__) {
     headers.Authorization = 'Bearer ' + process.env.API_TOKEN;
@@ -97,7 +97,7 @@ app.use((req, res, next) => {
     if (validate(req)) {
         next();
     } else {
-      // next();
+        // next();
         res.status(403).send('invalid-role');
     }
 });
@@ -534,19 +534,19 @@ app.post('/mutual-friends', (req, res) => {
 app.post('/flight-check', (req, res) => {
     const input = req.body;
     var flightNumber = input.flightCode + input.flightNumber;
-    const getUrl = `http://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${today_date}&tomorrow_date=${tomorrow_date}&flight_number=${input.flightNumber}`
+    const getUrl = `http://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=2017-02-23T18:30:00Z&tomorrow_date=2017-02-24T18:30:00Z&flight_number=63456`
     const getFlightOpts = {
         method: 'GET',
-         headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization' : 'Bearer dbdllkmd1qp2ihn1evc8kt4ycdzcs8iv',
-                    'X-Hasura-Role' : 'user'
-                }
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer dbdllkmd1qp2ihn1evc8kt4ycdzcs8iv',
+            'X-Hasura-Role': 'user'
+        }
     };
     request(getUrl, getFlightOpts, res, (resData) => {
 
-        if (resData.length  < 1) {
-            const url1 = `https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/tracks/${input.flightCode}/${input.flightNumber}/dep/${input.departYear}/${input.departMonth}/${input.departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8`;
+        if (resData.length < 1) {
+            const url1 = `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${input.flightCode}/${input.flightNumber}/departing/${input.departYear}/${input.departMonth}/${input.departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8`;
             const options = {
                 method: 'GET',
                 headers: {
@@ -554,33 +554,52 @@ app.post('/flight-check', (req, res) => {
                 }
             };
             request(url1, options, res, (data) => {
-
-                var airline = data.appendix.airlines[0];
+                console.log(data);
+                var airline = data.appendix.airlines;
+                var flightName = "";
                 var airports = data.appendix.airports;
-                var flights = data.flightTracks;
+                var flights = data.scheduledFlights;
                 var depCode = flights[0].departureAirportFsCode;
                 var destination = airports[0].city;
+                var depTime = flights[0].departureTime;
                 var origin = airports[airports.length - 1].city;
                 if (flights.length == 1) {
                     var arrCode = flights[0].arrivalAirportFsCode;
+                    var arrTime = flights[0].arrivalTime;
                 } else {
                     var arrCode = flights[flights.length - 1].arrivalAirportFsCode;
+                    var arrTime = flights[flights.length - 1].arrivalTime;
                 }
+                // $.each(airline, function(i, v) {
+                //     if (v.fs == input.flightCode) {
+                //         flightName = v.name;
+                //     }
+                // });
+
+                for (var i = 0; i < airline.length; i++) {
+
+                    if (airline[i].fs == input.flightCode) {
+
+                        flightName = airline[i].name;
+                    }
+                }
+                console.log(flightName);
                 const insertUrl = 'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
                 const insertOpts = {
                     method: 'POST',
                     body: JSON.stringify({
                         objects: [{
                             number: flightNumber,
-                            airline: airline.name,
+                            airline: flightName,
                             origin_code: depCode,
                             destination_code: arrCode,
-                            departure: flights[0].departureDate.dateLocal,
-                            origin:origin,
-                            destination:destination
+                            departure: depTime,
+                            arrival: arrTime,
+                            origin: origin,
+                            destination: destination
                         }]
                     }),
-                       headers
+                    headers
                 };
 
                 request(insertUrl, insertOpts, res, (resData) => {
