@@ -534,7 +534,7 @@ app.post('/mutual-friends', (req, res) => {
 app.post('/flight-check', (req, res) => {
     const input = req.body;
     var flightNumber = input.flightCode + input.flightNumber;
-    const getUrl = `http://data.hasura/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${flightNumber}`
+    const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${flightNumber}`
     const getFlightOpts = {
         method: 'GET',
         headers: {
@@ -574,7 +574,7 @@ app.post('/flight-check', (req, res) => {
                         flightName = airline[i].name;
                     }
                 }
-                const insertUrl = 'https://data.hasura/api/1/table/flights/insert';
+                const insertUrl = 'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
                 const insertOpts = {
                     method: 'POST',
                     body: JSON.stringify({
