@@ -523,7 +523,6 @@ app.post('/mutual-friends', (req, res) => {
             Authorization: 'Bearer ' + input.myToken
         }
     };
-
     request(url, options, res, (data) => {
         res.set('Content-Type', 'application/json');
         res.send(JSON.stringify(data));
