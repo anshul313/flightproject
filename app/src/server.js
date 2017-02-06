@@ -516,7 +516,7 @@ app.get('/linkedin-profile/:token', (req, res) => {
 app.post('/mutual-friends', (req, res) => {
     const input = req.body;
     console.log(input);
-    const url = `https://graph.facebook.com/v2.8/10211693695003663?fields=context.fields%28all_mutual_friends.limit%28100%29%29&access_token=EAALq7ZC7l4pMBAPujUDn7VvOJm3MV79FaapyvF2Lau0aM2aPowpHNkyuMpif8X78wZCl3dkkRrHJcsWBrSgtxuorhU7KFBuZCjigmb3lx8ZCL76B0rHmZBTbiDMZAFUVqP785FLsLbZC137TsN95tqZAMI92txR8DNZCPhS2YaK7GEyeWqZCXFYbfUERTxj1JpswMZD`;
+    const url = `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29&access_token=${input.userToken}`;
     const options = {
         method: 'GET',
         headers: {
