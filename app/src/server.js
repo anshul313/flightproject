@@ -539,7 +539,7 @@ app.post('/flight-check', (req, res) => {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': req.headers['Authorization'],
+            'Authorization': 'Bearer hetypyy9rd1kryl5pirpe1fvha8y5yug',
             'X-Hasura-Role': 'user'
         }
     };
