@@ -554,7 +554,6 @@ app.post('/flight-check', (req, res) => {
                 }
             };
             request(url1, options, res, (data) => {
-                console.log(data);
                 var airline = data.appendix.airlines;
                 var flightName = "";
                 var airports = data.appendix.airports;
@@ -570,16 +569,8 @@ app.post('/flight-check', (req, res) => {
                     var arrCode = flights[flights.length - 1].arrivalAirportFsCode;
                     var arrTime = flights[flights.length - 1].arrivalTime;
                 }
-                // $.each(airline, function(i, v) {
-                //     if (v.fs == input.flightCode) {
-                //         flightName = v.name;
-                //     }
-                // });
-
                 for (var i = 0; i < airline.length; i++) {
-
                     if (airline[i].fs == input.flightCode) {
-
                         flightName = airline[i].name;
                     }
                 }
@@ -604,7 +595,6 @@ app.post('/flight-check', (req, res) => {
                 request(insertUrl, insertOpts, res, (resData) => {
                     res.send(JSON.stringify(resData));
                 });
-
             });
         } else {
             res.send(resData);
