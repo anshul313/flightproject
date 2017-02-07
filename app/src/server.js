@@ -534,7 +534,7 @@ app.post('/mutual-friends', (req, res) => {
 
 app.post('/flight-check', (req, res) => {
     const input = req.body;
-    console.log(input);
+
     var flightCode = input.flight_number.substring(0, 2);
     var flightNumber = input.flight_number.substring(2);
     var d = new Date(input.today_date);
@@ -567,34 +567,43 @@ app.post('/flight-check', (req, res) => {
                 var flights = data.scheduledFlights;
                 var depCode = flights[0].departureAirportFsCode;
                 var destination = airports[0].city;
-                var depTime = new Date(flights[0].departureTime);
+                var depTime = flights[0].departureTime.substring(0, flights[0].departureTime.indexOf('.'))
+                depTime = depTime+'Z';
+
                 var origin = airports[airports.length - 1].city;
                 if (flights.length == 1) {
                     var arrCode = flights[0].arrivalAirportFsCode;
-                    var arrTime = new Date(flights[0].arrivalTime);
+                    // var arrTime = new Date(flights[0].arrivalTime).toISOString();
+                    var arrTime = flights[0].arrivalTime.substring(0, flights[0].arrivalTime.indexOf('.'))
+                    arrTime = arrTime+'Z';
+
                 } else {
                     var arrCode = flights[flights.length - 1].arrivalAirportFsCode;
-                    var arrTime = new Date(flights[flights.length - 1].arrivalTime);
+                    // var arrTime = new Date(flights[flights.length - 1].arrivalTime);
+                    var arrTime = flights[flights.length - 1].arrivalTime.substring(0, flights[flights.length - 1].arrivalTime.indexOf('.'))
+                    arrTime = arrTime+'Z';
                 }
                 for (var i = 0; i < airline.length; i++) {
                     if (airline[i].fs == flightCode) {
                         flightName = airline[i].name;
                     }
                 }
+
                 const insertUrl = 'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
                 const insertOpts = {
                     method: 'POST',
                     body: JSON.stringify({
                         objects: [{
 
-                            number: flightNumber,
+                            number: input.flight_number,
                             airline: flightName,
                             origin_code: depCode,
                             destination_code: arrCode,
                             departure: depTime,
                             arrival: arrTime,
                             origin: origin,
-                            destination: destination
+                            destination: destination,
+                            op_days:"444"
                         }]
                     }),
                     headers: {
@@ -605,6 +614,7 @@ app.post('/flight-check', (req, res) => {
                 };
                 // console.log(insertOpts.body);
                 request(insertUrl, insertOpts, res, (resData) => {
+
                     const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${input.flight_number}`
                     const getFlightOpts = {
                         method: 'GET',
@@ -615,7 +625,7 @@ app.post('/flight-check', (req, res) => {
                         }
                     };
                     request(getUrl, getFlightOpts, res, (resData) => {
-                        console.log(resData);
+
                         res.send(resData);
                     })
                 });
