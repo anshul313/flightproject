@@ -586,6 +586,7 @@ app.post('/flight-check', (req, res) => {
                     method: 'POST',
                     body: JSON.stringify({
                         objects: [{
+
                             number: flightNumber,
                             airline: flightName,
                             origin_code: depCode,
@@ -602,7 +603,7 @@ app.post('/flight-check', (req, res) => {
                         'X-Hasura-Role': 'admin'
                     }
                 };
-
+                console.log(JSON.stringify(insertOpts.body));
                 request(insertUrl, insertOpts, res, (resData) => {
                     const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${input.flight_number}`
                     const getFlightOpts = {
