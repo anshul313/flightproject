@@ -515,7 +515,6 @@ app.get('/linkedin-profile/:token', (req, res) => {
 
 app.post('/mutual-friends', (req, res) => {
     const input = req.body;
-    console.log(input);
     const url = `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29&access_token=${input.userToken}`;
     const options = {
         method: 'GET',
@@ -533,6 +532,7 @@ app.post('/mutual-friends', (req, res) => {
 
 app.post('/flight-check', (req, res) => {
     const input = req.body;
+    console.log(input);
     var flightCode = input.flightNumber.substring(0, 2);
     var flightNumber = input.flightNumber.substring(2);
     var d = new Date(input.today_date);
