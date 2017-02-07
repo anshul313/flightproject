@@ -567,14 +567,14 @@ app.post('/flight-check', (req, res) => {
                 var flights = data.scheduledFlights;
                 var depCode = flights[0].departureAirportFsCode;
                 var destination = airports[0].city;
-                var depTime = flights[0].departureTime;
+                var depTime = new Date(flights[0].departureTime);
                 var origin = airports[airports.length - 1].city;
                 if (flights.length == 1) {
                     var arrCode = flights[0].arrivalAirportFsCode;
-                    var arrTime = flights[0].arrivalTime;
+                    var arrTime = new Date(flights[0].arrivalTime);
                 } else {
                     var arrCode = flights[flights.length - 1].arrivalAirportFsCode;
-                    var arrTime = flights[flights.length - 1].arrivalTime;
+                    var arrTime = new Date(flights[flights.length - 1].arrivalTime);
                 }
                 for (var i = 0; i < airline.length; i++) {
                     if (airline[i].fs == flightCode) {
