@@ -534,10 +534,9 @@ app.post('/mutual-friends', (req, res) => {
 
 app.post('/flight-check', (req, res) => {
     const input = req.body;
-
     var flightCode = input.flight_number.substring(0, 2);
     var flightNumber = input.flight_number.substring(2);
-    var d = new Date(input.today_date);
+    var d = new Date(input.tomorrow_date);
     var departYear = d.getFullYear();
     var departMonth = d.getMonth() + 1;
     var departDay = d.getDate();
@@ -551,7 +550,6 @@ app.post('/flight-check', (req, res) => {
         }
     };
     request(getUrl, getFlightOpts, res, (resData) => {
-
         if (resData.length < 1) {
             const url1 = `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${flightCode}/${flightNumber}/departing/${departYear}/${departMonth}/${departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8`;
             const options = {
@@ -612,9 +610,7 @@ app.post('/flight-check', (req, res) => {
                         'X-Hasura-Role': 'admin'
                     }
                 };
-                // console.log(insertOpts.body);
                 request(insertUrl, insertOpts, res, (resData) => {
-
                     const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${input.flight_number}`
                     const getFlightOpts = {
                         method: 'GET',
