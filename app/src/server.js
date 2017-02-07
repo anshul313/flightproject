@@ -537,7 +537,7 @@ app.post('/flight-check', (req, res) => {
     var flightNumber = input.flight_number.substring(2);
     var d = new Date(input.today_date);
     var departYear = d.getFullYear();
-    var departMonth = d.getMonth()+1;
+    var departMonth = d.getMonth() + 1;
     var departDay = d.getDate();
     const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${input.flight_number}`
     const getFlightOpts = {
@@ -594,15 +594,26 @@ app.post('/flight-check', (req, res) => {
                             destination: destination
                         }]
                     }),
-                       headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer bgxmb0a2tf4gbzl7w4p74sv7jhf0xkl0g',
-            'X-Hasura-Role': 'admin'
-        }
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer bgxmb0a2tf4gbzl7w4p74sv7jhf0xkl0g',
+                        'X-Hasura-Role': 'admin'
+                    }
                 };
 
                 request(insertUrl, insertOpts, res, (resData) => {
-                    res.send(JSON.stringify(resData));
+                    const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${input.flight_number}`
+                    const getFlightOpts = {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer bgxmb0a2tf4gbzl7w4p74sv7jhf0xkl0',
+                            'X-Hasura-Role': 'user'
+                        }
+                    };
+                    request(getUrl, getFlightOpts, res, (resData) => {
+                        res.send(resData);
+                    })
                 });
             });
         } else {
