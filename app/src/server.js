@@ -603,7 +603,7 @@ app.post('/flight-check', (req, res) => {
                         'X-Hasura-Role': 'admin'
                     }
                 };
-                console.log(JSON.stringify(insertOpts.body));
+                // console.log(insertOpts.body);
                 request(insertUrl, insertOpts, res, (resData) => {
                     const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${input.flight_number}`
                     const getFlightOpts = {
@@ -615,6 +615,7 @@ app.post('/flight-check', (req, res) => {
                         }
                     };
                     request(getUrl, getFlightOpts, res, (resData) => {
+                        console.log(resData);
                         res.send(resData);
                     })
                 });
