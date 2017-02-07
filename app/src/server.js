@@ -525,7 +525,7 @@ app.post('/mutual-friends', (req, res) => {
         }
     };
     request(url, options, res, (data) => {
-        console.log(data);
+        console.log(JSON.stringify(data));
         res.set('Content-Type', 'application/json');
         res.send(JSON.stringify(data));
     });
@@ -598,7 +598,7 @@ app.post('/flight-check', (req, res) => {
                     }),
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer bgxmb0a2tf4gbzl7w4p74sv7jhf0xkl0g',
+                        'Authorization': 'Bearer bgxmb0a2tf4gbzl7w4p74sv7jhf0xkl0',
                         'X-Hasura-Role': 'admin'
                     }
                 };
