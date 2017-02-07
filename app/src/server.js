@@ -515,6 +515,7 @@ app.get('/linkedin-profile/:token', (req, res) => {
 
 app.post('/mutual-friends', (req, res) => {
     const input = req.body;
+    console.log(input);
     const url = `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29&access_token=${input.userToken}`;
     const options = {
         method: 'GET',
@@ -524,6 +525,7 @@ app.post('/mutual-friends', (req, res) => {
         }
     };
     request(url, options, res, (data) => {
+        console.log(data);
         res.set('Content-Type', 'application/json');
         res.send(JSON.stringify(data));
     });
