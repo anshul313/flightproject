@@ -533,13 +533,13 @@ app.post('/mutual-friends', (req, res) => {
 app.post('/flight-check', (req, res) => {
     const input = req.body;
     console.log(input);
-    var flightCode = input.flightNumber.substring(0, 2);
-    var flightNumber = input.flightNumber.substring(2);
+    var flightCode = input.flight_number.substring(0, 2);
+    var flightNumber = input.flight_number.substring(2);
     var d = new Date(input.today_date);
     var departYear = d.getFullYear();
     var departMonth = d.getMonth()+1;
     var departDay = d.getDate();
-    const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${input.flightNumber}`
+    const getUrl = `https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=${input.today_date}&tomorrow_date=${input.tomorrow_date}&flight_number=${input.flight_number}`
     const getFlightOpts = {
         method: 'GET',
         headers: {
@@ -575,7 +575,7 @@ app.post('/flight-check', (req, res) => {
                     var arrTime = flights[flights.length - 1].arrivalTime;
                 }
                 for (var i = 0; i < airline.length; i++) {
-                    if (airline[i].fs == input.flightCode) {
+                    if (airline[i].fs == flightCode) {
                         flightName = airline[i].name;
                     }
                 }
