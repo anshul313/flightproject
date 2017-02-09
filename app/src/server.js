@@ -8,7 +8,7 @@ import _io from 'socket.io';
 import config from './config';
 import mail from './mail.js';
 import nodemailer from 'nodemailer'
-
+var crypto = require('crypto');
 const fcm = new FCM(process.env.FCM_KEY);
 const app = new Express();
 const server = new http.Server(app);
@@ -515,8 +515,10 @@ app.get('/linkedin-profile/:token', (req, res) => {
 
 app.post('/mutual-friends', (req, res) => {
     const input = req.body;
-    console.log(input);
-    const url = `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29&access_token=${input.userToken}`;
+    const secret = 'b3fe1de6674a29c50b98837e030ec15a';
+    const hash = crypto.createHmac('sha256', secret).update(input.userToken).digest('hex');
+    console.log(hash);
+    const url = `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29&access_token=${input.userToken}&appsecret_proof=${hash}`;
     const options = {
         method: 'GET',
         headers: {
