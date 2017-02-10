@@ -515,7 +515,7 @@ app.get('/linkedin-profile/:token', (req, res) => {
 
 app.post('/mutual-friends', (req, res) => {
     const input = req.body;
-    const secret = '3i7ca5ub8r6586ol5wpvyfm5b61om0hc';
+    const secret = 'b3fe1de6674a29c50b98837e030ec15a';
     // 3i7ca5ub8r6586ol5wpvyfm5b61om0hc live Token
     // b3fe1de6674a29c50b98837e030ec15a staging Token
     const hash = crypto.createHmac('sha256', secret).update(input.userToken).digest('hex');
@@ -536,6 +536,7 @@ app.post('/mutual-friends', (req, res) => {
 });
 
 
+
 app.post('/flight-check', (req, res) => {
     const input = req.body;
     var flightCode = input.flight_number.substring(0, 2);
@@ -549,8 +550,8 @@ app.post('/flight-check', (req, res) => {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer bgxmb0a2tf4gbzl7w4p74sv7jhf0xkl0',
-            'X-Hasura-Role': 'user'
+            'Authorization': 'Bearer 3i7ca5ub8r6586ol5wpvyfm5b61om0hc',
+            'X-Hasura-Role': 'admin'
         }
     };
     request(getUrl, getFlightOpts, res, (resData) => {
@@ -610,7 +611,7 @@ app.post('/flight-check', (req, res) => {
                     }),
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer bgxmb0a2tf4gbzl7w4p74sv7jhf0xkl0',
+                        'Authorization': 'Bearer 3i7ca5ub8r6586ol5wpvyfm5b61om0hc',
                         'X-Hasura-Role': 'admin'
                     }
                 };
@@ -620,7 +621,7 @@ app.post('/flight-check', (req, res) => {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer bgxmb0a2tf4gbzl7w4p74sv7jhf0xkl0',
+                            'Authorization': 'Bearer 3i7ca5ub8r6586ol5wpvyfm5b61om0hc',
                             'X-Hasura-Role': 'user'
                         }
                     };
