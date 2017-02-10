@@ -551,7 +551,8 @@ app.post('/flight-check', (req, res) => {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
-            'X-Hasura-Role': 'admin'
+            'X-Hasura-Role': 'admin',
+            'X-Hasura-User-Id': 1
         }
     };
     request(getUrl, getFlightOpts, res, (resData) => {
@@ -607,7 +608,8 @@ app.post('/flight-check', (req, res) => {
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': 'Bearer 3i7ca5ub8r6586ol5wpvyfm5b61om0hc',
-                            'X-Hasura-Role': 'admin'
+                            'X-Hasura-Role': 'admin',
+                            'X-Hasura-User-Id': 1
                         }
                     };
                     request(insertUrl, insertOpts, res, (resData) => {
@@ -617,7 +619,8 @@ app.post('/flight-check', (req, res) => {
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': 'Bearer 3i7ca5ub8r6586ol5wpvyfm5b61om0hc',
-                                'X-Hasura-Role': 'user'
+                                'X-Hasura-Role': 'user',
+                                'X-Hasura-User-Id': 1
                             }
                         };
                         request(getUrl, getFlightOpts, res, (resData) => {
@@ -645,7 +648,7 @@ app.post('/flight-check', (req, res) => {
                     var destination1 = airports[0].city;
                     var origin1 = airports[airports.length - 2].city;
 
-        
+
                     for (var i = 0; i < airline.length; i++) {
                         if (airline[i].fs == flightCode) {
                             flightName = airline[i].name;
@@ -667,7 +670,7 @@ app.post('/flight-check', (req, res) => {
                                 origin: origin,
                                 destination: destination,
                                 op_days: "444"
-                            },{
+                            }, {
 
                                 number: input.flight_number,
                                 airline: flightName,
