@@ -39,7 +39,7 @@ let url = 'http://data.hasura';
 if (global.__DEVELOPMENT__) {
     headers.Authorization = 'Bearer ' + process.env.API_TOKEN;
     // url = 'http://data.earthly58.hasura-app.io';
-    url = 'https://data.stellar60.hasura-app.io/';
+    url = 'https://data.ailment92.hasura-app.io/';
 } else {
     headers['X-Hasura-Role'] = 'admin';
     headers['X-Hasura-User-Id'] = 1;
@@ -550,7 +550,7 @@ app.post('/flight-check', (req, res) => {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
+            'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
             'X-Hasura-Role': 'admin',
             'X-Hasura-User-Id': 1
         }
@@ -607,7 +607,7 @@ app.post('/flight-check', (req, res) => {
                         }),
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer 3i7ca5ub8r6586ol5wpvyfm5b61om0hc',
+                            'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
                             'X-Hasura-Role': 'admin',
                             'X-Hasura-User-Id': 1
                         }
@@ -618,7 +618,7 @@ app.post('/flight-check', (req, res) => {
                             method: 'GET',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': 'Bearer 3i7ca5ub8r6586ol5wpvyfm5b61om0hc',
+                                'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
                                 'X-Hasura-Role': 'user',
                                 'X-Hasura-User-Id': 1
                             }
@@ -685,7 +685,7 @@ app.post('/flight-check', (req, res) => {
                         }),
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
+                            'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
                             'X-Hasura-Role': 'admin'
                         }
                     };
@@ -695,7 +695,7 @@ app.post('/flight-check', (req, res) => {
                             method: 'GET',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
+                                'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
                                 'X-Hasura-Role': 'user'
                             }
                         };
