@@ -550,14 +550,14 @@ app.post('/flight-check', (req, res) => {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
+            'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
             'X-Hasura-Role': 'admin',
             'X-Hasura-User-Id': 1
         }
     };
     request(getUrl, getFlightOpts, res, (resData) => {
         if (resData.length < 1) {
-            const url1 = `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${flightCode}/${flightNumber}/departing/${departYear}/${departMonth}/${departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8`;
+            const url1 = `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${flightCode}/${flightNumber}/departing/${departYear}/${departMonth}/${departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8&utc=true`;
             const options = {
                 method: 'GET',
                 headers: {
@@ -607,7 +607,7 @@ app.post('/flight-check', (req, res) => {
                         }),
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
+                            'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
                             'X-Hasura-Role': 'admin',
                             'X-Hasura-User-Id': 1
                         }
@@ -618,7 +618,7 @@ app.post('/flight-check', (req, res) => {
                             method: 'GET',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
+                                'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
                                 'X-Hasura-Role': 'user',
                                 'X-Hasura-User-Id': 1
                             }
@@ -685,7 +685,7 @@ app.post('/flight-check', (req, res) => {
                         }),
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
+                            'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
                             'X-Hasura-Role': 'admin'
                         }
                     };
@@ -695,7 +695,7 @@ app.post('/flight-check', (req, res) => {
                             method: 'GET',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': 'Bearer qc6qxzjx7tbyptd6hecivkrxf1f6krac',
+                                'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
                                 'X-Hasura-Role': 'user'
                             }
                         };
