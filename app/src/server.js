@@ -873,13 +873,22 @@ app.post('/flight-check', function(req, res) {
   request(url, options, res, (resData) => {
     if (resData.scheduledFlights.length >= 1) {
       for (var pos = 0; pos < resData.scheduledFlights.length; pos++) {
-        resData.scheduledFlights[pos].departureTime = moment(resData.scheduledFlights[
-            pos].departureTime,
-          "YYYY-MM-DD HH:mm Z");
+
+        //   resData.scheduledFlights[pos].departureTime = moment(resData.scheduledFlights[
+        //       pos].departureTime,
+        //     "YYYY-MM-DD HH:mm Z");
+        //   resData.scheduledFlights[pos].arrivalTime = moment(resData.scheduledFlights[
+        //       pos].arrivalTime,
+        //     "YYYY-MM-DD HH:mm Z");
+        // }
+
+        resData.scheduledFlights[pos].departureTime = moment(
+          resData.scheduledFlights[
+            pos].departureTime).format();
         resData.scheduledFlights[pos].arrivalTime = moment(resData.scheduledFlights[
-            pos].arrivalTime,
-          "YYYY-MM-DD HH:mm Z");
+          pos].arrivalTime).format();
       }
+
       res.send(resData);
     } else {
       res.json({
