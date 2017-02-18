@@ -11,8 +11,8 @@ import nodemailer from 'nodemailer'
 var crypto = require('crypto');
 var moment = require('moment');
 // var request = require('request');
-// const fcm = new FCM(process.env.FCM_KEY);
-const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
+const fcm = new FCM(process.env.FCM_KEY);
+// const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
 const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
@@ -91,25 +91,25 @@ const request = (url, options, res, cb) => {
       }
     });
 };
-// const validate = (req) => {
-//   // Check if req.headers['X-Hasura-Role'] == 'user'
-//   const authHeader = req.headers['X-Hasura-Role'];
-//   // authUserId = req.headers('X-Hasura-User-Id');
-//   // console.log('user Id = ', authUserId);
-//   if (authHeader === 'user') {
-//     return true;
-//   }
-//   return false;
-// };
-//
-// app.use((req, res, next) => {
-//   if (validate(req)) {
-//     next();
-//   } else {
-//     // next();
-//     res.status(403).send('invalid-role');
-//   }
-// });
+const validate = (req) => {
+  // Check if req.headers['X-Hasura-Role'] == 'user'
+  const authHeader = req.headers['X-Hasura-Role'];
+  // authUserId = req.headers('X-Hasura-User-Id');
+  // console.log('user Id = ', authUserId);
+  if (authHeader === 'user') {
+    return true;
+  }
+  return false;
+};
+
+app.use((req, res, next) => {
+  if (validate(req)) {
+    next();
+  } else {
+    // next();
+    res.status(403).send('invalid-role');
+  }
+});
 
 app.post('/checkin/request', (req, res) => {
   const chunk = req.body;
