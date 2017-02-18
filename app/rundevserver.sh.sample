@@ -1,0 +1,2 @@
+#!/bin/bash
+API_TOKEN="<>" FCM_KEY="<>" npm run start-dev
