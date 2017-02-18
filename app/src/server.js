@@ -11,8 +11,8 @@ import nodemailer from 'nodemailer'
 var crypto = require('crypto');
 var moment = require('moment');
 // var request = require('request');
-const fcm = new FCM(process.env.FCM_KEY);
-// const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
+// const fcm = new FCM(process.env.FCM_KEY);
+const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
 const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
@@ -102,14 +102,14 @@ const validate = (req) => {
   return false;
 };
 
-app.use((req, res, next) => {
-  if (validate(req)) {
-    next();
-  } else {
-    // next();
-    res.status(403).send('invalid-role');
-  }
-});
+// app.use((req, res, next) => {
+//   if (validate(req)) {
+//     next();
+//   } else {
+//     // next();
+//     res.status(403).send('invalid-role');
+//   }
+// });
 
 app.post('/checkin/request', (req, res) => {
   const chunk = req.body;
@@ -830,9 +830,9 @@ app.post('/mutual-friends', (req, res) => {
 //             const getFlightOpts = {
 //               method: 'GET',
 //               headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': 'Bearer 6qusdur34ris9ar35aan9onkq7a3c383',
-//                 'X-Hasura-Role': 'user'
+//                 Content-Type: application/json
+//                 Authorization: Bearer 6qusdur34ris9ar35aan9onkq7a3c383
+//                 X-Hasura-Role: user
 //               }
 //             };
 //             request(getUrl, getFlightOpts, res, (resData) => {
