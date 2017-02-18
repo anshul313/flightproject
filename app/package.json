@@ -47,7 +47,7 @@
     "babel-polyfill": "^6.3.14",
     "body-parser": "^1.15.2",
     "express": "^4.13.3",
-    "fcm-push": "^1.0.7",
+    "fcm-push": "^1.1.2",
     "isomorphic-fetch": "^2.2.1",
     "morgan": "^1.7.0",
     "node-fetch": "^1.6.0",
