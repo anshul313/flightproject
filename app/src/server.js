@@ -11,8 +11,8 @@ import nodemailer from 'nodemailer'
 var crypto = require('crypto');
 var moment = require('moment');
 // var request = require('request');
-// const fcm = new FCM(process.env.FCM_KEY);
-const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
+const fcm = new FCM(process.env.FCM_KEY);
+// const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
 const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
@@ -859,9 +859,9 @@ app.post('/flight-check', function(req, res) {
   const input = req.body;
   var flightCode = input.flight_number.substring(0, 2);
   var flightNumber = input.flight_number.substring(2);
-  var departYear = input.year;
-  var departMonth = input.month;
-  var departDay = input.day;
+  var departYear = input.year.toString();
+  var departMonth = input.month.toString();
+  var departDay = input.day.toString();
   const url =
     `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${flightCode}/${flightNumber}/departing/${departYear}/${departMonth}/${departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8&utc=true`;
   const options = {
@@ -873,22 +873,12 @@ app.post('/flight-check', function(req, res) {
   request(url, options, res, (resData) => {
     if (resData.scheduledFlights.length >= 1) {
       for (var pos = 0; pos < resData.scheduledFlights.length; pos++) {
-
-        //   resData.scheduledFlights[pos].departureTime = moment(resData.scheduledFlights[
-        //       pos].departureTime,
-        //     "YYYY-MM-DD HH:mm Z");
-        //   resData.scheduledFlights[pos].arrivalTime = moment(resData.scheduledFlights[
-        //       pos].arrivalTime,
-        //     "YYYY-MM-DD HH:mm Z");
-        // }
-
         resData.scheduledFlights[pos].departureTime = moment(
           resData.scheduledFlights[
             pos].departureTime).format();
         resData.scheduledFlights[pos].arrivalTime = moment(resData.scheduledFlights[
           pos].arrivalTime).format();
       }
-
       res.send(resData);
     } else {
       res.json({
