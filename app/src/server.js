@@ -11,8 +11,8 @@ import nodemailer from 'nodemailer'
 var crypto = require('crypto');
 var moment = require('moment');
 // var request = require('request');
-const fcm = new FCM(process.env.FCM_KEY);
-// const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
+// const fcm = new FCM(process.env.FCM_KEY);
+const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
 const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
@@ -857,13 +857,15 @@ app.post('/mutual-friends', (req, res) => {
 
 app.post('/flight-check', function(req, res) {
   const input = req.body;
+  console.log('date : ', input.date.toString());
   var flightCode = input.flight_number.substring(0, 2);
   var flightNumber = input.flight_number.substring(2);
-  var departYear = input.year.toString();
-  var departMonth = input.month.toString();
-  var departDay = input.day.toString();
+  var check = moment(input.date.toString(), 'YYYY/MM/DD');
+  var departMonth = check.format('M');
+  var departDay = check.format('D');
+  var departYear = check.format('YYYY')
   const url =
-    `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${flightCode}/${flightNumber}/departing/${departYear}/${departMonth}/${departDay}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8&utc=true`;
+    `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${flightCode}/${flightNumber}/departing/${departYear.toString()}/${departMonth.toString()}/${departDay.toString()}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8&utc=true`;
   const options = {
     method: 'GET',
     headers: {
