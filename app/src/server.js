@@ -11,8 +11,8 @@ import nodemailer from 'nodemailer'
 var crypto = require('crypto');
 var moment = require('moment');
 // var request = require('request');
-// const fcm = new FCM(process.env.FCM_KEY);
-const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
+const fcm = new FCM(process.env.FCM_KEY);
+// const fcm = new FCM('AIzaSyAlEs8Uag-FVRJ-mSjqJIqZbg5x4vc5Tx0');
 const app = new Express();
 const server = new http.Server(app);
 const io = _io(server);
