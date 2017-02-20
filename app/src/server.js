@@ -901,8 +901,7 @@ app.post('/flight-check', (req, res) => {
             departure: result_depTime,
             arrival: result_arrTime,
             origin: origin,
-            destination: destination,
-            op_days: "444"
+            destination: destination
           }];
           var insertUrl =
             'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
@@ -997,10 +996,8 @@ app.post('/flight-check', (req, res) => {
             departure: result_depTime,
             arrival: result_arrTime,
             origin: origin,
-            destination: destination,
-            op_days: "444"
+            destination: destination
           }, {
-
             number: input.flight_number,
             airline: flightName,
             origin_code: depCode1,
@@ -1008,8 +1005,7 @@ app.post('/flight-check', (req, res) => {
             departure: result_depTime1,
             arrival: result_arrTime1,
             origin: origin1,
-            destination: destination1,
-            op_days: ""
+            destination: destination1
           }];
 
           var insertUrl =
