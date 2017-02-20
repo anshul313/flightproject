@@ -837,7 +837,7 @@ app.post('/flight-check', (req, res) => {
   var tomorrow_date = input.tomorrow_date;
 
   var getUrl =
-    'https://data.stellar60.hasura-app.io//v1/template/get_flights?today_date=' +
+    'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
     today_date + '&tomorrow_date=' +
     tomorrow_date + '&flight_number=' +
     input.flight_number;
@@ -908,64 +908,109 @@ app.post('/flight-check', (req, res) => {
           // console.log('result_depTime : ', result_depTime);
           // console.log('result_arrTime : ', result_arrTime);
 
+          const connectionCheckData = {
+            columns: ['*'],
+            where: {
+              $and: [{
+                number: input.flight_number
+              }, {
+                airline: flightName
+              }, {
+                origin_code: depCode
+              }, {
+                destination_code: arrCode
+              }, {
+                destination_code: arrCode
+              }, {
+                departure: depTime
+              }, {
+                arrival: arrTime
+              }]
+            }
+          };
 
-
-          var insertUrl =
-            'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
-          var insertOpts = {
+          const connectionCheckUrl =
+            'https://data.stellar60.hasura-app.io/api/1/table/flights/select';
+          const connectionCheckOpts = {
             method: 'POST',
-            body: JSON.stringify({
-              objects: [{
-                number: input.flight_number,
-                airline: flightName,
-                origin_code: depCode,
-                destination_code: arrCode,
-                departure: depTime,
-                arrival: arrTime,
-                origin: origin,
-                destination: destination,
-                op_days: "444"
-              }],
-              "returning": ["id"]
-            }),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
               'X-Hasura-Role': 'admin',
               'X-Hasura-User-Id': 1
-            }
+            },
+            body: JSON.stringify(connectionCheckData)
           };
 
-          request(insertUrl, insertOpts, res, (resData) => {
-            var getUrl =
-              'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
-              today_date + '&tomorrow_date=' +
-              tomorrow_date + '&flight_number=' +
-              input.flight_number
-            var getFlightOpts = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
-                'X-Hasura-Role': 'admin',
-                'X-Hasura-User-Id': 1
+          request(connectionCheckUrl, connectionCheckOpts, null, (
+            checkResult) => {
+            if (checkResult.length != 0) {
+              for (var i = 0; i < checkResult.length; i++) {
+                delete checkResult[i].eff_from;
+                delete checkResult[i].eff_till;
+                delete checkResult[i].op_days;
               }
-            };
+              res.send(checkResult);
+            } else {
+              var insertUrl =
+                'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
+              var insertOpts = {
+                method: 'POST',
+                body: JSON.stringify({
+                  objects: [{
+                    number: input.flight_number,
+                    airline: flightName,
+                    origin_code: depCode,
+                    destination_code: arrCode,
+                    departure: depTime,
+                    arrival: arrTime,
+                    origin: origin,
+                    destination: destination,
+                    op_days: "444"
+                  }],
+                  "returning": ["id"]
+                }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+                  'X-Hasura-Role': 'admin',
+                  'X-Hasura-User-Id': 1
+                }
+              };
 
-            var result = [{
-              id: resData.returning[0].id,
-              number: input.flight_number,
-              airline: flightName,
-              origin_code: depCode,
-              destination_code: arrCode,
-              departure: result_depTime,
-              arrival: result_arrTime,
-              origin: origin,
-              destination: destination
-            }];
-            request(getUrl, getFlightOpts, res, (resData) => {
-              res.send(result);
-            });
+              request(insertUrl, insertOpts, res, (resData) => {
+                var getUrl =
+                  'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
+                  today_date + '&tomorrow_date=' +
+                  tomorrow_date + '&flight_number=' +
+                  input.flight_number
+                var getFlightOpts = {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+                    'X-Hasura-Role': 'admin',
+                    'X-Hasura-User-Id': 1
+                  }
+                };
+
+                var result = [{
+                  id: resData.returning[0].id,
+                  number: input.flight_number,
+                  airline: flightName,
+                  origin_code: depCode,
+                  destination_code: arrCode,
+                  departure: result_depTime,
+                  arrival: result_arrTime,
+                  origin: origin,
+                  destination: destination
+                }];
+                request(getUrl, getFlightOpts, res, (
+                  resData) => {
+                  res.send(result);
+                });
+              });
+            }
           });
         } else if (flights.length == 2) {
 
@@ -973,6 +1018,11 @@ app.post('/flight-check', (req, res) => {
           var arrCode = flights[0].arrivalAirportFsCode;
           var destination = airports[1].city;
           var origin = airports[0].city;
+          for (var i = 0; i < airline.length; i++) {
+            if (airline[i].fs == flightCode) {
+              flightName = airline[i].name;
+            }
+          }
 
           var depTime = moment.utc(data.scheduledFlights[0].departureTime)
             .format();
@@ -1005,12 +1055,6 @@ app.post('/flight-check', (req, res) => {
           var origin1 = airports[1].city;
           var destination1 = airports[2].city;
 
-          for (var i = 0; i < airline.length; i++) {
-            if (airline[i].fs == flightCode) {
-              flightName = airline[i].name;
-            }
-          }
-
           var depTime1 = moment.utc(data.scheduledFlights[1].departureTime)
             .format();
 
@@ -1036,78 +1080,127 @@ app.post('/flight-check', (req, res) => {
           console.log('2result_depTime1 : ', result_depTime1);
           console.log('2result_arrTime1 : ', result_arrTime1);
 
-          var insertUrl =
-            'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
-          var insertOpts = {
+
+          const connectionCheckData = {
+            columns: ['*'],
+            where: {
+              $or: [{
+                $and: [{
+                  number: input.flight_number
+                }, {
+                  airline: flightName
+                }, {
+                  origin_code: depCode
+                }, {
+                  destination_code: arrCode
+                }, {
+                  destination_code: arrCode
+                }, {
+                  departure: depTime
+                }, {
+                  arrival: arrTime
+                }],
+                $and: [{
+                  number: input.flight_number
+                }, {
+                  airline: flightName
+                }, {
+                  origin_code: depCode1
+                }, {
+                  destination_code: arrCode1
+                }, {
+                  destination_code: arrCode1
+                }, {
+                  departure: depTime1
+                }, {
+                  arrival: arrTime1
+                }]
+              }]
+            }
+          };
+
+          const connectionCheckUrl =
+            'https://data.stellar60.hasura-app.io/api/1/table/flights/select';
+          const connectionCheckOpts = {
             method: 'POST',
-            body: JSON.stringify({
-              objects: [{
-                number: input.flight_number,
-                airline: flightName,
-                origin_code: depCode,
-                destination_code: arrCode,
-                departure: depTime,
-                arrival: arrTime,
-                origin: origin,
-                destination: destination
-              }, {
-                number: input.flight_number,
-                airline: flightName,
-                origin_code: depCode1,
-                destination_code: arrCode1,
-                departure: depTime1,
-                arrival: arrTime1,
-                origin: origin1,
-                destination: destination1
-              }],
-              "returning": ["id"]
-            }),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
-              'X-Hasura-Role': 'admin'
-            }
+              'X-Hasura-Role': 'admin',
+              'X-Hasura-User-Id': 1
+            },
+            body: JSON.stringify(connectionCheckData)
           };
-          request(insertUrl, insertOpts, res, (resData) => {
-            var getUrl =
-              'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
-              today_date + '&tomorrow_date=' +
-              tomorrow_date + '&flight_number=' +
-              input.flight_number;
 
-            var getFlightOpts = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
-                'X-Hasura-Role': 'admin'
+
+          request(connectionCheckUrl, connectionCheckOpts, null, (
+            checkResult) => {
+            if (checkResult.length != 0) {
+              for (var i = 0; i < checkResult.length; i++) {
+                delete checkResult[i].eff_from;
+                delete checkResult[i].eff_till;
+                delete checkResult[i].op_days;
               }
-            };
-
-            var result = [{
-              id: resData.returning[0].id,
-              number: input.flight_number,
-              airline: flightName,
-              origin_code: depCode,
-              destination_code: arrCode,
-              departure: result_depTime,
-              arrival: result_arrTime,
-              origin: origin,
-              destination: destination
-            }, {
-              id: resData.returning[1].id,
-              number: input.flight_number,
-              airline: flightName,
-              origin_code: depCode1,
-              destination_code: arrCode1,
-              departure: result_depTime1,
-              arrival: result_arrTime1,
-              origin: origin1,
-              destination: destination1
-            }];
-            request(getUrl, getFlightOpts, res, (resData) => {
-              res.send(result);
-            })
+              res.send(checkResult);
+            } else {
+              var insertUrl =
+                'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
+              var insertOpts = {
+                method: 'POST',
+                body: JSON.stringify({
+                  objects: [{
+                    number: input.flight_number,
+                    airline: flightName,
+                    origin_code: depCode,
+                    destination_code: arrCode,
+                    departure: depTime,
+                    arrival: arrTime,
+                    origin: origin,
+                    destination: destination
+                  }, {
+                    number: input.flight_number,
+                    airline: flightName,
+                    origin_code: depCode1,
+                    destination_code: arrCode1,
+                    departure: depTime1,
+                    arrival: arrTime1,
+                    origin: origin1,
+                    destination: destination1
+                  }],
+                  "returning": ["id"]
+                }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+                  'X-Hasura-Role': 'admin'
+                }
+              };
+              request(insertUrl, insertOpts, res, (resData) => {
+                var result = [{
+                  id: resData.returning[0].id,
+                  number: input.flight_number,
+                  airline: flightName,
+                  origin_code: depCode,
+                  destination_code: arrCode,
+                  departure: result_depTime,
+                  arrival: result_arrTime,
+                  origin: origin,
+                  destination: destination
+                }, {
+                  id: resData.returning[1].id,
+                  number: input.flight_number,
+                  airline: flightName,
+                  origin_code: depCode1,
+                  destination_code: arrCode1,
+                  departure: result_depTime1,
+                  arrival: result_arrTime1,
+                  origin: origin1,
+                  destination: destination1
+                }];
+                console.log('result : ', result);
+                res.send(result);
+              });
+            }
           });
         } else {
           res.send({
@@ -1116,12 +1209,11 @@ app.post('/flight-check', (req, res) => {
         }
       });
     } else {
-
+      console.log('exit');
       res.send(resData);
     }
   });
 });
-
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
