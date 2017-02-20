@@ -893,16 +893,6 @@ app.post('/flight-check', (req, res) => {
           var result_arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
             .format();
 
-          var result = [{
-            number: input.flight_number,
-            airline: flightName,
-            origin_code: depCode,
-            destination_code: arrCode,
-            departure: result_depTime,
-            arrival: result_arrTime,
-            origin: origin,
-            destination: destination
-          }];
           var insertUrl =
             'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
           var insertOpts = {
@@ -918,7 +908,8 @@ app.post('/flight-check', (req, res) => {
                 origin: origin,
                 destination: destination,
                 op_days: "444"
-              }]
+              }],
+              "returning": ["id"]
             }),
             headers: {
               'Content-Type': 'application/json',
@@ -943,6 +934,17 @@ app.post('/flight-check', (req, res) => {
                 'X-Hasura-User-Id': 1
               }
             };
+            var result = [{
+              id: resData.returning[0].id,
+              number: input.flight_number,
+              airline: flightName,
+              origin_code: depCode,
+              destination_code: arrCode,
+              departure: result_depTime,
+              arrival: result_arrTime,
+              origin: origin,
+              destination: destination
+            }];
             request(getUrl, getFlightOpts, res, (resData) => {
               res.send(result);
             });
@@ -988,25 +990,7 @@ app.post('/flight-check', (req, res) => {
             }
           }
 
-          var result = [{
-            number: input.flight_number,
-            airline: flightName,
-            origin_code: depCode,
-            destination_code: arrCode,
-            departure: result_depTime,
-            arrival: result_arrTime,
-            origin: origin,
-            destination: destination
-          }, {
-            number: input.flight_number,
-            airline: flightName,
-            origin_code: depCode1,
-            destination_code: arrCode1,
-            departure: result_depTime1,
-            arrival: result_arrTime1,
-            origin: origin1,
-            destination: destination1
-          }];
+
 
           var insertUrl =
             'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
@@ -1014,7 +998,6 @@ app.post('/flight-check', (req, res) => {
             method: 'POST',
             body: JSON.stringify({
               objects: [{
-
                 number: input.flight_number,
                 airline: flightName,
                 origin_code: depCode,
@@ -1032,7 +1015,8 @@ app.post('/flight-check', (req, res) => {
                 arrival: arrTime1,
                 origin: origin1,
                 destination: destination1
-              }]
+              }],
+              "returning": ["id"]
             }),
             headers: {
               'Content-Type': 'application/json',
@@ -1055,6 +1039,29 @@ app.post('/flight-check', (req, res) => {
                 'X-Hasura-Role': 'admin'
               }
             };
+
+            var result = [{
+              id: resData.returning[0].id,
+              number: input.flight_number,
+              airline: flightName,
+              origin_code: depCode,
+              destination_code: arrCode,
+              departure: result_depTime,
+              arrival: result_arrTime,
+              origin: origin,
+              destination: destination
+            }, {
+              id: resData.returning[1].id,
+              number: input.flight_number,
+              airline: flightName,
+              origin_code: depCode1,
+              destination_code: arrCode1,
+              departure: result_depTime1,
+              arrival: result_arrTime1,
+              origin: origin1,
+              destination: destination1
+            }];
+
             request(getUrl, getFlightOpts, res, (resData) => {
               res.send(result);
             })
