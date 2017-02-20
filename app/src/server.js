@@ -873,8 +873,14 @@ app.post('/flight-check', (req, res) => {
 
         if (flights.length == 1) {
           var depCode = flights[0].departureAirportFsCode;
-          var destination = airports[0].city;
-
+          var origin = airports[airports.length - 2].city;
+          var destination = airports[airports.length - 1].city;
+          var arrCode = flights[0].arrivalAirportFsCode;
+          for (var i = 0; i < airline.length; i++) {
+            if (airline[i].fs == flightCode) {
+              flightName = airline[i].name;
+            }
+          }
 
           var depTime = moment.utc(data.scheduledFlights[0].departureTime)
             .format();
@@ -882,27 +888,27 @@ app.post('/flight-check', (req, res) => {
           var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
             .format();
 
+
           var depTimeX = moment.tz(data.scheduledFlights[0].departureTime,
             data.appendix.airports[0].timeZoneRegionName.toString()
-          ).format();
+          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
           var arrTimeX = moment.tz(data.scheduledFlights[0].arrivalTime,
-            data.appendix.airports[0].timeZoneRegionName.toString()
-          ).format();
+            data.appendix.airports[1].timeZoneRegionName.toString()
+          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+          // console.log('depTimeX : ', depTimeX);
+          // console.log('arrTimeX : ', arrTimeX);
 
           var result_depTime = moment.utc(depTimeX).format(
             "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
           var result_arrTime = moment.utc(arrTimeX).format(
             "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-          var origin = airports[airports.length - 1].city;
-          var arrCode = flights[0].arrivalAirportFsCode;
+          // console.log('result_depTime : ', result_depTime);
+          // console.log('result_arrTime : ', result_arrTime);
 
-          for (var i = 0; i < airline.length; i++) {
-            if (airline[i].fs == flightCode) {
-              flightName = airline[i].name;
-            }
-          }
+
 
           var insertUrl =
             'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
@@ -914,8 +920,8 @@ app.post('/flight-check', (req, res) => {
                 airline: flightName,
                 origin_code: depCode,
                 destination_code: arrCode,
-                departure: result_depTime,
-                arrival: result_arrTime,
+                departure: depTime,
+                arrival: arrTime,
                 origin: origin,
                 destination: destination,
                 op_days: "444"
@@ -965,6 +971,8 @@ app.post('/flight-check', (req, res) => {
 
           var depCode = flights[0].departureAirportFsCode;
           var arrCode = flights[0].arrivalAirportFsCode;
+          var destination = airports[1].city;
+          var origin = airports[0].city;
 
           var depTime = moment.utc(data.scheduledFlights[0].departureTime)
             .format();
@@ -974,22 +982,34 @@ app.post('/flight-check', (req, res) => {
 
           var depTimeX = moment.tz(data.scheduledFlights[0].departureTime,
             data.appendix.airports[0].timeZoneRegionName.toString()
-          ).format();
+          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
           var arrTimeX = moment.tz(data.scheduledFlights[0].arrivalTime,
-            data.appendix.airports[0].timeZoneRegionName.toString()
-          ).format();
+            data.appendix.airports[1].timeZoneRegionName.toString()
+          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+          // console.log('2depTimeX : ', depTimeX);
+          // console.log('2arrTimeX : ', arrTimeX);
 
           var result_depTime = moment.utc(depTimeX).format(
             "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
           var result_arrTime = moment.utc(arrTimeX).format(
             "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-          var destination = airports[airports.length - 2].city;
-          var origin = airports[airports.length - 1].city;
+          // console.log('2result_depTime : ', result_depTime);
+          // console.log('2result_arrTime : ', result_arrTime);
+
 
           var depCode1 = flights[1].departureAirportFsCode;
           var arrCode1 = flights[1].arrivalAirportFsCode;
+          var origin1 = airports[1].city;
+          var destination1 = airports[2].city;
+
+          for (var i = 0; i < airline.length; i++) {
+            if (airline[i].fs == flightCode) {
+              flightName = airline[i].name;
+            }
+          }
 
           var depTime1 = moment.utc(data.scheduledFlights[1].departureTime)
             .format();
@@ -997,28 +1017,24 @@ app.post('/flight-check', (req, res) => {
           var arrTime1 = moment.utc(data.scheduledFlights[1].arrivalTime)
             .format();
 
-          var depTime1X = moment.tz(data.scheduledFlights[1].departureTime,
-            data.appendix.airports[1].timeZoneRegionName.toString()
-          ).format();
+          var depTimeX1 = moment.tz(data.scheduledFlights[1].departureTime,
+            data.appendix.airports[2].timeZoneRegionName.toString()
+          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-          var arrTime1X = moment.tz(data.scheduledFlights[1].arrivalTime,
-            data.appendix.airports[1].timeZoneRegionName.toString()
-          ).format();
+          var arrTimeX1 = moment.tz(data.scheduledFlights[1].arrivalTime,
+            data.appendix.airports[2].timeZoneRegionName.toString()
+          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-          var result_depTime1 = moment.utc(depTime1X).format(
+          console.log('2depTimeX1 : ', depTimeX1);
+          console.log('2arrTimeX1 : ', arrTimeX1);
+
+          var result_depTime1 = moment.utc(depTimeX).format(
             "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-          var result_arrTime1 = moment.utc(arrTime1).format(
+          var result_arrTime1 = moment.utc(arrTimeX).format(
             "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-
-          var destination1 = airports[0].city;
-          var origin1 = airports[airports.length - 2].city;
-
-          for (var i = 0; i < airline.length; i++) {
-            if (airline[i].fs == flightCode) {
-              flightName = airline[i].name;
-            }
-          }
+          console.log('2result_depTime1 : ', result_depTime1);
+          console.log('2result_arrTime1 : ', result_arrTime1);
 
           var insertUrl =
             'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
@@ -1030,8 +1046,8 @@ app.post('/flight-check', (req, res) => {
                 airline: flightName,
                 origin_code: depCode,
                 destination_code: arrCode,
-                departure: result_depTime,
-                arrival: result_arrTime,
+                departure: depTime,
+                arrival: arrTime,
                 origin: origin,
                 destination: destination
               }, {
@@ -1039,8 +1055,8 @@ app.post('/flight-check', (req, res) => {
                 airline: flightName,
                 origin_code: depCode1,
                 destination_code: arrCode1,
-                departure: result_depTime1,
-                arrival: result_arrTime1,
+                departure: depTime1,
+                arrival: arrTime1,
                 origin: origin1,
                 destination: destination1
               }],
@@ -1074,8 +1090,8 @@ app.post('/flight-check', (req, res) => {
               airline: flightName,
               origin_code: depCode,
               destination_code: arrCode,
-              departure: depTime,
-              arrival: arrTime,
+              departure: result_depTime,
+              arrival: result_arrTime,
               origin: origin,
               destination: destination
             }, {
@@ -1084,8 +1100,8 @@ app.post('/flight-check', (req, res) => {
               airline: flightName,
               origin_code: depCode1,
               destination_code: arrCode1,
-              departure: depTime1,
-              arrival: arrTime1,
+              departure: result_depTime1,
+              arrival: result_arrTime1,
               origin: origin1,
               destination: destination1
             }];
@@ -1100,6 +1116,7 @@ app.post('/flight-check', (req, res) => {
         }
       });
     } else {
+
       res.send(resData);
     }
   });
