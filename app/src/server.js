@@ -836,7 +836,7 @@ app.post('/flight-check', (req, res) => {
   var tomorrow_date = input.tomorrow_date;
 
   var getUrl =
-    'https://data.ailment92.hasura-app.io/v1/template/get_flights?today_date=' +
+    'https://data.stellar60.hasura-app.io//v1/template/get_flights?today_date=' +
     today_date + '&tomorrow_date=' +
     tomorrow_date + '&flight_number=' +
     input.flight_number;
@@ -844,7 +844,7 @@ app.post('/flight-check', (req, res) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
+      'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     }
@@ -852,7 +852,12 @@ app.post('/flight-check', (req, res) => {
   request(getUrl, getFlightOpts, res, (resData) => {
     if (resData.length < 1) {
       const url1 =
-        `https://api.flightstats.com/flex/schedules/rest/v1/json/flight/${flightCode}/${flightNumber}/departing/${departYear.toString()}/${departMonth.toString()}/${departDay.toString()}?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8&utc=true`;
+        'https://api.flightstats.com/flex/schedules/rest/v1/json/flight/' +
+        flightCode + '/' + flightNumber.toString() + '/departing/' +
+        departYear.toString() + '/' + departMonth.toString() + '/' +
+        departDay.toString() +
+        '?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8&utc=true';
+      console.log('url1 : ', url1);
       const options = {
         method: 'GET',
         headers: {
@@ -870,10 +875,10 @@ app.post('/flight-check', (req, res) => {
           var depCode = flights[0].departureAirportFsCode;
           var destination = airports[0].city;
 
-          var depTime = moment.utc(data.scheduledFlights[0].departureTime,
-            "YYYY-MM-DD HH:mm ZZ").format();
-          var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime,
-            "YYYY-MM-DD HH:mm ZZ").format();
+          var depTime = moment.utc(data.scheduledFlights[0].departureTime)
+            .format();
+          var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
+            .format();
           var origin = airports[airports.length - 1].city;
           var arrCode = flights[0].arrivalAirportFsCode;
 
@@ -883,10 +888,10 @@ app.post('/flight-check', (req, res) => {
             }
           }
 
-          var result_depTime = moment(data.scheduledFlights[0].departureTime)
-            .zone('+05:30').format();
-          var result_arrTime = moment(data.scheduledFlights[0].arrivalTime)
-            .zone('+05:30').format();
+          var result_depTime = moment.utc(data.scheduledFlights[0].departureTime)
+            .format();
+          var result_arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
+            .format();
 
           var result = [{
             number: input.flight_number,
@@ -900,7 +905,7 @@ app.post('/flight-check', (req, res) => {
             op_days: "444"
           }];
           var insertUrl =
-            'https://data.ailment92.hasura-app.io/api/1/table/flights/insert';
+            'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
           var insertOpts = {
             method: 'POST',
             body: JSON.stringify({
@@ -918,7 +923,7 @@ app.post('/flight-check', (req, res) => {
             }),
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
+              'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
               'X-Hasura-Role': 'admin',
               'X-Hasura-User-Id': 1
             }
@@ -926,7 +931,7 @@ app.post('/flight-check', (req, res) => {
 
           request(insertUrl, insertOpts, res, (resData) => {
             var getUrl =
-              'https://data.ailment92.hasura-app.io/v1/template/get_flights?today_date=' +
+              'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
               today_date + '&tomorrow_date=' +
               tomorrow_date + '&flight_number=' +
               input.flight_number
@@ -934,7 +939,7 @@ app.post('/flight-check', (req, res) => {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
+                'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
                 'X-Hasura-Role': 'admin',
                 'X-Hasura-User-Id': 1
               }
@@ -948,10 +953,10 @@ app.post('/flight-check', (req, res) => {
           var depCode = flights[0].departureAirportFsCode;
           var arrCode = flights[0].arrivalAirportFsCode;
 
-          var depTime = moment.utc(data.scheduledFlights[0].departureTime,
-            "YYYY-MM-DD HH:mm ZZ").format();
-          var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime,
-            "YYYY-MM-DD HH:mm ZZ").format();
+          var depTime = moment.utc(data.scheduledFlights[0].departureTime)
+            .format();
+          var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
+            .format();
 
           var destination = airports[airports.length - 2].city;
           var origin = airports[airports.length - 1].city;
@@ -959,20 +964,20 @@ app.post('/flight-check', (req, res) => {
           var depCode1 = flights[1].departureAirportFsCode;
           var arrCode1 = flights[1].arrivalAirportFsCode;
 
-          var depTime1 = moment.utc(data.scheduledFlights[1].departureTime,
-            "YYYY-MM-DD HH:mm ZZ").format();
-          var arrTime1 = moment.utc(data.scheduledFlights[1].arrivalTime,
-            "YYYY-MM-DD HH:mm ZZ").format();
+          var depTime1 = moment.utc(data.scheduledFlights[1].departureTime)
+            .format();
+          var arrTime1 = moment.utc(data.scheduledFlights[1].arrivalTime)
+            .format();
 
-          var result_depTime = moment(data.scheduledFlights[0].departureTime)
-            .zone('+05:30').format();
-          var result_arrTime = moment(data.scheduledFlights[0].arrivalTime)
-            .zone('+05:30').format();
+          var result_depTime = moment.utc(data.scheduledFlights[0].departureTime)
+            .format();
+          var result_arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
+            .format();
 
-          var result_depTime1 = moment(data.scheduledFlights[1].departureTime)
-            .zone('+05:30').format();
-          var result_arrTime1 = moment(data.scheduledFlights[1].arrivalTime)
-            .zone('+05:30').format();
+          var result_depTime1 = moment.utc(data.scheduledFlights[1]
+            .departureTime).format();
+          var result_arrTime1 = moment.utc(data.scheduledFlights[1]
+            .arrivalTime).format();
 
           var destination1 = airports[0].city;
           var origin1 = airports[airports.length - 2].city;
@@ -1008,7 +1013,7 @@ app.post('/flight-check', (req, res) => {
           }];
 
           var insertUrl =
-            'https://data.ailment92.hasura-app.io/api/1/table/flights/insert';
+            'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
           var insertOpts = {
             method: 'POST',
             body: JSON.stringify({
@@ -1021,10 +1026,8 @@ app.post('/flight-check', (req, res) => {
                 departure: depTime,
                 arrival: arrTime,
                 origin: origin,
-                destination: destination,
-                op_days: "444"
+                destination: destination
               }, {
-
                 number: input.flight_number,
                 airline: flightName,
                 origin_code: depCode1,
@@ -1032,19 +1035,18 @@ app.post('/flight-check', (req, res) => {
                 departure: depTime1,
                 arrival: arrTime1,
                 origin: origin1,
-                destination: destination1,
-                op_days: ""
+                destination: destination1
               }]
             }),
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
+              'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
               'X-Hasura-Role': 'admin'
             }
           };
           request(insertUrl, insertOpts, res, (resData) => {
             var getUrl =
-              'https://data.ailment92.hasura-app.io/v1/template/get_flights?today_date=' +
+              'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
               today_date + '&tomorrow_date=' +
               tomorrow_date + '&flight_number=' +
               input.flight_number;
@@ -1053,7 +1055,7 @@ app.post('/flight-check', (req, res) => {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
+                'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
                 'X-Hasura-Role': 'admin'
               }
             };
