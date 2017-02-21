@@ -840,7 +840,7 @@ app.post('/flight-check', (req, res) => {
   // console.log('input.flight_number : ', input.flight_number);
 
   var getUrl =
-    'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
+    'https://data.ailment92.hasura-app.io/v1/template/get_flights?today_date=' +
     today_date + '&tomorrow_date=' +
     tomorrow_date + '&flight_number=' +
     input.flight_number;
@@ -848,7 +848,7 @@ app.post('/flight-check', (req, res) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+      'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     }
@@ -928,12 +928,12 @@ app.post('/flight-check', (req, res) => {
           };
 
           const connectionCheckUrl =
-            'https://data.stellar60.hasura-app.io/api/1/table/flights/select';
+            'https://data.ailment92.hasura-app.io/api/1/table/flights/select';
           const connectionCheckOpts = {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+              'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
               'X-Hasura-Role': 'admin',
               'X-Hasura-User-Id': 1
             },
@@ -951,7 +951,7 @@ app.post('/flight-check', (req, res) => {
               res.send(checkResult);
             } else {
               var insertUrl =
-                'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
+                'https://data.ailment92.hasura-app.io/api/1/table/flights/insert';
               var insertOpts = {
                 method: 'POST',
                 body: JSON.stringify({
@@ -970,7 +970,7 @@ app.post('/flight-check', (req, res) => {
                 }),
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+                  'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
                   'X-Hasura-Role': 'admin',
                   'X-Hasura-User-Id': 1
                 }
@@ -978,7 +978,7 @@ app.post('/flight-check', (req, res) => {
 
               request(insertUrl, insertOpts, res, (resData) => {
                 var getUrl =
-                  'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
+                  'https://data.ailment92.hasura-app.io/v1/template/get_flights?today_date=' +
                   today_date + '&tomorrow_date=' +
                   tomorrow_date + '&flight_number=' +
                   input.flight_number
@@ -986,7 +986,7 @@ app.post('/flight-check', (req, res) => {
                   method: 'GET',
                   headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+                    'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
                     'X-Hasura-Role': 'admin',
                     'X-Hasura-User-Id': 1
                   }
@@ -1111,12 +1111,12 @@ app.post('/flight-check', (req, res) => {
           };
 
           const connectionCheckUrl =
-            'https://data.stellar60.hasura-app.io/api/1/table/flights/select';
+            'https://data.ailment92.hasura-app.io/api/1/table/flights/select';
           const connectionCheckOpts = {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+              'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
               'X-Hasura-Role': 'admin',
               'X-Hasura-User-Id': 1
             },
@@ -1136,7 +1136,7 @@ app.post('/flight-check', (req, res) => {
               res.send(checkResult);
             } else {
               var insertUrl =
-                'https://data.stellar60.hasura-app.io/api/1/table/flights/insert';
+                'https://data.ailment92.hasura-app.io/api/1/table/flights/insert';
               var insertOpts = {
                 method: 'POST',
                 body: JSON.stringify({
@@ -1163,7 +1163,7 @@ app.post('/flight-check', (req, res) => {
                 }),
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+                  'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
                   'X-Hasura-Role': 'admin'
                 }
               };
@@ -1295,8 +1295,10 @@ io.on('connection', (socket) => {
           socket.emit('chat message',
             'You don\'t have a connection with user');
         } else {
-          const user1 = (user.from < user.to) ? user.from : user.to;
-          const user2 = (user.from < user.to) ? user.to : user.from;
+          const user1 = (user.from < user.to) ? user.from :
+            user.to;
+          const user2 = (user.from < user.to) ? user.to :
+            user.from;
           // const chattimestamp = (new Date()).toISOString();
           const messageInsertData = JSON.stringify({
             objects: [{
@@ -1369,7 +1371,8 @@ io.on('connection', (socket) => {
                     console.log('err: ', err);
                     console.log('res: ', res);
                     console.log(
-                      'Something has gone wrong!');
+                      'Something has gone wrong!'
+                    );
                   } else {
                     console.log(
                       'Successfully sent with response: ',
