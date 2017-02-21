@@ -923,16 +923,6 @@ app.post('/flight-check', (req, res) => {
             where: {
               $and: [{
                 number: input.flight_number
-              }, {
-                airline: flightName
-              }, {
-                origin_code: depCode
-              }, {
-                destination_code: arrCode
-              }, {
-                departure: result_depTime
-              }, {
-                arrival: result_arrTime
               }]
             }
           };
