@@ -827,6 +827,7 @@ app.post('/mutual-friends', (req, res) => {
 app.post('/flight-check', (req, res) => {
 
   const input = req.body;
+  input.flight_number = input.flight_number.toUpperCase();
   var flightCode = (input.flight_number.substring(0, 2)).toUpperCase();
   var flightNumber = input.flight_number.substring(2);
   var check = moment(input.today_date.toString(), 'YYYY/MM/DD');
@@ -835,6 +836,8 @@ app.post('/flight-check', (req, res) => {
   var departYear = check.format('YYYY');
   var today_date = input.today_date;
   var tomorrow_date = input.tomorrow_date;
+
+  // console.log('input.flight_number : ', input.flight_number);
 
   var getUrl =
     'https://data.stellar60.hasura-app.io/v1/template/get_flights?today_date=' +
@@ -865,7 +868,10 @@ app.post('/flight-check', (req, res) => {
         }
       };
 
+
+
       request(url1, options, res, (data) => {
+        // console.log('resData : ', data);
         var airline = data.appendix.airlines;
         var flightName = "";
         var airports = data.appendix.airports;
@@ -877,10 +883,14 @@ app.post('/flight-check', (req, res) => {
           var destination = airports[airports.length - 1].city;
           var arrCode = flights[0].arrivalAirportFsCode;
           for (var i = 0; i < airline.length; i++) {
-            if (airline[i].fs == flightCode) {
+            if (airline[i].fs == flightCode || airline[i].fs == (
+                flightCode + '*')) {
               flightName = airline[i].name;
             }
           }
+          //
+          // console.log('origin : ', origin);
+          // console.log('destination : ', destination);
 
           var depTime = moment.utc(data.scheduledFlights[0].departureTime)
             .format();
@@ -920,11 +930,9 @@ app.post('/flight-check', (req, res) => {
               }, {
                 destination_code: arrCode
               }, {
-                destination_code: arrCode
+                departure: result_depTime
               }, {
-                departure: depTime
-              }, {
-                arrival: arrTime
+                arrival: result_arrTime
               }]
             }
           };
