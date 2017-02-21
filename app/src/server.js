@@ -962,8 +962,8 @@ app.post('/flight-check', (req, res) => {
                     airline: flightName,
                     origin_code: depCode,
                     destination_code: arrCode,
-                    departure: depTime,
-                    arrival: arrTime,
+                    departure: result_depTime,
+                    arrival: result_arrTime,
                     origin: origin,
                     destination: destination,
                     op_days: "444"
@@ -1147,8 +1147,8 @@ app.post('/flight-check', (req, res) => {
                     airline: flightName,
                     origin_code: depCode,
                     destination_code: arrCode,
-                    departure: depTime,
-                    arrival: arrTime,
+                    departure: result_depTime,
+                    arrival: result_arrTime,
                     origin: origin,
                     destination: destination
                   }, {
@@ -1156,8 +1156,8 @@ app.post('/flight-check', (req, res) => {
                     airline: flightName,
                     origin_code: depCode1,
                     destination_code: arrCode1,
-                    departure: depTime1,
-                    arrival: arrTime1,
+                    departure: result_depTime1,
+                    arrival: result_arrTime1,
                     origin: origin1,
                     destination: destination1
                   }],
@@ -1191,7 +1191,7 @@ app.post('/flight-check', (req, res) => {
                   origin: origin1,
                   destination: destination1
                 }];
-                console.log('result : ', result);
+                // console.log('result : ', result);
                 res.send(result);
               });
             }
