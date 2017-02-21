@@ -827,7 +827,7 @@ app.post('/mutual-friends', (req, res) => {
 app.post('/flight-check', (req, res) => {
 
   const input = req.body;
-  var flightCode = input.flight_number.substring(0, 2);
+  var flightCode = (input.flight_number.substring(0, 2)).toUpperCase();
   var flightNumber = input.flight_number.substring(2);
   var check = moment(input.today_date.toString(), 'YYYY/MM/DD');
   var departMonth = check.format('M')
@@ -1014,14 +1014,23 @@ app.post('/flight-check', (req, res) => {
           });
         } else if (flights.length == 2) {
 
-          var depCode = flights[0].departureAirportFsCode;
-          var arrCode = flights[0].arrivalAirportFsCode;
-          var destination = airports[1].city;
-          var origin = airports[0].city;
+          var depCode = (flights[0].departureAirportFsCode).toUpperCase();
+          var arrCode = (flights[0].arrivalAirportFsCode).toUpperCase();
+          // var destination = airports[1].city;
+          // var origin = airports[0].city;
+          var origin = "";
+          var destination1 = "";
           for (var i = 0; i < airline.length; i++) {
             if (airline[i].fs == flightCode) {
               flightName = airline[i].name;
             }
+          }
+
+          for (var i = 0; i < airports.length; i++) {
+            if (airports[i].fs == arrCode)
+              destination = airports[i].city
+            if (airports[i].fs == depCode)
+              origin = airports[i].city
           }
 
           var depTime = moment.utc(data.scheduledFlights[0].departureTime)
@@ -1050,10 +1059,20 @@ app.post('/flight-check', (req, res) => {
           // console.log('2result_arrTime : ', result_arrTime);
 
 
-          var depCode1 = flights[1].departureAirportFsCode;
-          var arrCode1 = flights[1].arrivalAirportFsCode;
-          var origin1 = airports[1].city;
-          var destination1 = airports[2].city;
+          var depCode1 = (flights[1].departureAirportFsCode).toUpperCase();
+          var arrCode1 = (flights[1].arrivalAirportFsCode).toUpperCase();
+          // var origin1 = airports[1].city;
+          // var destination1 = airports[2].city;
+
+          var origin1 = "";
+          var destination1 = "";
+
+          for (var i = 0; i < airports.length; i++) {
+            if (airports[i].fs == arrCode1)
+              destination1 = airports[i].city;
+            if (airports[i].fs == depCode1)
+              origin1 = airports[i].city;
+          }
 
           var depTime1 = moment.utc(data.scheduledFlights[1].departureTime)
             .format();
@@ -1069,51 +1088,25 @@ app.post('/flight-check', (req, res) => {
             data.appendix.airports[2].timeZoneRegionName.toString()
           ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-          console.log('2depTimeX1 : ', depTimeX1);
-          console.log('2arrTimeX1 : ', arrTimeX1);
+          // console.log('2depTimeX1 : ', depTimeX1);
+          // console.log('2arrTimeX1 : ', arrTimeX1);
 
           var result_depTime1 = moment.utc(depTimeX).format(
             "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
           var result_arrTime1 = moment.utc(arrTimeX).format(
             "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-          console.log('2result_depTime1 : ', result_depTime1);
-          console.log('2result_arrTime1 : ', result_arrTime1);
+          // console.log('2result_depTime1 : ', result_depTime1);
+          // console.log('2result_arrTime1 : ', result_arrTime1);
 
+          // console.log(flightName);
 
           const connectionCheckData = {
             columns: ['*'],
             where: {
-              $or: [{
+              $and: [{
                 $and: [{
                   number: input.flight_number
-                }, {
-                  airline: flightName
-                }, {
-                  origin_code: depCode
-                }, {
-                  destination_code: arrCode
-                }, {
-                  destination_code: arrCode
-                }, {
-                  departure: depTime
-                }, {
-                  arrival: arrTime
-                }],
-                $and: [{
-                  number: input.flight_number
-                }, {
-                  airline: flightName
-                }, {
-                  origin_code: depCode1
-                }, {
-                  destination_code: arrCode1
-                }, {
-                  destination_code: arrCode1
-                }, {
-                  departure: depTime1
-                }, {
-                  arrival: arrTime1
                 }]
               }]
             }
@@ -1135,6 +1128,7 @@ app.post('/flight-check', (req, res) => {
 
           request(connectionCheckUrl, connectionCheckOpts, null, (
             checkResult) => {
+            // console.log('checkResult : ', checkResult);
             if (checkResult.length != 0) {
               for (var i = 0; i < checkResult.length; i++) {
                 delete checkResult[i].eff_from;
