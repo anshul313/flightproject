@@ -936,13 +936,13 @@ app.post('/flight-check', (req, res) => {
         }
       };
 
-      const connectionCheckUrl = development_database_url +
+      const connectionCheckUrl = production_database_url +
         'api/1/table/flights/select';
       const connectionCheckOpts = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': development_authToken,
+          'Authorization': production_authToken,
           'X-Hasura-Role': 'admin',
           'X-Hasura-User-Id': 1
         },
@@ -959,7 +959,7 @@ app.post('/flight-check', (req, res) => {
           }
           res.send(checkResult);
         } else {
-          var insertUrl = development_database_url +
+          var insertUrl = production_database_url +
             'api/1/table/flights/insert';
           var insertOpts = {
             method: 'POST',
@@ -979,14 +979,14 @@ app.post('/flight-check', (req, res) => {
             }),
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': development_authToken,
+              'Authorization': production_authToken,
               'X-Hasura-Role': 'admin',
               'X-Hasura-User-Id': 1
             }
           };
 
           request(insertUrl, insertOpts, res, (resData) => {
-            var getUrl = development_database_url +
+            var getUrl = production_database_url +
               'v1/template/get_flights?today_date=' +
               today_date + '&tomorrow_date=' +
               tomorrow_date + '&flight_number=' +
@@ -995,7 +995,7 @@ app.post('/flight-check', (req, res) => {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': development_authToken,
+                'Authorization': production_authToken,
                 'X-Hasura-Role': 'admin',
                 'X-Hasura-User-Id': 1
               }
@@ -1127,13 +1127,13 @@ app.post('/flight-check', (req, res) => {
         }
       };
 
-      const connectionCheckUrl = development_database_url +
+      const connectionCheckUrl = production_database_url +
         'api/1/table/flights/select';
       const connectionCheckOpts = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': development_authToken,
+          'Authorization': production_authToken,
           'X-Hasura-Role': 'admin',
           'X-Hasura-User-Id': 1
         },
@@ -1151,7 +1151,7 @@ app.post('/flight-check', (req, res) => {
           }
           res.send(checkResult);
         } else {
-          var insertUrl = development_database_url +
+          var insertUrl = production_database_url +
             'api/1/table/flights/insert';
           var insertOpts = {
             method: 'POST',
@@ -1179,7 +1179,7 @@ app.post('/flight-check', (req, res) => {
             }),
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': development_authToken,
+              'Authorization': production_authToken,
               'X-Hasura-Role': 'admin'
             }
           };
