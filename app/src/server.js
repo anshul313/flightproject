@@ -25,6 +25,10 @@ const transporter = nodemailer.createTransport({
 
 // var moment = require('moment');
 var moment = require('moment-timezone');
+var production_database_url = 'https://data.ailment92.hasura-app.io/';
+var development_database_url = 'https://data.stellar60.hasura-app.io/';
+var production_authToken = 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa';
+var development_authToken = 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z';
 
 let authUserId = '0';
 
@@ -838,373 +842,420 @@ app.post('/flight-check', (req, res) => {
   var tomorrow_date = input.tomorrow_date;
 
   // console.log('input.flight_number : ', input.flight_number);
-
-  var getUrl =
-    'https://data.ailment92.hasura-app.io/v1/template/get_flights?today_date=' +
-    today_date + '&tomorrow_date=' +
-    tomorrow_date + '&flight_number=' +
-    input.flight_number;
-  var getFlightOpts = {
+  //
+  // var getUrl = development_database_url +
+  //   'v1/template/get_flights?today_date=' +
+  //   today_date + '&tomorrow_date=' +
+  //   tomorrow_date + '&flight_number=' +
+  //   input.flight_number;
+  // var getFlightOpts = {
+  //   method: 'GET',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //     'Authorization': development_authToken,
+  //     'X-Hasura-Role': 'admin',
+  //     'X-Hasura-User-Id': 1
+  //   }
+  // };
+  // request(getUrl, getFlightOpts, res, (resData) => {
+  //   if (resData.length < 1) {
+  const url1 =
+    'https://api.flightstats.com/flex/schedules/rest/v1/json/flight/' +
+    flightCode + '/' + flightNumber.toString() + '/departing/' +
+    departYear.toString() + '/' + departMonth.toString() + '/' +
+    departDay.toString() +
+    '?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8&utc=true';
+  const options = {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
-      'X-Hasura-Role': 'admin',
-      'X-Hasura-User-Id': 1
+      'Content-Type': 'application/json'
     }
   };
-  request(getUrl, getFlightOpts, res, (resData) => {
-    if (resData.length < 1) {
-      const url1 =
-        'https://api.flightstats.com/flex/schedules/rest/v1/json/flight/' +
-        flightCode + '/' + flightNumber.toString() + '/departing/' +
-        departYear.toString() + '/' + departMonth.toString() + '/' +
-        departDay.toString() +
-        '?appId=7c7b6a76&appKey=40a9cba98bd34a470328391666ce9df8&utc=true';
-      const options = {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+
+
+
+  request(url1, options, res, (data) => {
+    // console.log('resData : ', data);
+    var airline = data.appendix.airlines;
+    var flightName = "";
+    var airports = data.appendix.airports;
+    var flights = data.scheduledFlights;
+
+    if (flights.length == 1) {
+      var depCode = flights[0].departureAirportFsCode;
+      var origin = airports[airports.length - 2].city;
+      var destination = airports[airports.length - 1].city;
+      var arrCode = flights[0].arrivalAirportFsCode;
+      for (var i = 0; i < airline.length; i++) {
+        if (airline[i].fs == flightCode || airline[i].fs == (
+            flightCode + '*')) {
+          flightName = airline[i].name;
+        }
+      }
+      //
+      // console.log('origin : ', origin);
+      // console.log('destination : ', destination);
+
+      var depTime = moment.utc(data.scheduledFlights[0].departureTime)
+        .format();
+
+      var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
+        .format();
+
+
+      var depTimeX = moment.tz(data.scheduledFlights[0].departureTime,
+        data.appendix.airports[0].timeZoneRegionName.toString()
+      ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      var arrTimeX = moment.tz(data.scheduledFlights[0].arrivalTime,
+        data.appendix.airports[1].timeZoneRegionName.toString()
+      ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      // console.log('depTimeX : ', depTimeX);
+      // console.log('arrTimeX : ', arrTimeX);
+
+      var result_depTime = moment.utc(depTimeX).format(
+        "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+      var result_arrTime = moment.utc(arrTimeX).format(
+        "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      // console.log('result_depTime : ', result_depTime);
+      // console.log('result_arrTime : ', result_arrTime);
+
+      const connectionCheckData = {
+        columns: ['*'],
+        where: {
+          number: input.flight_number,
+          airline: flightName,
+          origin_code: depCode,
+          destination_code: arrCode,
+          origin: origin,
+          destination: destination,
+          departure: result_depTime,
+          arrival: result_arrTime,
         }
       };
 
+      const connectionCheckUrl = development_database_url +
+        'api/1/table/flights/select';
+      const connectionCheckOpts = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': development_authToken,
+          'X-Hasura-Role': 'admin',
+          'X-Hasura-User-Id': 1
+        },
+        body: JSON.stringify(connectionCheckData)
+      };
 
-
-      request(url1, options, res, (data) => {
-        // console.log('resData : ', data);
-        var airline = data.appendix.airlines;
-        var flightName = "";
-        var airports = data.appendix.airports;
-        var flights = data.scheduledFlights;
-
-        if (flights.length == 1) {
-          var depCode = flights[0].departureAirportFsCode;
-          var origin = airports[airports.length - 2].city;
-          var destination = airports[airports.length - 1].city;
-          var arrCode = flights[0].arrivalAirportFsCode;
-          for (var i = 0; i < airline.length; i++) {
-            if (airline[i].fs == flightCode || airline[i].fs == (
-                flightCode + '*')) {
-              flightName = airline[i].name;
-            }
+      request(connectionCheckUrl, connectionCheckOpts, null, (
+        checkResult) => {
+        if (checkResult.length != 0) {
+          for (var i = 0; i < checkResult.length; i++) {
+            delete checkResult[i].eff_from;
+            delete checkResult[i].eff_till;
+            delete checkResult[i].op_days;
           }
-          //
-          // console.log('origin : ', origin);
-          // console.log('destination : ', destination);
-
-          var depTime = moment.utc(data.scheduledFlights[0].departureTime)
-            .format();
-
-          var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
-            .format();
-
-
-          var depTimeX = moment.tz(data.scheduledFlights[0].departureTime,
-            data.appendix.airports[0].timeZoneRegionName.toString()
-          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          var arrTimeX = moment.tz(data.scheduledFlights[0].arrivalTime,
-            data.appendix.airports[1].timeZoneRegionName.toString()
-          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          // console.log('depTimeX : ', depTimeX);
-          // console.log('arrTimeX : ', arrTimeX);
-
-          var result_depTime = moment.utc(depTimeX).format(
-            "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-          var result_arrTime = moment.utc(arrTimeX).format(
-            "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          // console.log('result_depTime : ', result_depTime);
-          // console.log('result_arrTime : ', result_arrTime);
-
-          const connectionCheckData = {
-            columns: ['*'],
-            where: {
-              $and: [{
-                number: input.flight_number
-              }]
-            }
-          };
-
-          const connectionCheckUrl =
-            'https://data.ailment92.hasura-app.io/api/1/table/flights/select';
-          const connectionCheckOpts = {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
-              'X-Hasura-Role': 'admin',
-              'X-Hasura-User-Id': 1
-            },
-            body: JSON.stringify(connectionCheckData)
-          };
-
-          request(connectionCheckUrl, connectionCheckOpts, null, (
-            checkResult) => {
-            if (checkResult.length != 0) {
-              for (var i = 0; i < checkResult.length; i++) {
-                delete checkResult[i].eff_from;
-                delete checkResult[i].eff_till;
-                delete checkResult[i].op_days;
-              }
-              res.send(checkResult);
-            } else {
-              var insertUrl =
-                'https://data.ailment92.hasura-app.io/api/1/table/flights/insert';
-              var insertOpts = {
-                method: 'POST',
-                body: JSON.stringify({
-                  objects: [{
-                    number: input.flight_number,
-                    airline: flightName,
-                    origin_code: depCode,
-                    destination_code: arrCode,
-                    departure: result_depTime,
-                    arrival: result_arrTime,
-                    origin: origin,
-                    destination: destination,
-                    op_days: "444"
-                  }],
-                  "returning": ["id"]
-                }),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
-                  'X-Hasura-Role': 'admin',
-                  'X-Hasura-User-Id': 1
-                }
-              };
-
-              request(insertUrl, insertOpts, res, (resData) => {
-                var getUrl =
-                  'https://data.ailment92.hasura-app.io/v1/template/get_flights?today_date=' +
-                  today_date + '&tomorrow_date=' +
-                  tomorrow_date + '&flight_number=' +
-                  input.flight_number
-                var getFlightOpts = {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
-                    'X-Hasura-Role': 'admin',
-                    'X-Hasura-User-Id': 1
-                  }
-                };
-
-                var result = [{
-                  id: resData.returning[0].id,
-                  number: input.flight_number,
-                  airline: flightName,
-                  origin_code: depCode,
-                  destination_code: arrCode,
-                  departure: result_depTime,
-                  arrival: result_arrTime,
-                  origin: origin,
-                  destination: destination
-                }];
-                request(getUrl, getFlightOpts, res, (
-                  resData) => {
-                  res.send(result);
-                });
-              });
-            }
-          });
-        } else if (flights.length == 2) {
-
-          var depCode = (flights[0].departureAirportFsCode).toUpperCase();
-          var arrCode = (flights[0].arrivalAirportFsCode).toUpperCase();
-          // var destination = airports[1].city;
-          // var origin = airports[0].city;
-          var origin = "";
-          var destination1 = "";
-          for (var i = 0; i < airline.length; i++) {
-            if (airline[i].fs == flightCode) {
-              flightName = airline[i].name;
-            }
-          }
-
-          for (var i = 0; i < airports.length; i++) {
-            if (airports[i].fs == arrCode)
-              destination = airports[i].city
-            if (airports[i].fs == depCode)
-              origin = airports[i].city
-          }
-
-          var depTime = moment.utc(data.scheduledFlights[0].departureTime)
-            .format();
-
-          var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
-            .format();
-
-          var depTimeX = moment.tz(data.scheduledFlights[0].departureTime,
-            data.appendix.airports[0].timeZoneRegionName.toString()
-          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          var arrTimeX = moment.tz(data.scheduledFlights[0].arrivalTime,
-            data.appendix.airports[1].timeZoneRegionName.toString()
-          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          // console.log('2depTimeX : ', depTimeX);
-          // console.log('2arrTimeX : ', arrTimeX);
-
-          var result_depTime = moment.utc(depTimeX).format(
-            "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-          var result_arrTime = moment.utc(arrTimeX).format(
-            "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          // console.log('2result_depTime : ', result_depTime);
-          // console.log('2result_arrTime : ', result_arrTime);
-
-
-          var depCode1 = (flights[1].departureAirportFsCode).toUpperCase();
-          var arrCode1 = (flights[1].arrivalAirportFsCode).toUpperCase();
-          // var origin1 = airports[1].city;
-          // var destination1 = airports[2].city;
-
-          var origin1 = "";
-          var destination1 = "";
-
-          for (var i = 0; i < airports.length; i++) {
-            if (airports[i].fs == arrCode1)
-              destination1 = airports[i].city;
-            if (airports[i].fs == depCode1)
-              origin1 = airports[i].city;
-          }
-
-          var depTime1 = moment.utc(data.scheduledFlights[1].departureTime)
-            .format();
-
-          var arrTime1 = moment.utc(data.scheduledFlights[1].arrivalTime)
-            .format();
-
-          var depTimeX1 = moment.tz(data.scheduledFlights[1].departureTime,
-            data.appendix.airports[2].timeZoneRegionName.toString()
-          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          var arrTimeX1 = moment.tz(data.scheduledFlights[1].arrivalTime,
-            data.appendix.airports[2].timeZoneRegionName.toString()
-          ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          // console.log('2depTimeX1 : ', depTimeX1);
-          // console.log('2arrTimeX1 : ', arrTimeX1);
-
-          var result_depTime1 = moment.utc(depTimeX).format(
-            "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-          var result_arrTime1 = moment.utc(arrTimeX).format(
-            "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-          // console.log('2result_depTime1 : ', result_depTime1);
-          // console.log('2result_arrTime1 : ', result_arrTime1);
-
-          // console.log(flightName);
-
-          const connectionCheckData = {
-            columns: ['*'],
-            where: {
-              $and: [{
-                $and: [{
-                  number: input.flight_number
-                }]
-              }]
-            }
-          };
-
-          const connectionCheckUrl =
-            'https://data.ailment92.hasura-app.io/api/1/table/flights/select';
-          const connectionCheckOpts = {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
-              'X-Hasura-Role': 'admin',
-              'X-Hasura-User-Id': 1
-            },
-            body: JSON.stringify(connectionCheckData)
-          };
-
-
-          request(connectionCheckUrl, connectionCheckOpts, null, (
-            checkResult) => {
-            // console.log('checkResult : ', checkResult);
-            if (checkResult.length != 0) {
-              for (var i = 0; i < checkResult.length; i++) {
-                delete checkResult[i].eff_from;
-                delete checkResult[i].eff_till;
-                delete checkResult[i].op_days;
-              }
-              res.send(checkResult);
-            } else {
-              var insertUrl =
-                'https://data.ailment92.hasura-app.io/api/1/table/flights/insert';
-              var insertOpts = {
-                method: 'POST',
-                body: JSON.stringify({
-                  objects: [{
-                    number: input.flight_number,
-                    airline: flightName,
-                    origin_code: depCode,
-                    destination_code: arrCode,
-                    departure: result_depTime,
-                    arrival: result_arrTime,
-                    origin: origin,
-                    destination: destination
-                  }, {
-                    number: input.flight_number,
-                    airline: flightName,
-                    origin_code: depCode1,
-                    destination_code: arrCode1,
-                    departure: result_depTime1,
-                    arrival: result_arrTime1,
-                    origin: origin1,
-                    destination: destination1
-                  }],
-                  "returning": ["id"]
-                }),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa',
-                  'X-Hasura-Role': 'admin'
-                }
-              };
-              request(insertUrl, insertOpts, res, (resData) => {
-                var result = [{
-                  id: resData.returning[0].id,
-                  number: input.flight_number,
-                  airline: flightName,
-                  origin_code: depCode,
-                  destination_code: arrCode,
-                  departure: result_depTime,
-                  arrival: result_arrTime,
-                  origin: origin,
-                  destination: destination
-                }, {
-                  id: resData.returning[1].id,
-                  number: input.flight_number,
-                  airline: flightName,
-                  origin_code: depCode1,
-                  destination_code: arrCode1,
-                  departure: result_depTime1,
-                  arrival: result_arrTime1,
-                  origin: origin1,
-                  destination: destination1
-                }];
-                // console.log('result : ', result);
-                res.send(result);
-              });
-            }
-          });
+          res.send(checkResult);
         } else {
-          res.send({
-            msg: 'No Flight Found'
+          var insertUrl = development_database_url +
+            'api/1/table/flights/insert';
+          var insertOpts = {
+            method: 'POST',
+            body: JSON.stringify({
+              objects: [{
+                number: input.flight_number,
+                airline: flightName,
+                origin_code: depCode,
+                destination_code: arrCode,
+                departure: result_depTime,
+                arrival: result_arrTime,
+                origin: origin,
+                destination: destination,
+                op_days: "444"
+              }],
+              "returning": ["id"]
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': development_authToken,
+              'X-Hasura-Role': 'admin',
+              'X-Hasura-User-Id': 1
+            }
+          };
+
+          request(insertUrl, insertOpts, res, (resData) => {
+            var getUrl = development_database_url +
+              'v1/template/get_flights?today_date=' +
+              today_date + '&tomorrow_date=' +
+              tomorrow_date + '&flight_number=' +
+              input.flight_number
+            var getFlightOpts = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': development_authToken,
+                'X-Hasura-Role': 'admin',
+                'X-Hasura-User-Id': 1
+              }
+            };
+
+            var result = [{
+              id: resData.returning[0].id,
+              number: input.flight_number,
+              airline: flightName,
+              origin_code: depCode,
+              destination_code: arrCode,
+              departure: result_depTime,
+              arrival: result_arrTime,
+              origin: origin,
+              destination: destination
+            }];
+            request(getUrl, getFlightOpts, res, (
+              resData) => {
+              res.send(result);
+            });
+          });
+        }
+      });
+    } else if (flights.length == 2) {
+
+      var depCode = (flights[0].departureAirportFsCode).toUpperCase();
+      var arrCode = (flights[0].arrivalAirportFsCode).toUpperCase();
+      // var destination = airports[1].city;
+      // var origin = airports[0].city;
+      var origin = "";
+      var destination1 = "";
+      for (var i = 0; i < airline.length; i++) {
+        if (airline[i].fs == flightCode) {
+          flightName = airline[i].name;
+        }
+      }
+
+      for (var i = 0; i < airports.length; i++) {
+        if (airports[i].fs == arrCode)
+          destination = airports[i].city
+        if (airports[i].fs == depCode)
+          origin = airports[i].city
+      }
+
+      var depTime = moment.utc(data.scheduledFlights[0].departureTime)
+        .format();
+
+      var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
+        .format();
+
+      var depTimeX = moment.tz(data.scheduledFlights[0].departureTime,
+        data.appendix.airports[0].timeZoneRegionName.toString()
+      ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      var arrTimeX = moment.tz(data.scheduledFlights[0].arrivalTime,
+        data.appendix.airports[1].timeZoneRegionName.toString()
+      ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      // console.log('2depTimeX : ', depTimeX);
+      // console.log('2arrTimeX : ', arrTimeX);
+
+      var result_depTime = moment.utc(depTimeX).format(
+        "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+      var result_arrTime = moment.utc(arrTimeX).format(
+        "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      // console.log('2result_depTime : ', result_depTime);
+      // console.log('2result_arrTime : ', result_arrTime);
+
+
+      var depCode1 = (flights[1].departureAirportFsCode).toUpperCase();
+      var arrCode1 = (flights[1].arrivalAirportFsCode).toUpperCase();
+      // var origin1 = airports[1].city;
+      // var destination1 = airports[2].city;
+
+      var origin1 = "";
+      var destination1 = "";
+
+      for (var i = 0; i < airports.length; i++) {
+        if (airports[i].fs == arrCode1)
+          destination1 = airports[i].city;
+        if (airports[i].fs == depCode1)
+          origin1 = airports[i].city;
+      }
+
+      var depTime1 = moment.utc(data.scheduledFlights[1].departureTime)
+        .format();
+
+      var arrTime1 = moment.utc(data.scheduledFlights[1].arrivalTime)
+        .format();
+
+      var depTimeX1 = moment.tz(data.scheduledFlights[1].departureTime,
+        data.appendix.airports[2].timeZoneRegionName.toString()
+      ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      var arrTimeX1 = moment.tz(data.scheduledFlights[1].arrivalTime,
+        data.appendix.airports[2].timeZoneRegionName.toString()
+      ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      // console.log('2depTimeX1 : ', depTimeX1);
+      // console.log('2arrTimeX1 : ', arrTimeX1);
+
+      var result_depTime1 = moment.utc(depTimeX).format(
+        "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+      var result_arrTime1 = moment.utc(arrTimeX).format(
+        "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+      // console.log('2result_depTime1 : ', result_depTime1);
+      // console.log('2result_arrTime1 : ', result_arrTime1);
+      // console.log(flightName);
+
+      const connectionCheckData = {
+        columns: ['*'],
+        where: {
+          number: input.flight_number,
+          airline: flightName,
+          $and: [{
+            $or: [{
+              departure: result_depTime
+            }, {
+              departure: result_depTime
+            }],
+            $or: [{
+              arrival: result_arrTime
+            }, {
+              arrival: result_arrTime1
+            }]
+          }]
+        }
+      };
+
+      const connectionCheckUrl = development_database_url +
+        'api/1/table/flights/select';
+      const connectionCheckOpts = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': development_authToken,
+          'X-Hasura-Role': 'admin',
+          'X-Hasura-User-Id': 1
+        },
+        body: JSON.stringify(connectionCheckData)
+      };
+
+      request(connectionCheckUrl, connectionCheckOpts, null, (
+        checkResult) => {
+        // console.log('checkResult : ', checkResult);
+        if (checkResult.length != 0) {
+          for (var i = 0; i < checkResult.length; i++) {
+            delete checkResult[i].eff_from;
+            delete checkResult[i].eff_till;
+            delete checkResult[i].op_days;
+          }
+          res.send(checkResult);
+        } else {
+          var insertUrl = development_database_url +
+            'api/1/table/flights/insert';
+          var insertOpts = {
+            method: 'POST',
+            body: JSON.stringify({
+              objects: [{
+                number: input.flight_number,
+                airline: flightName,
+                origin_code: depCode,
+                destination_code: arrCode,
+                departure: result_depTime,
+                arrival: result_arrTime,
+                origin: origin,
+                destination: destination
+              }, {
+                number: input.flight_number,
+                airline: flightName,
+                origin_code: depCode1,
+                destination_code: arrCode1,
+                departure: result_depTime1,
+                arrival: result_arrTime1,
+                origin: origin1,
+                destination: destination1
+              }],
+              "returning": ["id"]
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': development_authToken,
+              'X-Hasura-Role': 'admin'
+            }
+          };
+          request(insertUrl, insertOpts, res, (resData) => {
+            var result = [{
+              id: resData.returning[0].id,
+              number: input.flight_number,
+              airline: flightName,
+              origin_code: depCode,
+              destination_code: arrCode,
+              departure: result_depTime,
+              arrival: result_arrTime,
+              origin: origin,
+              destination: destination
+            }, {
+              id: resData.returning[1].id,
+              number: input.flight_number,
+              airline: flightName,
+              origin_code: depCode1,
+              destination_code: arrCode1,
+              departure: result_depTime1,
+              arrival: result_arrTime1,
+              origin: origin1,
+              destination: destination1
+            }];
+            // console.log('result : ', result);
+            res.send(result);
           });
         }
       });
     } else {
-      console.log('exit');
-      res.send(resData);
+      res.send({
+        msg: 'No Flight Found'
+      });
     }
   });
+  //   } else {
+  //     console.log('exit');
+  //     res.send(resData);
+  //   }
+  // });
+});
+
+app.get('/frequent-fliers', (req, res) => {
+  var getUrl = development_database_url + 'v1/query';
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      type: 'run_sql',
+      args: {
+        sql: 'SELECT count(c.user_id) AS count, c.user_id, w.qualification,w.institute_name  FROM user_flight c INNER JOIN user_education w ON c.user_id=w.user_id GROUP BY c.user_id, w.qualification,w.institute_name ORDER BY count DESC LIMIT 10;'
+      }
+    })
+  };
+
+  request(getUrl, getoptions, res, (resData) => {
+    console.log(resData);
+    var result = [];
+    console.log(resData.result.length);
+    for (var i = 1; i < resData.result.length; i++) {
+      var object = {};
+      console.log(resData.result[i].length);
+      for (var j = 0; j < resData.result[i].length; j++) {
+        object[resData.result[0][j]] = resData.result[i][j];
+        console.log(object)
+      }
+      result.push(object);
+    }
+    res.send(result);
+  });
+
 });
 
 app.post('/send-feedback', (req, res) => {
