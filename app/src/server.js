@@ -932,7 +932,7 @@ app.post('/flight-check', (req, res) => {
       var result_arrTime = moment.utc(arrTimeX).format(
         "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-      console.log('result_depTime : ', result_depTime);
+      // console.log('result_depTime : ', result_depTime);
       // console.log('result_arrTime : ', result_arrTime);
 
       const connectionCheckData = {
