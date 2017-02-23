@@ -919,10 +919,12 @@ var find_data = function(flight_details_object, res, callback) {
   request_function(url, options, res, function(err, database_flight_data) {
     if (err)
       return callback(true, err);
-    // console.log(database_flight_data)
-    delete database_flight_data[0].eff_from;
-    delete database_flight_data[0].eff_till;
-    delete database_flight_data[0].op_days;
+    // console.log('find_data : ', database_flight_data);
+    if (database_flight_data.length > 0) {
+      delete database_flight_data[0].eff_from;
+      delete database_flight_data[0].eff_till;
+      delete database_flight_data[0].op_days;
+    }
     return callback(null, database_flight_data);
   });
 };
