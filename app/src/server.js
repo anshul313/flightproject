@@ -881,11 +881,28 @@ app.post('/flight-check', (req, res) => {
     var airports = data.appendix.airports;
     var flights = data.scheduledFlights;
 
+
+    // count = 0
+    //
+    // while flights.lenght && count < 2 {
+    //
+    //
+    //
+    //   count++
+    // }
+
+
+
     if (flights.length == 1) {
       var depCode = flights[0].departureAirportFsCode;
       var origin = airports[airports.length - 2].city;
       var destination = airports[airports.length - 1].city;
       var arrCode = flights[0].arrivalAirportFsCode;
+      var originAirportObject = new Object;
+      var destinationAirportObject = new Object;
+
+
+      //Flight Name
       for (var i = 0; i < airline.length; i++) {
         if (airline[i].fs == flightCode || airline[i].fs == (
             flightCode + '*')) {
@@ -893,38 +910,63 @@ app.post('/flight-check', (req, res) => {
         }
       }
 
+      //Get Origin Airport Object
       for (var i = 0; i < airports.length; i++) {
-        if (airports[i].fs == arrCode) {
-          destination = airports[i].city;
-        }
+        if (airports[i].fs == arrCode)
+          originAirportObject = Object.assign(originAirportObject,
+            airports[i])
+
+
       }
 
+
+
+      //Get Destinatation Airport Object
       for (var i = 0; i < airports.length; i++) {
-        if (airports[i].fs == depCode) {
-          origin = airports[i].city;
-        }
+        if (airports[i].fs == depCode)
+          destinationAirportObject = Object.assign(
+            destinationAirportObject, airports[i]);
+
+
       }
 
+      console.log('originAirportObject : ', originAirportObject);
+
+      console.log('destinationAirportObject : ',
+        destinationAirportObject);
+
+      origin = originAirportObject.city;
+      destination = destinationAirportObject.city;
+
+      console.log('origin : ', origin);
+
+      console.log('destination : ',
+        destination);
       //
       // console.log('origin : ', origin);
       // console.log('destination : ', destination);
 
-      var depTime = moment.utc(data.scheduledFlights[0].departureTime)
+      var depTime = moment.utc(flights[0].departureTime)
         .format();
 
-      var arrTime = moment.utc(data.scheduledFlights[0].arrivalTime)
+      console.log('departureTime : ', depTime);
+
+      var arrTime = moment.utc(flights[0].arrivalTime)
         .format();
 
+      console.log('arrivalTime : ', arrTime);
 
-      var depTimeX = moment.tz(data.scheduledFlights[0].departureTime,
-        data.appendix.airports[0].timeZoneRegionName.toString()
+
+      var depTimeX = moment.tz(flights[0].departureTime,
+        origin.timeZoneRegionName.toString()
       ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-      var arrTimeX = moment.tz(data.scheduledFlights[0].arrivalTime,
-        data.appendix.airports[1].timeZoneRegionName.toString()
+      var arrTimeX = moment.tz(flights[0].arrivalTime,
+        destination.timeZoneRegionName.toString()
       ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
       console.log('depTimeX : ', depTimeX);
+      console.log('arrTimeX : ', arrTimeX);
       // console.log('arrTimeX : ', arrTimeX);
 
       var result_depTime = moment.utc(depTimeX).format(
@@ -1037,6 +1079,12 @@ app.post('/flight-check', (req, res) => {
 
       var depCode = (flights[0].departureAirportFsCode).toUpperCase();
       var arrCode = (flights[0].arrivalAirportFsCode).toUpperCase();
+
+      for (var i = 0; i < airline.length; i++) {
+        if (airline[i].fs == flightCode) {
+          flightName = airline[i].name;
+        }
+      }
       // var destination = airports[1].city;
       // var origin = airports[0].city;
       var origin = "";
@@ -1238,16 +1286,17 @@ app.post('/flight-check', (req, res) => {
 });
 
 
+
 app.get('/frequent-fliers', (req, res) => {
 
   var finalresult = [];
   var ids = [];
-  var getUrl = production_database_url + 'v1/query';
+  var getUrl = development_database_url + 'v1/query';
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': production_authToken,
+      'authorization': development_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1273,7 +1322,7 @@ app.get('/frequent-fliers', (req, res) => {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': production_authToken,
+        'authorization': development_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1289,7 +1338,6 @@ app.get('/frequent-fliers', (req, res) => {
         }
       })
     };
-    console.
     request(getUrl, getoptions, res, (resData1) => {
       for (var i = 0; i < resData1.length; i++) {
         finalresult.push({
