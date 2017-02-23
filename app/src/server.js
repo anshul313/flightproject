@@ -892,6 +892,19 @@ app.post('/flight-check', (req, res) => {
           flightName = airline[i].name;
         }
       }
+
+      for (var i = 0; i < airports.length; i++) {
+        if (airports[i].fs == arrCode) {
+          destination = airports[i].city;
+        }
+      }
+
+      for (var i = 0; i < airports.length; i++) {
+        if (airports[i].fs == depCode) {
+          origin = airports[i].city;
+        }
+      }
+
       //
       // console.log('origin : ', origin);
       // console.log('destination : ', destination);
