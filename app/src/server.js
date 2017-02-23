@@ -29,7 +29,7 @@ var production_database_url = 'https://data.ailment92.hasura-app.io/';
 var development_database_url = 'https://data.stellar60.hasura-app.io/';
 var production_authToken = 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa';
 var development_authToken = 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z';
-
+var _ = require('lodash');
 let authUserId = '0';
 
 // Express Logging Middleware
@@ -1223,7 +1223,11 @@ app.post('/flight-check', (req, res) => {
   // });
 });
 
+
 app.get('/frequent-fliers', (req, res) => {
+
+  var finalresult = [];
+  var ids = [];
   var getUrl = development_database_url + 'v1/query';
   var getoptions = {
     method: 'POST',
@@ -1235,27 +1239,53 @@ app.get('/frequent-fliers', (req, res) => {
     body: JSON.stringify({
       type: 'run_sql',
       args: {
-        sql: 'SELECT count(c.user_id) AS count, c.user_id, w.qualification,w.institute_name  FROM user_flight c INNER JOIN user_education w ON c.user_id=w.user_id GROUP BY c.user_id, w.qualification,w.institute_name ORDER BY count DESC LIMIT 10;'
+        sql: 'SELECT count(c.user_id) AS count, c.user_id  FROM user_flight c  GROUP BY c.user_id  ORDER BY count DESC LIMIT 10'
       }
     })
   };
 
   request(getUrl, getoptions, res, (resData) => {
-    console.log(resData);
     var result = [];
-    console.log(resData.result.length);
     for (var i = 1; i < resData.result.length; i++) {
       var object = {};
-      console.log(resData.result[i].length);
       for (var j = 0; j < resData.result[i].length; j++) {
         object[resData.result[0][j]] = resData.result[i][j];
-        console.log(object)
       }
       result.push(object);
+      ids.push(parseInt(object.user_id));
     }
-    res.send(result);
-  });
 
+    var getoptions = {
+      method: 'POST',
+      headers: {
+        'x-hasura-role': 'admin',
+        'authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        "type": "select",
+        "args": {
+          "table": "user",
+          "columns": ["*"],
+          "where": {
+            "id": {
+              '$in': ids
+            }
+          }
+        }
+      })
+    };
+    request(getUrl, getoptions, res, (resData1) => {
+      for (var i = 0; i < resData1.length; i++) {
+        finalresult.push({
+          userId: parseInt(result[i].user_id),
+          total_flights_count: result[i].count,
+          userDetail: resData1[i]
+        });
+      }
+      res.send(finalresult);
+    });
+  });
 });
 
 app.post('/send-feedback', (req, res) => {
