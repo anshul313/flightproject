@@ -924,7 +924,7 @@ app.post('/flight-check', (req, res) => {
         data.appendix.airports[1].timeZoneRegionName.toString()
       ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-      // console.log('depTimeX : ', depTimeX);
+      console.log('depTimeX : ', depTimeX);
       // console.log('arrTimeX : ', arrTimeX);
 
       var result_depTime = moment.utc(depTimeX).format(
