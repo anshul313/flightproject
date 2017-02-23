@@ -1228,12 +1228,12 @@ app.get('/frequent-fliers', (req, res) => {
 
   var finalresult = [];
   var ids = [];
-  var getUrl = development_database_url + 'v1/query';
+  var getUrl = production_database_url + 'v1/query';
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1259,7 +1259,7 @@ app.get('/frequent-fliers', (req, res) => {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z',
+        'authorization': production_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
