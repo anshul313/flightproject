@@ -1275,6 +1275,7 @@ app.get('/frequent-fliers', (req, res) => {
         }
       })
     };
+
     request(getUrl, getoptions, res, (resData1) => {
       for (var i = 0; i < resData1.length; i++) {
         finalresult.push({
