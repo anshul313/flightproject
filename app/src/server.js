@@ -1051,7 +1051,7 @@ app.post('/flight-check', (req, res) => {
                 }
 
                 if (result.length > 0) {
-                  finalresult.push(result);
+                  finalresult.push(result[0]);
                   // console.log('finalresult : ', finalresult);
                   if (finalresult.length == flights.length)
                     res.send(finalresult);
