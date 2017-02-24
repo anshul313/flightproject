@@ -904,13 +904,13 @@ var find_data = function(flight_details_object, res, callback) {
     where: flight_details_object
   };
 
-  const url = development_database_url +
+  const url = production_database_url +
     'api/1/table/flights/select';
   const options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -930,7 +930,7 @@ var find_data = function(flight_details_object, res, callback) {
 };
 
 var insert_data = function(flight_details_object, res, callback) {
-  var insertUrl = development_database_url +
+  var insertUrl = production_database_url +
     'api/1/table/flights/insert';
   var insertOpts = {
     method: 'POST',
@@ -940,7 +940,7 @@ var insert_data = function(flight_details_object, res, callback) {
     }),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -1075,69 +1075,69 @@ app.post('/flight-check', (req, res) => {
 });
 
 
-app.get('/frequent-fliers', (req, res) => {
-
-  var finalresult = [];
-  var ids = [];
-  var getUrl = development_database_url + 'v1/query';
-  var getoptions = {
-    method: 'POST',
-    headers: {
-      'x-hasura-role': 'admin',
-      'authorization': development_authToken,
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify({
-      type: 'run_sql',
-      args: {
-        sql: 'SELECT count(c.user_id) AS count, c.user_id  FROM user_flight c  GROUP BY c.user_id  ORDER BY count DESC LIMIT 10'
-      }
-    })
-  };
-
-  request(getUrl, getoptions, res, (resData) => {
-    var result = [];
-    for (var i = 1; i < resData.result.length; i++) {
-      var object = {};
-      for (var j = 0; j < resData.result[i].length; j++) {
-        object[resData.result[0][j]] = resData.result[i][j];
-      }
-      result.push(object);
-      ids.push(parseInt(object.user_id));
-    }
-
-    var getoptions = {
-      method: 'POST',
-      headers: {
-        'x-hasura-role': 'admin',
-        'authorization': development_authToken,
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        "type": "select",
-        "args": {
-          "table": "user",
-          "columns": ["*"],
-          "where": {
-            "id": {
-              '$in': ids
-            }
-          }
-        }
-      })
-    };
-    request(getUrl, getoptions, res, (resData1) => {
-      for (var i = 0; i < resData1.length; i++) {
-        finalresult.push({
-          userId: parseInt(result[i].user_id),
-          total_flights_count: result[i].count,
-          userDetail: resData1[i]
-        });
-      }
-      res.send(finalresult);
-    });
-  });
-});
+// app.get('/frequent-fliers', (req, res) => {
+//
+//   var finalresult = [];
+//   var ids = [];
+//   var getUrl = develop_database_url + 'v1/query';
+//   var getoptions = {
+//     method: 'POST',
+//     headers: {
+//       'x-hasura-role': 'admin',
+//       'authorization': development_authToken,
+//       'content-type': 'application/json'
+//     },
+//     body: JSON.stringify({
+//       type: 'run_sql',
+//       args: {
+//         sql: 'SELECT count(c.user_id) AS count, c.user_id  FROM user_flight c  GROUP BY c.user_id  ORDER BY count DESC LIMIT 10'
+//       }
+//     })
+//   };
+//
+//   request(getUrl, getoptions, res, (resData) => {
+//     var result = [];
+//     for (var i = 1; i < resData.result.length; i++) {
+//       var object = {};
+//       for (var j = 0; j < resData.result[i].length; j++) {
+//         object[resData.result[0][j]] = resData.result[i][j];
+//       }
+//       result.push(object);
+//       ids.push(parseInt(object.user_id));
+//     }
+//
+//     var getoptions = {
+//       method: 'POST',
+//       headers: {
+//         'x-hasura-role': 'admin',
+//         'authorization': development_authToken,
+//         'content-type': 'application/json'
+//       },
+//       body: JSON.stringify({
+//         "type": "select",
+//         "args": {
+//           "table": "user",
+//           "columns": ["*"],
+//           "where": {
+//             "id": {
+//               '$in': ids
+//             }
+//           }
+//         }
+//       })
+//     };
+//     request(getUrl, getoptions, res, (resData1) => {
+//       for (var i = 0; i < resData1.length; i++) {
+//         finalresult.push({
+//           userId: parseInt(result[i].user_id),
+//           total_flights_count: result[i].count,
+//           userDetail: resData1[i]
+//         });
+//       }
+//       res.send(finalresult);
+//     });
+//   });
+// });
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
