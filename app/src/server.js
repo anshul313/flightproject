@@ -1025,6 +1025,7 @@ app.post('/flight-check', (req, res) => {
             destinationAirportObject,
             function(result_arrTime,
               result_depTime) {
+
               // console.log('flightName : ', flightName);
               // console.log('origin : ', origin);
               // console.log('destination : ', destination);
