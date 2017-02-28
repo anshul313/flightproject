@@ -957,8 +957,8 @@ app.get('/frequent-fliers', (req, res) => {
         });
 
         var experience = new Object({
-          companyName: resData1[i].education[0].company_name,
-          designation: resData1[i].education[0].designation
+          companyName: resData1[i].experience[0].company_name,
+          designation: resData1[i].experience[0].designation
         });
 
         var user_details = new Object({
