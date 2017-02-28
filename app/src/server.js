@@ -951,19 +951,29 @@ app.get('/frequent-fliers', (req, res) => {
           user_interests.push(resData1[i].interests[j].interest);
         }
 
-        var user_details = new Object({
-          id: parseInt(result[i].user_id),
-          name: resData1[i].name,
-          city: resData1[i].city,
-          profilePicUrl: resData1[i].profile_pic,
-          intent: resData1[i].intent,
-          education: resData1[i].education[0],
-          experience: resData1[i].experience[0],
-          interests: user_interests,
-          facebookId: resData1[i].facebook_id
+        var education = new Object({
+          institutionName: resData1[i].education[0].institute_name,
+          qualification: resData1[i].education[0].qualification
         });
-        finalresult.push(user_details);
 
+        var experience = new Object({
+          companyName: resData1[i].education[0].company_name,
+          designation: resData1[i].education[0].designation
+        });
+
+        var user_details = new Object({
+          user2: parseInt(result[i].user_id),
+          user2_name: resData1[i].name,
+          user2_city: resData1[i].city,
+          user2_profile_pic: resData1[i].profile_pic,
+          user2_intent: resData1[i].intent,
+          user2_education: education,
+          user2_experience: experience,
+          user2_interest: user_interests,
+          user2_facebook_id: resData1[i].facebook_id
+        });
+
+        finalresult.push(user_details);
       }
       res.send(finalresult);
     });
