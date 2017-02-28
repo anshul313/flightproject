@@ -952,13 +952,18 @@ app.get('/frequent-fliers', (req, res) => {
         }
 
         var education = new Object({
-          institutionName: resData1[i].education[0].institute_name,
-          qualification: resData1[i].education[0].qualification
+          f1: resData1[i].education[0].institute_name,
+          id: resData1[i].education[0].id,
+          user_id: resData1[i].education[0].user_id,
+          f2: resData1[i].education[0].qualification,
+
         });
 
         var experience = new Object({
-          companyName: resData1[i].experience[0].company_name,
-          designation: resData1[i].experience[0].designation
+          f1: resData1[i].experience[0].company_name,
+          id: resData1[i].experience[0].id,
+          user_id: resData1[i].experience[0].user_id,
+          f2: resData1[i].experience[0].designation
         });
 
         var user_details = new Object({
