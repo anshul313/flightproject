@@ -1044,6 +1044,7 @@ app.post('/image-upload', (req, res) => {
     } else {
       if (filename == "") {
         // console.log('no filename1 : ', filename);
+        res.send("please choose a file");
       } else {
         // console.log('filename : ', filename);
         var readStream = fs.createReadStream('./' +
@@ -1072,8 +1073,6 @@ var s3Upload = function(readStream, fileName, req, res) {
     Body: readStream
   };
   s3.putObject(params, function(err, data) {
-    console.log('err : ', err);
-    console.log('data : ', data);
     if (err) {
       callback(true, null);
     }
@@ -1096,8 +1095,8 @@ var s3Upload = function(readStream, fileName, req, res) {
     update_data(updateData, upadteUrl, res, function(err,
       data) {
       if (err)
-        res.send(err);
-      res.send(data);
+        res.send("internal error occured");
+      res.send("successfully uploaded");
     });
   });
 };
