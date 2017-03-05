@@ -1101,6 +1101,56 @@ var s3Upload = function(readStream, fileName, req, res) {
   });
 };
 
+var find = function(checkData, url, res, callback) {
+
+  var req_url = development_database_url + url;
+  console.log('req_url : ', req_url);
+  var options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': development_authToken,
+      'X-Hasura-Role': 'admin',
+      'X-Hasura-User-Id': 1
+    },
+    body: JSON.stringify(checkData)
+  };
+  request_function(req_url, options, res, function(err, response) {
+    if (err)
+      return callback(true, err);
+    // console.log('find_data : ', database_flight_data);
+    return callback(null, response);
+  });
+};
+
+app.get('/all-airports', (req, res) => {
+  const checkData = {
+    columns: ['*']
+  };
+  var url = 'api/1/table/airport/select';
+
+  find(checkData, url, res, function(err, data) {
+    if (err)
+      res.send('internal error occred');
+    res.send(data)
+  });
+});
+
+app.get('/airport-by-id', (req, res) => {
+  const checkData = {
+    columns: ['*'],
+    where: {
+      id: parseInt(req.query.id)
+    }
+  };
+  var url = 'api/1/table/airport/select';
+
+  find(checkData, url, res, function(err, data) {
+    if (err)
+      res.send('internal error occred');
+    res.send(data)
+  });
+});
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
