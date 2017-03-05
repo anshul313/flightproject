@@ -23,14 +23,20 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+var ACCESS_KEY = "AKIAIDNABRSVLUSX6ESA";
+var SECRET_KEY = "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";
+
 // var moment = require('moment');
+var multer = require('multer');
 var moment = require('moment-timezone');
 var production_database_url = 'https://data.ailment92.hasura-app.io/';
 var development_database_url = 'https://data.stellar60.hasura-app.io/';
 var production_authToken = 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa';
 var development_authToken = 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z';
 var _ = require('lodash');
+var fs = require('fs');
 let authUserId = '0';
+var AWS = require("aws-sdk");
 
 // Express Logging Middleware
 if (global.__DEVELOPMENT__)
@@ -629,13 +635,11 @@ app.post('/mutual-friends', (req, res) => {
   });
 });
 
-
 var request_function = function(url, options, res, callback) {
   request(url, options, res, (data) => {
     return callback(null, data);
   });
 }
-
 
 var flightStat = function(flightCode, flightNumber, departYear, departMonth,
   departDay, res, callback) {
@@ -659,8 +663,6 @@ var flightStat = function(flightCode, flightNumber, departYear, departMonth,
     return callback(null, flight_data);
   });
 }
-
-
 
 var changeTime = function(flight, originAirportObject, destinationAirportObject,
   callback) {
@@ -757,7 +759,6 @@ var insert_data = function(flight_details_object, res, callback) {
     return callback(null, flight_details_object);
   });
 }
-
 
 app.post('/flight-check', (req, res) => {
   var finalresult = [];
@@ -941,14 +942,23 @@ app.get('/frequent-fliers', (req, res) => {
     };
     request(getUrl, getoptions, res, (resData1) => {
       // console.log('result :', result);
-      // console.log('resData1 :', resData1);
-
+      console.log('resData1 :', resData1[0].interests[0]);
+      // console.log('resData1 : ', resData1[1].);
       for (var i = 0; i < resData1.length; i++) {
         var user_interests = [];
+        var user2_experience = [];
+        var user2_companyName = [];
+        var user2_designation = [];
 
         for (var j = 0; j < resData1[i].interests.length; j++) {
           // console.log('interest : ', resData1[i].interests[j].interest);
           user_interests.push(resData1[i].interests[j].interest);
+        }
+
+        for (var j = 0; j < resData1[i].experience.length; j++) {
+          // console.log('interest : ', resData1[i].interests[j].interest);
+          user2_companyName.push(resData1[i].experience[j].company_name);
+          user2_designation.push(resData1[i].experience[j].designation);
         }
 
         var education = new Object({
@@ -960,10 +970,10 @@ app.get('/frequent-fliers', (req, res) => {
         });
 
         var experience = new Object({
-          f1: resData1[i].experience[0].company_name,
+          f1: user2_companyName,
           id: resData1[i].experience[0].id,
           user_id: resData1[i].experience[0].user_id,
-          f2: resData1[i].experience[0].designation
+          f2: user2_designation
         });
 
         var user_details = new Object({
@@ -984,6 +994,114 @@ app.get('/frequent-fliers', (req, res) => {
     });
   });
 });
+
+var update_data = function(updateData, url, res, callback) {
+
+  const updateUrl = development_database_url + url;
+  const updateOpts = {
+    method: 'POST',
+    body: updateData,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': development_authToken,
+      'X-Hasura-Role': 'admin'
+    }
+  };
+
+  request_function(updateUrl, updateOpts, res, function(err, response) {
+    if (err)
+      return callback(true, err);
+    return callback(null, response);
+  });
+}
+
+app.post('/image-upload', (req, res) => {
+  // console.log('userId :', req.body.userId);
+  var filename = "";
+  var image_url = '';
+  var storage = multer.diskStorage({
+    destination: function(req, file, callback) {
+      callback(null, "./")
+    },
+    filename: function(req, file, callback) {
+      // console.log("file", file.originalname)
+      // console.log('userid : ', req.body.userid);
+      filename = 'a.png'
+      callback(null, filename)
+    }
+  });
+  var uploadfile = multer({
+    storage: storage,
+    size: 1080 * 10 * 10 * 10
+  }).single('file');
+  uploadfile(req, res, function(err) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler
+          .getErrorMessage(
+            err)
+      });
+    } else {
+      if (filename == "") {
+        // console.log('no filename1 : ', filename);
+      } else {
+        // console.log('filename : ', filename);
+        var readStream = fs.createReadStream('./' +
+          filename);
+        filename = 'profile_id=' + req.body.userid + 'time=' + new Date()
+          .getTime() + ".png";
+        // console.log('filename : ', filename);
+        s3Upload(readStream, filename, req, res);
+      }
+    }
+  });
+});
+
+var s3Upload = function(readStream, fileName, req, res) {
+  var bucket_name = 'levoprofilepics';
+  var s3 = new AWS.S3({
+    region: 'ap-northeast-1',
+    apiVersion: '2017-02-08',
+    accessKeyId: ACCESS_KEY,
+    secretAccessKey: SECRET_KEY
+  });
+  var params = {
+    Bucket: bucket_name,
+    Key: fileName,
+    ACL: 'public-read',
+    Body: readStream
+  };
+  s3.putObject(params, function(err, data) {
+    console.log('err : ', err);
+    console.log('data : ', data);
+    if (err) {
+      callback(true, null);
+    }
+    var filePath = './a.png';
+    fs.unlinkSync(filePath);
+    var image_url =
+      'https://s3-ap-northeast-1.amazonaws.com/levoprofilepics/' +
+      fileName;
+
+    const updateData = JSON.stringify({
+      $set: {
+        profile_pic: image_url
+      },
+      where: {
+        id: parseInt(req.body.userid)
+      }
+    });
+
+    var upadteUrl = 'api/1/table/user/update';
+    update_data(updateData, upadteUrl, res, function(err,
+      data) {
+      if (err)
+        res.send(err);
+      res.send(data);
+    });
+  });
+};
+
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
