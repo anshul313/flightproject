@@ -698,7 +698,13 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
   var result_arrTime = moment.utc(arrTimeX).format(
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-  callback(result_arrTime, result_depTime);
+  var result_depTime_local = moment.utc(depTimeX).format(
+    "YYYY-MM-DD" + ' ' + "HH:mm:ss");
+  var result_arrTime_local = moment.utc(arrTimeX).format(
+    "YYYY-MM-DD" + ' ' + "HH:mm:ss");
+
+  callback(result_arrTime, result_depTime, result_arrTime_local,
+    result_depTime_local);
 
 }
 
@@ -827,7 +833,8 @@ app.post('/flight-check', (req, res) => {
           changeTime(flights[count], originAirportObject,
             destinationAirportObject,
             function(result_arrTime,
-              result_depTime) {
+              result_depTime, result_arrTime_local,
+              result_depTime_local) {
 
               // console.log('flightName : ', flightName);
               // console.log('origin : ', origin);
@@ -843,8 +850,13 @@ app.post('/flight-check', (req, res) => {
                 departure: result_depTime,
                 arrival: result_arrTime,
                 origin: origin,
-                destination: destination
+                destination: destination,
+                arrival_local: result_arrTime_local,
+                departure_local: result_depTime_local
               });
+
+              console.log('arrival_local : ', result_arrTime_local);
+              console.log('departure_local : ', result_depTime_local);
 
               find_data(flight_details_object, res, function(err,
                 result) {
