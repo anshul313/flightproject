@@ -1153,11 +1153,11 @@ app.get('/all-airports', (req, res) => {
   });
 });
 
-app.get('/airport-by-id', (req, res) => {
+app.get('/airport-by-code', (req, res) => {
   const checkData = {
     columns: ['*'],
     where: {
-      id: parseInt(req.query.id)
+      airport_code: req.query.airport_code.toUpperCase()
     }
   };
   var url = 'api/1/table/airport/select';
