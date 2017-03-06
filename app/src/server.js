@@ -1044,7 +1044,7 @@ app.post('/image-upload', (req, res) => {
   });
   var uploadfile = multer({
     storage: storage,
-    size: 1080 * 10 * 10 * 10
+    size: 1024 * 1024 * 10
   }).single('file');
   uploadfile(req, res, function(err) {
     if (err) {
