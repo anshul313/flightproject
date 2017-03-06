@@ -954,11 +954,12 @@ app.get('/frequent-fliers', (req, res) => {
     };
     request(getUrl, getoptions, res, (resData1) => {
       // console.log('result :', result);
-      console.log('resData1 :', resData1[0].interests[0]);
+      // console.log('resData1 :', resData1[1]);
       // console.log('resData1 : ', resData1[1].);
       for (var i = 0; i < resData1.length; i++) {
         var user_interests = [];
         var user2_experience = [];
+        var user2_education = [];
         var user2_companyName = [];
         var user2_designation = [];
 
@@ -967,26 +968,30 @@ app.get('/frequent-fliers', (req, res) => {
           user_interests.push(resData1[i].interests[j].interest);
         }
 
-        for (var j = 0; j < resData1[i].experience.length; j++) {
-          // console.log('interest : ', resData1[i].interests[j].interest);
-          user2_companyName.push(resData1[i].experience[j].company_name);
-          user2_designation.push(resData1[i].experience[j].designation);
+        // for (var j = 0; j < resData1[i].experience.length; j++) {
+        //   // console.log('interest : ', resData1[i].interests[j].interest);
+        //   user2_companyName.push(resData1[i].experience[j].company_name);
+        //   user2_designation.push(resData1[i].experience[j].designation);
+        // }
+
+        for (var j = 0; j < resData1[i].education.length; j++) {
+          var education = new Object({
+            f1: resData1[i].education[j].institute_name,
+            id: resData1[i].education[j].id,
+            user_id: resData1[i].education[j].user_id,
+            f2: resData1[i].education[j].qualification
+          });
+          user2_education.push(education);
         }
-
-        var education = new Object({
-          f1: resData1[i].education[0].institute_name,
-          id: resData1[i].education[0].id,
-          user_id: resData1[i].education[0].user_id,
-          f2: resData1[i].education[0].qualification,
-
-        });
-
-        var experience = new Object({
-          f1: user2_companyName,
-          id: resData1[i].experience[0].id,
-          user_id: resData1[i].experience[0].user_id,
-          f2: user2_designation
-        });
+        for (var j = 0; j < resData1[i].experience.length; j++) {
+          var experience = new Object({
+            f1: resData1[i].experience[j].company_name,
+            id: resData1[i].experience[j].id,
+            user_id: resData1[i].experience[j].user_id,
+            f2: resData1[i].experience[j].designation
+          });
+          user2_experience.push(experience);
+        }
 
         var user_details = new Object({
           user2: parseInt(result[i].user_id),
@@ -994,8 +999,8 @@ app.get('/frequent-fliers', (req, res) => {
           user2_city: resData1[i].city,
           user2_profile_pic: resData1[i].profile_pic,
           user2_intent: resData1[i].intent,
-          user2_education: education,
-          user2_experience: experience,
+          user2_education: user2_education,
+          user2_experience: user2_experience,
           user2_interest: user_interests,
           user2_facebook_id: resData1[i].facebook_id
         });
