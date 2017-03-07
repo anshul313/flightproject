@@ -23,8 +23,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-var ACCESS_KEY = "AKIAIDNABRSVLUSX6ESA";
-var SECRET_KEY = "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";
 
 // var moment = require('moment');
 var multer = require('multer');
@@ -1083,8 +1081,8 @@ var s3Upload = function(readStream, fileName, req, res) {
   var s3 = new AWS.S3({
     region: 'ap-northeast-1',
     apiVersion: '2017-02-08',
-    accessKeyId: ACCESS_KEY,
-    secretAccessKey: SECRET_KEY
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_KEY
   });
   var params = {
     Bucket: bucket_name,

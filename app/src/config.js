@@ -18,8 +18,8 @@ module.exports = Object.assign({
   host,
   port,
   apiHost: process.env.APIHOST || 'localhost',
-  apiPort: process.env.APIPORT,
-  app: {
-    title: 'Levo Chat & API'
-  }
+    apiPort: process.env.APIPORT,
+    app: {
+      title: 'Levo Chat & API'
+    },
 }, environment);
