@@ -1094,7 +1094,10 @@ var s3Upload = function(readStream, fileName, req, res) {
   };
   s3.putObject(params, function(err, data) {
     if (err) {
-      callback(true, null);
+      res.send({
+        message: err,
+        error: true
+      });
     }
     var filePath = './a.png';
     fs.unlinkSync(filePath);
