@@ -1078,6 +1078,8 @@ app.post('/image-upload', (req, res) => {
 
 var s3Upload = function(readStream, fileName, req, res) {
   var bucket_name = 'levoprofilepics';
+  console.log('ACCESS_KEY : ', process.env.ACCESS_KEY);
+  console.log("SECRET_KEY : ", process.env.SECRET_KEY);
   var s3 = new AWS.S3({
     region: 'ap-northeast-1',
     apiVersion: '2017-02-08',
