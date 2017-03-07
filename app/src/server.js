@@ -1061,7 +1061,10 @@ app.post('/image-upload', (req, res) => {
     } else {
       if (filename == "") {
         // console.log('no filename1 : ', filename);
-        res.send("please choose a file");
+        res.send({
+          message: "image not found",
+          error: false
+        });
       } else {
         // console.log('filename : ', filename);
         var readStream = fs.createReadStream('./' +
@@ -1112,8 +1115,14 @@ var s3Upload = function(readStream, fileName, req, res) {
     update_data(updateData, upadteUrl, res, function(err,
       data) {
       if (err)
-        res.send("internal error occured");
-      res.send("successfully uploaded");
+        res.send({
+          message: err,
+          error: true
+        });
+      res.send({
+        message: "image uploaded successfully",
+        error: false
+      });
     });
   });
 };
