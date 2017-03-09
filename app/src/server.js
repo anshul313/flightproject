@@ -30,7 +30,7 @@ var moment = require('moment-timezone');
 var production_database_url = 'https://data.ailment92.hasura-app.io/';
 var development_database_url = 'https://data.stellar60.hasura-app.io/';
 var production_authToken = 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa';
-var development_authToken = 'Bearer tpn0wlstnkuvkbyz9ej946l5k7k8mgx0';
+var development_authToken = 'Bearer o9mwref75mjk7rw42kyhvekhh2l3z23v';
 var _ = require('lodash');
 var fs = require('fs');
 let authUserId = '0';
@@ -755,16 +755,19 @@ var insert_data = function(flight_details_object, res, callback) {
   };
 
   request_function(insertUrl, insertOpts, res, function(err, response) {
+    // console.log(response);
     if (err)
       return callback(true, err);
     flight_details_object.id = response.returning[0].id;
     // console.log('flight_details_object : ',
     //   flight_details_object);
+    // console.log(flight_details_object);
     return callback(null, flight_details_object);
   });
 }
 
 app.post('/flight-check', (req, res) => {
+  console.log('flight-check');
   var finalresult = [];
   const input = req.body;
   input.flight_number = input.flight_number.toUpperCase();
@@ -853,11 +856,12 @@ app.post('/flight-check', (req, res) => {
                 departure_local: result_depTime_local
               });
 
-              console.log('arrival_local : ', result_arrTime_local);
-              console.log('departure_local : ', result_depTime_local);
+              // console.log('arrival_local : ', result_arrTime_local);
+              // console.log('departure_local : ', result_depTime_local);
 
               find_data(flight_details_object, res, function(err,
                 result) {
+                // console.log('result : ', result);
                 if (err) {
                   res.send({
                     error_msg: result
@@ -870,6 +874,7 @@ app.post('/flight-check', (req, res) => {
                   if (finalresult.length == flights.length)
                     res.send(finalresult);
                 } else {
+                  // console.log('insert data');
                   insert_data(flight_details_object, res, function(
                     err, result) {
                     finalresult.push(result);
