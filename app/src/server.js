@@ -23,8 +23,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-var ACCESS_KEY = "AKIAIDNABRSVLUSX6ESA";
-var SECRET_KEY = "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";
 
 // var moment = require('moment');
 var multer = require('multer');
@@ -32,7 +30,7 @@ var moment = require('moment-timezone');
 var production_database_url = 'https://data.ailment92.hasura-app.io/';
 var development_database_url = 'https://data.stellar60.hasura-app.io/';
 var production_authToken = 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa';
-var development_authToken = 'Bearer 1bpdlrcrztryt2fiyts2tb9oeyzvav4z';
+var development_authToken = 'Bearer tpn0wlstnkuvkbyz9ej946l5k7k8mgx0';
 var _ = require('lodash');
 var fs = require('fs');
 let authUserId = '0';
@@ -1061,7 +1059,10 @@ app.post('/image-upload', (req, res) => {
     } else {
       if (filename == "") {
         // console.log('no filename1 : ', filename);
-        res.send("please choose a file");
+        res.send({
+          message: "image not found",
+          error: false
+        });
       } else {
         // console.log('filename : ', filename);
         var readStream = fs.createReadStream('./' +
@@ -1077,11 +1078,13 @@ app.post('/image-upload', (req, res) => {
 
 var s3Upload = function(readStream, fileName, req, res) {
   var bucket_name = 'levoprofilepics';
+  console.log('ACCESS_KEY : ', process.env.ACCESS_KEY);
+  console.log("SECRET_KEY : ", process.env.SECRET_KEY);
   var s3 = new AWS.S3({
     region: 'ap-northeast-1',
     apiVersion: '2017-02-08',
-    accessKeyId: ACCESS_KEY,
-    secretAccessKey: SECRET_KEY
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_KEY
   });
   var params = {
     Bucket: bucket_name,
@@ -1091,7 +1094,10 @@ var s3Upload = function(readStream, fileName, req, res) {
   };
   s3.putObject(params, function(err, data) {
     if (err) {
-      callback(true, null);
+      res.send({
+        message: err,
+        error: true
+      });
     }
     var filePath = './a.png';
     fs.unlinkSync(filePath);
@@ -1112,8 +1118,14 @@ var s3Upload = function(readStream, fileName, req, res) {
     update_data(updateData, upadteUrl, res, function(err,
       data) {
       if (err)
-        res.send("internal error occured");
-      res.send("successfully uploaded");
+        res.send({
+          message: err,
+          error: true
+        });
+      res.send({
+        message: "image uploaded successfully",
+        error: false
+      });
     });
   });
 };
