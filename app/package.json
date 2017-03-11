@@ -48,6 +48,7 @@
     "babel-polyfill": "^6.3.14",
     "body-parser": "^1.15.2",
     "express": "^4.13.3",
+    "express-routes-versioning": "^1.0.0",
     "fcm-push": "^1.1.2",
     "fs": "0.0.1-security",
     "isomorphic-fetch": "^2.2.1",

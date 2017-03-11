@@ -26,10 +26,11 @@ const transporter = nodemailer.createTransport({
 
 // var moment = require('moment');
 var multer = require('multer');
+var routesVersioning = require('express-routes-versioning')();
 var moment = require('moment-timezone');
 var production_database_url = 'https://data.ailment92.hasura-app.io/';
 var development_database_url = 'https://data.stellar60.hasura-app.io/';
-var production_authToken = 'Bearer da6oyc1i8v5g8jbnlwxgmhf2fp67bx9x';
+var production_authToken = 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa';
 var development_authToken = 'Bearer o9mwref75mjk7rw42kyhvekhh2l3z23v';
 var _ = require('lodash');
 var fs = require('fs');
@@ -713,13 +714,13 @@ var find_data = function(flight_details_object, res, callback) {
     where: flight_details_object
   };
 
-  const url = production_database_url +
+  const url = development_database_url +
     'api/1/table/flights/select';
   const options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -739,7 +740,7 @@ var find_data = function(flight_details_object, res, callback) {
 };
 
 var insert_data = function(flight_details_object, res, callback) {
-  var insertUrl = production_database_url +
+  var insertUrl = development_database_url +
     'api/1/table/flights/insert';
   var insertOpts = {
     method: 'POST',
@@ -749,7 +750,7 @@ var insert_data = function(flight_details_object, res, callback) {
     }),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -774,8 +775,8 @@ app.post('/flight-check', (req, res) => {
   var flightCode = (input.flight_number.substring(0, 2)).toUpperCase();
   var flightNumber = input.flight_number.substring(2);
   var check = moment(input.today_date.toString(), 'YYYY/MM/DD');
-  var departMonth = check.format('MM')
-  var departDay = check.format('DD')
+  var departMonth = check.format('M')
+  var departDay = check.format('D')
   var departYear = check.format('YYYY');
   var today_date = input.today_date;
   var tomorrow_date = input.tomorrow_date;
@@ -851,10 +852,9 @@ app.post('/flight-check', (req, res) => {
                 departure: result_depTime,
                 arrival: result_arrTime,
                 origin: origin,
-                destination: destination
-                  // ,
-                  // arrival_local: result_arrTime_local,
-                  // departure_local: result_depTime_local
+                destination: destination,
+                arrival_local: result_arrTime_local,
+                departure_local: result_depTime_local
               });
 
               // console.log('arrival_local : ', result_arrTime_local);
@@ -862,7 +862,7 @@ app.post('/flight-check', (req, res) => {
 
               find_data(flight_details_object, res, function(err,
                 result) {
-                // console.log('result : ', result);
+                console.log('result : ', result);
                 if (err) {
                   res.send({
                     error_msg: result
@@ -875,7 +875,7 @@ app.post('/flight-check', (req, res) => {
                   if (finalresult.length == flights.length)
                     res.send(finalresult);
                 } else {
-                  // console.log('insert data');
+                  console.log('insert data');
                   insert_data(flight_details_object, res, function(
                     err, result) {
                     finalresult.push(result);
@@ -898,12 +898,12 @@ app.get('/frequent-fliers', (req, res) => {
 
   var finalresult = [];
   var ids = [];
-  var getUrl = production_database_url + 'v1/query';
+  var getUrl = development_database_url + 'v1/query';
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': production_authToken,
+      'authorization': development_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -929,7 +929,7 @@ app.get('/frequent-fliers', (req, res) => {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': production_authToken,
+        'authorization': development_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1016,176 +1016,205 @@ app.get('/frequent-fliers', (req, res) => {
   });
 });
 
-// var update_data = function(updateData, url, res, callback) {
-//
-//   const updateUrl = development_database_url + url;
-//   const updateOpts = {
-//     method: 'POST',
-//     body: updateData,
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Authorization': development_authToken,
-//       'X-Hasura-Role': 'admin'
-//     }
-//   };
-//
-//   request_function(updateUrl, updateOpts, res, function(err, response) {
-//     if (err)
-//       return callback(true, err);
-//     return callback(null, response);
-//   });
-// }
-//
-// app.post('/image-upload', (req, res) => {
-//   // console.log('userId :', req.body.userId);
-//   var filename = "";
-//   var image_url = '';
-//   var storage = multer.diskStorage({
-//     destination: function(req, file, callback) {
-//       callback(null, "./")
-//     },
-//     filename: function(req, file, callback) {
-//       // console.log("file", file.originalname)
-//       // console.log('userid : ', req.body.userid);
-//       filename = 'a.png'
-//       callback(null, filename)
-//     }
-//   });
-//   var uploadfile = multer({
-//     storage: storage,
-//     size: 1024 * 1024 * 10
-//   }).single('file');
-//   uploadfile(req, res, function(err) {
-//     if (err) {
-//       return res.status(400).send({
-//         message: errorHandler
-//           .getErrorMessage(
-//             err)
-//       });
-//     } else {
-//       if (filename == "") {
-//         // console.log('no filename1 : ', filename);
-//         res.send({
-//           message: "image not found",
-//           error: false
-//         });
-//       } else {
-//         // console.log('filename : ', filename);
-//         var readStream = fs.createReadStream('./' +
-//           filename);
-//         filename = 'profile_id=' + req.body.userid + 'time=' + new Date()
-//           .getTime() + ".png";
-//         // console.log('filename : ', filename);
-//         s3Upload(readStream, filename, req, res);
-//       }
-//     }
-//   });
-// });
-//
-// var s3Upload = function(readStream, fileName, req, res) {
-//   var bucket_name = 'levoprofilepics';
-//   console.log('ACCESS_KEY : ', process.env.ACCESS_KEY);
-//   console.log("SECRET_KEY : ", process.env.SECRET_KEY);
-//   var s3 = new AWS.S3({
-//     region: 'ap-northeast-1',
-//     apiVersion: '2017-02-08',
-//     accessKeyId: process.env.ACCESS_KEY,
-//     secretAccessKey: process.env.SECRET_KEY
-//   });
-//   var params = {
-//     Bucket: bucket_name,
-//     Key: fileName,
-//     ACL: 'public-read',
-//     Body: readStream
-//   };
-//   s3.putObject(params, function(err, data) {
-//     if (err) {
-//       res.send({
-//         message: err,
-//         error: true
-//       });
-//     }
-//     var filePath = './a.png';
-//     fs.unlinkSync(filePath);
-//     var image_url =
-//       'https://s3-ap-northeast-1.amazonaws.com/levoprofilepics/' +
-//       fileName;
-//
-//     const updateData = JSON.stringify({
-//       $set: {
-//         profile_pic: image_url
-//       },
-//       where: {
-//         id: parseInt(req.body.userid)
-//       }
-//     });
-//
-//     var upadteUrl = 'api/1/table/user/update';
-//     update_data(updateData, upadteUrl, res, function(err,
-//       data) {
-//       if (err)
-//         res.send({
-//           message: err,
-//           error: true
-//         });
-//       res.send({
-//         message: "image uploaded successfully",
-//         error: false
-//       });
-//     });
-//   });
-// };
-//
-// var find = function(checkData, url, res, callback) {
-//
-//   var req_url = development_database_url + url;
-//   console.log('req_url : ', req_url);
-//   var options = {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Authorization': development_authToken,
-//       'X-Hasura-Role': 'admin',
-//       'X-Hasura-User-Id': 1
-//     },
-//     body: JSON.stringify(checkData)
-//   };
-//   request_function(req_url, options, res, function(err, response) {
-//     if (err)
-//       return callback(true, err);
-//     // console.log('find_data : ', database_flight_data);
-//     return callback(null, response);
-//   });
-// };
-//
-// app.get('/all-airports', (req, res) => {
-//   const checkData = {
-//     columns: ['*']
-//   };
-//   var url = 'api/1/table/airport/select';
-//
-//   find(checkData, url, res, function(err, data) {
-//     if (err)
-//       res.send('internal error occred');
-//     res.send(data)
-//   });
-// });
-//
-// app.get('/airport-by-code', (req, res) => {
-//   const checkData = {
-//     columns: ['*'],
-//     where: {
-//       airport_code: req.query.airport_code.toUpperCase()
-//     }
-//   };
-//   var url = 'api/1/table/airport/select';
-//
-//   find(checkData, url, res, function(err, data) {
-//     if (err)
-//       res.send('internal error occred');
-//     res.send(data)
-//   });
-// });
+var update_data = function(updateData, url, res, callback) {
+
+  const updateUrl = development_database_url + url;
+  const updateOpts = {
+    method: 'POST',
+    body: updateData,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': development_authToken,
+      'X-Hasura-Role': 'admin'
+    }
+  };
+
+  request_function(updateUrl, updateOpts, res, function(err, response) {
+    if (err)
+      return callback(true, err);
+    return callback(null, response);
+  });
+}
+
+app.post('/image-upload', (req, res) => {
+  // console.log('userId :', req.body.userId);
+  var filename = "";
+  var image_url = '';
+  var storage = multer.diskStorage({
+    destination: function(req, file, callback) {
+      callback(null, "./")
+    },
+    filename: function(req, file, callback) {
+      // console.log("file", file.originalname)
+      // console.log('userid : ', req.body.userid);
+      filename = 'a.png'
+      callback(null, filename)
+    }
+  });
+  var uploadfile = multer({
+    storage: storage,
+    size: 1024 * 1024 * 10
+  }).single('file');
+  uploadfile(req, res, function(err) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler
+          .getErrorMessage(
+            err)
+      });
+    } else {
+      if (filename == "") {
+        // console.log('no filename1 : ', filename);
+        res.send({
+          message: "image not found",
+          error: false
+        });
+      } else {
+        // console.log('filename : ', filename);
+        var readStream = fs.createReadStream('./' +
+          filename);
+        filename = 'profile_id=' + req.body.userid + 'time=' + new Date()
+          .getTime() + ".png";
+        // console.log('filename : ', filename);
+        s3Upload(readStream, filename, req, res);
+      }
+    }
+  });
+});
+
+var s3Upload = function(readStream, fileName, req, res) {
+  var bucket_name = 'levoprofilepics';
+  console.log('ACCESS_KEY : ', process.env.ACCESS_KEY);
+  console.log("SECRET_KEY : ", process.env.SECRET_KEY);
+  var s3 = new AWS.S3({
+    region: 'ap-northeast-1',
+    apiVersion: '2017-02-08',
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_KEY
+  });
+  var params = {
+    Bucket: bucket_name,
+    Key: fileName,
+    ACL: 'public-read',
+    Body: readStream
+  };
+  s3.putObject(params, function(err, data) {
+    if (err) {
+      res.send({
+        message: err,
+        error: true
+      });
+    }
+    var filePath = './a.png';
+    fs.unlinkSync(filePath);
+    var image_url =
+      'https://s3-ap-northeast-1.amazonaws.com/levoprofilepics/' +
+      fileName;
+
+    const updateData = JSON.stringify({
+      $set: {
+        profile_pic: image_url
+      },
+      where: {
+        id: parseInt(req.body.userid)
+      }
+    });
+
+    var upadteUrl = 'api/1/table/user/update';
+    update_data(updateData, upadteUrl, res, function(err,
+      data) {
+      if (err)
+        res.send({
+          message: err,
+          error: true
+        });
+      res.send({
+        message: "image uploaded successfully",
+        error: false
+      });
+    });
+  });
+};
+
+var find = function(checkData, url, res, callback) {
+
+  var req_url = development_database_url + url;
+  console.log('req_url : ', req_url);
+  var options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': development_authToken,
+      'X-Hasura-Role': 'admin',
+      'X-Hasura-User-Id': 1
+    },
+    body: JSON.stringify(checkData)
+  };
+  request_function(req_url, options, res, function(err, response) {
+    if (err)
+      return callback(true, err);
+    // console.log('find_data : ', database_flight_data);
+    return callback(null, response);
+  });
+};
+
+app.get('/all-airports', routesVersioning({
+  "~1.0.0": respondV1
+}, NoMatchFoundCallback));
+
+function respondV1(req, res, next) {
+  const checkData = {
+    columns: ['*']
+  };
+  var url = 'api/1/table/airport/select';
+
+  find(checkData, url, res, function(err, data) {
+    if (err)
+      res.json({
+        data: data,
+        error: {
+          code: 500,
+          message: 'Backend Error',
+          errors: err
+        }
+      });
+    res.json({
+      data: data,
+      error: {
+        code: 200,
+        message: 'success',
+        errors: err
+      }
+    });
+  });
+}
+
+function NoMatchFoundCallback(req, res, next) {
+  res.json({
+    data: [],
+    error: {
+      code: 404,
+      message: 'version not found',
+      errors: ''
+    }
+  });
+}
+
+app.get('/airport-by-code', (req, res) => {
+  const checkData = {
+    columns: ['*'],
+    where: {
+      airport_code: req.query.airport_code.toUpperCase()
+    }
+  };
+  var url = 'api/1/table/airport/select';
+
+  find(checkData, url, res, function(err, data) {
+    if (err)
+      res.send('internal error occred');
+    res.send(data)
+  });
+});
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
