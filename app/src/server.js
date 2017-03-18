@@ -925,7 +925,7 @@ app.get('/frequent-fliers', (req, res) => {
   //     result.push(object);
   //     ids.push(parseInt(object.user_id));
   //   }
-
+  var ids = [46, 565, 302, 206, 535, 95, 159, 50];
   var getoptions = {
     method: 'POST',
     headers: {
@@ -936,25 +936,24 @@ app.get('/frequent-fliers', (req, res) => {
     body: JSON.stringify({
       "type": "select",
       "args": {
-        "table": "frequent_fliers",
+        "table": "user",
         "columns": [
-            "*", {
-              "name": "education",
-              "columns": ["*"]
-            }, {
-              "name": "experience",
-              "columns": ["*"]
-            }, {
-              "name": "interests",
-              "columns": ["*"]
-            }
-          ]
-          // ,
-          // "where": {
-          //   "id": {
-          //     '$in': ids
-          //   }
-          // }
+          "*", {
+            "name": "education",
+            "columns": ["*"]
+          }, {
+            "name": "experience",
+            "columns": ["*"]
+          }, {
+            "name": "interests",
+            "columns": ["*"]
+          }
+        ],
+        "where": {
+          "id": {
+            '$in': ids
+          }
+        }
       }
     })
   };
@@ -1214,7 +1213,6 @@ app.get('/airport-by-code', (req, res) => {
   var url = 'api/1/table/airport/select';
 
   find(checkData, url, res, function(err, data) {
-    console.log(data);
     if (err) {
       res.json({
         data: [],
