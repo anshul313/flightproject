@@ -1240,14 +1240,15 @@ app.get('/airport-by-code', (req, res) => {
             errors: err
           }
         });
+      console.log('data : ', data);
       var finaldata = new Object({
-        long: data.long,
-        time: data.time,
-        lat: data.lat,
-        city: data.city,
-        id: data.id,
-        airport_name: data.airport_name,
-        airport_code: data.airport_code,
+        long: data[0].long,
+        time: data[0].time,
+        lat: data[0].lat,
+        city: data[0].city,
+        id: data[0].id,
+        airport_name: data[0].airport_name,
+        airport_code: data[0].airport_code,
         total_user: data1.length
       });
       res.json({
