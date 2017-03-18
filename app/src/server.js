@@ -1224,43 +1224,65 @@ app.get('/airport-by-code', (req, res) => {
         }
       });
     }
-    url = 'api/1/table/airport_user/select';
-    const checkData = {
-      columns: ['*'],
-      where: {
-        airport_id: data[0].id
-      }
-    };
-    find(checkData, url, res, function(err, data1) {
-      if (err)
-        res.json({
-          data: [],
-          error: {
-            code: 500,
-            message: 'Backend Error',
-            errors: err
-          }
-        });
-      var finaldata = new Object({
-        long: data[0].long,
-        time: data[0].time,
-        lat: data[0].lat,
-        city: data[0].city,
-        id: data[0].id,
-        airport_name: data[0].airport_name,
-        airport_code: data[0].airport_code,
-        total_user: data1.length
+    if (data.length > 0) {
+      url = 'api/1/table/airport_user/select';
+      const checkData = {
+        columns: ['*'],
+        where: {
+          airport_id: data[0].id
+        }
+      };
+      find(checkData, url, res, function(err, data1) {
+        if (err)
+          res.json({
+            data: [],
+            error: {
+              code: 500,
+              message: 'Backend Error',
+              errors: err
+            }
+          });
+        if (data1.length > 0) {
+          var finaldata = new Object({
+            long: data[0].long,
+            time: data[0].time,
+            lat: data[0].lat,
+            city: data[0].city,
+            id: data[0].id,
+            airport_name: data[0].airport_name,
+            airport_code: data[0].airport_code,
+            total_user: data1.length
+          });
+          final.push(finaldata);
+          res.json({
+            data: final,
+            error: {
+              code: 200,
+              message: 'success',
+              errors: err
+            }
+          });
+        } else {
+          res.json({
+            data: [],
+            error: {
+              code: 200,
+              message: 'success',
+              errors: err
+            }
+          });
+        }
       });
-      final.push(finaldata);
+    } else {
       res.json({
-        data: final,
+        data: [],
         error: {
           code: 200,
           message: 'success',
           errors: err
         }
       });
-    });
+    }
   });
 });
 
