@@ -1204,6 +1204,7 @@ function NoMatchFoundCallback(req, res, next) {
 }
 
 app.get('/airport-by-code', (req, res) => {
+  var final = [];
   const checkData = {
     columns: ['*'],
     where: {
@@ -1240,7 +1241,6 @@ app.get('/airport-by-code', (req, res) => {
             errors: err
           }
         });
-      console.log('data : ', data);
       var finaldata = new Object({
         long: data[0].long,
         time: data[0].time,
