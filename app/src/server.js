@@ -1214,6 +1214,7 @@ app.get('/airport-by-code', (req, res) => {
   var url = 'api/1/table/airport/select';
 
   find(checkData, url, res, function(err, data) {
+    console.log(data);
     if (err) {
       res.json({
         data: [],
@@ -1228,7 +1229,7 @@ app.get('/airport-by-code', (req, res) => {
     const checkData = {
       columns: ['*'],
       where: {
-        airport_code: data.id
+        airport_id: data[0].id
       }
     };
     find(checkData, url, res, function(err, data1) {
