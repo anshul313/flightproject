@@ -36,6 +36,7 @@ var _ = require('lodash');
 var fs = require('fs');
 let authUserId = '0';
 var AWS = require("aws-sdk");
+var schedule = require('node-schedule');
 
 // Express Logging Middleware
 if (global.__DEVELOPMENT__)
@@ -1174,7 +1175,7 @@ function respondV1(req, res, next) {
   find(checkData, url, res, function(err, data) {
     if (err)
       res.json({
-        data: data,
+        data: [],
         error: {
           code: 500,
           message: 'Backend Error',
@@ -1213,9 +1214,207 @@ app.get('/airport-by-code', (req, res) => {
   var url = 'api/1/table/airport/select';
 
   find(checkData, url, res, function(err, data) {
-    if (err)
-      res.send('internal error occred');
-    res.send(data)
+    if (err) {
+      res.json({
+        data: [],
+        error: {
+          code: 500,
+          message: 'Backend Error',
+          errors: err
+        }
+      });
+    }
+    url = 'api/1/table/airport_user/select';
+    const checkData = {
+      columns: ['*'],
+      where: {
+        airport_code: data.id
+      }
+    };
+    find(checkData, url, res, function(err, data1) {
+      if (err)
+        res.json({
+          data: [],
+          error: {
+            code: 500,
+            message: 'Backend Error',
+            errors: err
+          }
+        });
+      res.json({
+        data: {
+          airportDetail: data,
+          totalUser: data1.length
+        },
+        error: {
+          code: 200,
+          message: 'success',
+          errors: err
+        }
+      });
+    });
+  });
+});
+
+app.post('/airport-user-enter', (req, res) => {
+  var airport_code = req.body.airport_code.toUpperCase();
+  var userid = req.body.userid;
+
+  const checkData = {
+    columns: ['*'],
+    where: {
+      user_id: userid
+    }
+  };
+  var url = 'api/1/table/airport_user/select';
+
+  find(checkData, url, res, function(err, data) {
+    if (err) {
+      res.json({
+        data: [],
+        error: {
+          code: 500,
+          message: 'Backend Error',
+          errors: err
+        }
+      });
+    }
+    if (data.length == 0) {
+      const checkData = {
+        columns: ['*'],
+        where: {
+          airport_code: airport_code.toUpperCase()
+        }
+      };
+      var url = 'api/1/table/airport/select';
+
+      find(checkData, url, res, function(err, data1) {
+        if (err) {
+          res.json({
+            data: [],
+            error: {
+              code: 500,
+              message: 'Backend Error',
+              errors: err
+            }
+          });
+        }
+        var insertUrl = development_database_url +
+          'api/1/table/airport_user/insert';
+
+        var user_airport_details_object = new Object({
+          user_id: userid,
+          airport_id: data1[0].id,
+          entry_time: new Date().getTime()
+        });
+
+        var insertOpts = {
+          method: 'POST',
+          body: JSON.stringify({
+            objects: [user_airport_details_object],
+            "returning": ["id"]
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': development_authToken,
+            'X-Hasura-Role': 'admin'
+          }
+        };
+
+        request_function(insertUrl, insertOpts, res, function(err,
+          response) {
+          if (err) {
+            res.json({
+              data: [],
+              error: {
+                code: 500,
+                message: 'Backend Error',
+                errors: err
+              }
+            });
+          }
+          res.json({
+            data: "user sucessfully entered",
+            error: {
+              code: 200,
+              message: 'success',
+              errors: err
+            }
+          });
+        });
+      });
+    } else {
+      res.json({
+        data: "user exists",
+        error: {
+          code: 200,
+          message: 'success',
+          errors: err
+        }
+      });
+    }
+  });
+});
+
+app.post('/airport-user-exit', (req, res) => {
+  var userid = req.body.userid;
+  var getUrl = development_database_url + 'v1/query';
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "delete",
+      "args": {
+        "table": "airport_user",
+        "where": {
+          "user_id": userid
+        },
+        "returning": ["id"]
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (resData1) => {
+    console.log('response data : ', resData1);
+    res.json({
+      data: "user successfully exit",
+      error: {
+        code: 200,
+        message: 'success',
+        errors: ""
+      }
+    });
+  });
+});
+
+var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
+  var currentTime = new Date().getTime() - (3600000 * 4);
+  var getUrl = development_database_url + 'v1/query';
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "delete",
+      "args": {
+        "table": "airport_user",
+        "where": {
+          "entry_time": {
+            '$lt': currentTime
+          }
+        },
+        "returning": ["id"]
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (resData1) => {
+    console.log('response data : ', resData1);
   });
 });
 
