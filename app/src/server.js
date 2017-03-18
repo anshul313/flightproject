@@ -1214,6 +1214,7 @@ app.get('/airport-by-code', (req, res) => {
   var url = 'api/1/table/airport/select';
 
   find(checkData, url, res, function(err, data) {
+
     if (err) {
       res.json({
         data: [],
@@ -1242,36 +1243,25 @@ app.get('/airport-by-code', (req, res) => {
               errors: err
             }
           });
-        if (data1.length > 0) {
-          var finaldata = new Object({
-            long: data[0].long,
-            time: data[0].time,
-            lat: data[0].lat,
-            city: data[0].city,
-            id: data[0].id,
-            airport_name: data[0].airport_name,
-            airport_code: data[0].airport_code,
-            total_user: data1.length
-          });
-          final.push(finaldata);
-          res.json({
-            data: final,
-            error: {
-              code: 200,
-              message: 'success',
-              errors: err
-            }
-          });
-        } else {
-          res.json({
-            data: [],
-            error: {
-              code: 200,
-              message: 'success',
-              errors: err
-            }
-          });
-        }
+        var finaldata = new Object({
+          long: data[0].long,
+          time: data[0].time,
+          lat: data[0].lat,
+          city: data[0].city,
+          id: data[0].id,
+          airport_name: data[0].airport_name,
+          airport_code: data[0].airport_code,
+          total_user: data1.length
+        });
+        final.push(finaldata);
+        res.json({
+          data: final,
+          error: {
+            code: 200,
+            message: 'success',
+            errors: err
+          }
+        });
       });
     } else {
       res.json({
