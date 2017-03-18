@@ -1363,7 +1363,7 @@ app.post('/airport-user-enter', (req, res) => {
             }
 
             res.json({
-              data: data2,
+              data: data1,
               error: {
                 code: 200,
                 message: 'success',
@@ -1374,13 +1374,34 @@ app.post('/airport-user-enter', (req, res) => {
         });
       });
     } else {
-      res.json({
-        data: data,
-        error: {
-          code: 200,
-          message: 'success',
-          errors: err
+      console.log('you are here: ', data);
+      const checkData = {
+        columns: ['*'],
+        where: {
+          airport_code: airport_code
         }
+      };
+      var url = 'api/1/table/airport/select';
+
+      find(checkData, url, res, function(err, doc) {
+        if (err) {
+          res.json({
+            data: [],
+            error: {
+              code: 500,
+              message: 'Backend Error',
+              errors: err
+            }
+          });
+        }
+        res.json({
+          data: doc,
+          error: {
+            code: 200,
+            message: 'success',
+            errors: err
+          }
+        });
       });
     }
   });
@@ -1388,13 +1409,14 @@ app.post('/airport-user-enter', (req, res) => {
 
 app.post('/airport-user-exit', (req, res) => {
   var userid = req.body.user_id;
+  var airport_code = req.body.airport_code.toUpperCase();
   const checkData = {
     columns: ['*'],
     where: {
-      user_id: userid
+      airport_code: airport_code
     }
   };
-  var url = 'api/1/table/airport_user/select';
+  var url = 'api/1/table/airport/select';
   find(checkData, url, res, function(err, data) {
     if (err) {
       res.json({
