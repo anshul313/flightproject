@@ -1285,7 +1285,7 @@ app.post('/airport-user-enter', (req, res) => {
           airport_code: airport_code.toUpperCase()
         }
       };
-      var url = 'api/1/table/airport/select';
+      var url = development_database_url + 'api/1/table/airport/select';
 
       find(checkData, url, res, function(err, data1) {
         if (err) {
@@ -1385,6 +1385,172 @@ app.post('/airport-user-exit', (req, res) => {
         message: 'success',
         errors: ""
       }
+    });
+  });
+});
+
+app.post('/airport-user-profile', (req, res) => {
+  var airport_code = req.body.airport_code.toUpperCase();
+  var userid = req.body.userid;
+  var ids = [];
+  var finalresult = [];
+  const checkData = {
+    "columns": [
+      "*", {
+        "name": "airport_user",
+        "columns": ["*"]
+      }
+    ],
+    where: {
+      airport_code: airport_code
+    }
+  };
+  var url = 'api/1/table/airport/select';
+
+  find(checkData, url, res, function(err, data) {
+    if (err) {
+      res.json({
+        data: [],
+        error: {
+          code: 500,
+          message: 'Backend Error',
+          errors: err
+        }
+      });
+    }
+    console.log('data : ', data[0].airport_user);
+    for (var i = 0; i < data[0].airport_user.length; i++) {
+      ids.push(data[0].airport_user[i].user_id);
+    }
+    const checkData = {
+      "columns": ["*"],
+      "where": {
+        $and: [{
+          user1: userid
+        }, {
+          user2: {
+            '$in': ids
+          }
+        }],
+        $or: [{
+          is_liked: true
+        }, {
+          is_liked: null
+        }]
+      }
+    };
+    var url = 'api/1/table/like/select';
+
+    find(checkData, url, res, function(err, data1) {
+      if (err) {
+        res.json({
+          data: [],
+          error: {
+            code: 500,
+            message: 'Backend Error',
+            errors: err
+          }
+        });
+      }
+      console.log(data1);
+      var like_ids = [];
+      for (var i = 0; i < data1.length; i++) {
+        like_ids.push(data1[i].user2)
+      }
+      console.log(ids);
+      console.log(like_ids);
+      var getUrl = development_database_url + 'v1/query';
+
+      var getoptions = {
+        method: 'POST',
+        headers: {
+          'x-hasura-role': 'admin',
+          'authorization': development_authToken,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          "type": "select",
+          "args": {
+            "table": "user",
+            "columns": [
+              "*", {
+                "name": "education",
+                "columns": ["*"]
+              }, {
+                "name": "experience",
+                "columns": ["*"]
+              }, {
+                "name": "interests",
+                "columns": ["*"]
+              }
+            ],
+            "where": {
+              "id": {
+                '$in': like_ids
+              }
+            }
+          }
+        })
+      };
+      request(getUrl, getoptions, res, (resData1) => {
+        // console.log(resData1);
+        // res.send(resData1);
+        // console.log('result :', result);
+        // console.log('resData1 :', resData1[1]);
+        // console.log('resData1 : ', resData1[1].);
+        for (var i = 0; i < resData1.length; i++) {
+          var user_interests = [];
+          var user2_experience = [];
+          var user2_education = [];
+          var user2_companyName = [];
+          var user2_designation = [];
+
+          for (var j = 0; j < resData1[i].interests.length; j++) {
+            // console.log('interest : ', resData1[i].interests[j].interest);
+            user_interests.push(resData1[i].interests[j].interest);
+          }
+
+          for (var j = 0; j < resData1[i].experience.length; j++) {
+            // console.log('interest : ', resData1[i].interests[j].interest);
+            user2_companyName.push(resData1[i].experience[j].company_name);
+            user2_designation.push(resData1[i].experience[j].designation);
+          }
+
+          for (var j = 0; j < resData1[i].education.length; j++) {
+            var education = new Object({
+              f1: resData1[i].education[j].institute_name,
+              id: resData1[i].education[j].id,
+              user_id: resData1[i].education[j].user_id,
+              f2: resData1[i].education[j].qualification
+            });
+            user2_education.push(education);
+          }
+          for (var j = 0; j < resData1[i].experience.length; j++) {
+            var experience = new Object({
+              f1: resData1[i].experience[j].company_name,
+              id: resData1[i].experience[j].id,
+              user_id: resData1[i].experience[j].user_id,
+              f2: resData1[i].experience[j].designation
+            });
+            user2_experience.push(experience);
+          }
+
+          var user_details = new Object({
+            user2: parseInt(resData1[i].id),
+            user2_name: resData1[i].name,
+            user2_city: resData1[i].city,
+            user2_profile_pic: resData1[i].profile_pic,
+            user2_intent: resData1[i].intent,
+            user2_education: user2_education,
+            user2_experience: user2_experience,
+            user2_interest: user_interests,
+            user2_facebook_id: resData1[i].facebook_id
+          });
+
+          finalresult.push(user_details);
+        }
+        res.send(finalresult);
+      });
     });
   });
 });
