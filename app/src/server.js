@@ -1251,8 +1251,9 @@ app.get('/airport-by-code', (req, res) => {
         airport_code: data[0].airport_code,
         total_user: data1.length
       });
+      final.push(finaldata);
       res.json({
-        data: finaldata,
+        data: final,
         error: {
           code: 200,
           message: 'success',
