@@ -1266,7 +1266,7 @@ app.get('/airport-by-code', (req, res) => {
 
 app.post('/airport-user-enter', (req, res) => {
   var airport_code = req.body.airport_code.toUpperCase();
-  var userid = req.body.userid;
+  var userid = req.body.user_id;
 
   const checkData = {
     columns: ['*'],
@@ -1387,7 +1387,7 @@ app.post('/airport-user-enter', (req, res) => {
 });
 
 app.post('/airport-user-exit', (req, res) => {
-  var userid = req.body.userid;
+  var userid = req.body.user_id;
   const checkData = {
     columns: ['*'],
     where: {
@@ -1441,7 +1441,7 @@ app.post('/airport-user-exit', (req, res) => {
 
 app.post('/airport-user-profile', (req, res) => {
   var airport_code = req.body.airport_code.toUpperCase();
-  var userid = req.body.userid;
+  var userid = req.body.user_id;
   var ids = [];
   var finalresult = [];
   const checkData = {
