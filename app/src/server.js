@@ -1332,19 +1332,41 @@ app.post('/airport-user-enter', (req, res) => {
               }
             });
           }
-          res.json({
-            data: "user sucessfully entered",
-            error: {
-              code: 200,
-              message: 'success',
-              errors: err
+          console.log(response);
+          const checkData = {
+            columns: ['*'],
+            where: {
+              id: response.returning[0].id
             }
+          };
+          var url = 'api/1/table/airport_user/select';
+
+          find(checkData, url, res, function(err, data2) {
+            if (err) {
+              res.json({
+                data: [],
+                error: {
+                  code: 500,
+                  message: 'Backend Error',
+                  errors: err
+                }
+              });
+            }
+
+            res.json({
+              data: data2,
+              error: {
+                code: 200,
+                message: 'success',
+                errors: err
+              }
+            });
           });
         });
       });
     } else {
       res.json({
-        data: "user exists",
+        data: data,
         error: {
           code: 200,
           message: 'success',
@@ -1357,34 +1379,53 @@ app.post('/airport-user-enter', (req, res) => {
 
 app.post('/airport-user-exit', (req, res) => {
   var userid = req.body.userid;
-  var getUrl = development_database_url + 'v1/query';
-  var getoptions = {
-    method: 'POST',
-    headers: {
-      'x-hasura-role': 'admin',
-      'authorization': development_authToken,
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify({
-      "type": "delete",
-      "args": {
-        "table": "airport_user",
-        "where": {
-          "user_id": userid
-        },
-        "returning": ["id"]
-      }
-    })
+  const checkData = {
+    columns: ['*'],
+    where: {
+      user_id: userid
+    }
   };
-  request(getUrl, getoptions, res, (resData1) => {
-    console.log('response data : ', resData1);
-    res.json({
-      data: "user successfully exit",
-      error: {
-        code: 200,
-        message: 'success',
-        errors: ""
-      }
+  var url = 'api/1/table/airport_user/select';
+  find(checkData, url, res, function(err, data) {
+    if (err) {
+      res.json({
+        data: [],
+        error: {
+          code: 500,
+          message: 'Backend Error',
+          errors: err
+        }
+      });
+    }
+    var getUrl = development_database_url + 'v1/query';
+    var getoptions = {
+      method: 'POST',
+      headers: {
+        'x-hasura-role': 'admin',
+        'authorization': development_authToken,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        "type": "delete",
+        "args": {
+          "table": "airport_user",
+          "where": {
+            "user_id": userid
+          },
+          "returning": ["id"]
+        }
+      })
+    };
+    request(getUrl, getoptions, res, (resData1) => {
+      console.log('response data : ', resData1);
+      res.json({
+        data: data,
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
     });
   });
 });
