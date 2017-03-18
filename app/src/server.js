@@ -1240,11 +1240,18 @@ app.get('/airport-by-code', (req, res) => {
             errors: err
           }
         });
+      var finaldata = new Object({
+        long: data.long,
+        time: data.time,
+        lat: data.lat,
+        city: data.city,
+        id: data.id,
+        airport_name: data.airport_name,
+        airport_code: data.airport_code,
+        total_user: data1.length
+      });
       res.json({
-        data: {
-          airportDetail: data,
-          totalUser: data1.length
-        },
+        data: finaldata,
         error: {
           code: 200,
           message: 'success',
