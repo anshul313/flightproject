@@ -1285,7 +1285,7 @@ app.post('/airport-user-enter', (req, res) => {
           airport_code: airport_code.toUpperCase()
         }
       };
-      var url = development_database_url + 'api/1/table/airport/select';
+      var url = 'api/1/table/airport/select';
 
       find(checkData, url, res, function(err, data1) {
         if (err) {
