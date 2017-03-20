@@ -1502,28 +1502,24 @@ app.post('/airport-user-profile', (req, res) => {
         }
       });
     }
-    console.log('data : ', data[0].airport_user);
+    // console.log('data : ', data[0].airport_user);
     for (var i = 0; i < data[0].airport_user.length; i++) {
       ids.push(data[0].airport_user[i].user_id);
     }
+    console.log("ids : ", ids);
     const checkData = {
       "columns": ["*"],
       "where": {
-        $and: [{
-          user1: userid
-        }, {
-          user2: {
-            '$in': ids
-          }
-        }],
-        $or: [{
-          is_liked: true
-        }, {
-          is_liked: null
-        }]
+        user1: userid,
+        user2: {
+          '$in': ids
+        },
+        is_liked: false
       }
     };
     var url = 'api/1/table/like/select';
+
+    // console.log('checkData : ', checkData);
 
     find(checkData, url, res, function(err, data1) {
       if (err) {
@@ -1536,13 +1532,16 @@ app.post('/airport-user-profile', (req, res) => {
           }
         });
       }
-      console.log(data1);
-      var like_ids = [];
+      // console.log('data1 : ', data1);
+      var unlike_ids = [];
       for (var i = 0; i < data1.length; i++) {
-        like_ids.push(data1[i].user2)
+        unlike_ids.push(data1[i].user2)
       }
-      console.log(ids);
-      console.log(like_ids);
+      // console.log('unlike_ids :', unlike_ids);
+      var final_ids = _.differenceBy(ids, unlike_ids);
+      // console.log('final_ids : ', final_ids);
+      // console.log('like_ids :', final_ids);
+
       var getUrl = development_database_url + 'v1/query';
 
       var getoptions = {
@@ -1570,7 +1569,7 @@ app.post('/airport-user-profile', (req, res) => {
             ],
             "where": {
               "id": {
-                '$in': like_ids
+                '$in': final_ids
               }
             }
           }
