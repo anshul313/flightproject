@@ -1538,7 +1538,10 @@ app.post('/airport-user-profile', (req, res) => {
         unlike_ids.push(data1[i].user2)
       }
       // console.log('unlike_ids :', unlike_ids);
+      var temp = [];
+      temp.push(req.body.user_id)
       var final_ids = _.differenceBy(ids, unlike_ids);
+      final_ids = _.differenceBy(ids, temp);
       // console.log('final_ids : ', final_ids);
       // console.log('like_ids :', final_ids);
 
