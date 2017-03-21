@@ -1603,7 +1603,7 @@ app.post('/airport-user-profile', (req, res) => {
               user2_education.push(education);
             }
 
-            for (var j = 0; j < resData1[i].experience.length; j++) {
+            for (var j = 0; j < data.experience.length; j++) {
               var experience = new Object({
                 f1: data.experience[j].company_name,
                 id: data.experience[j].id,
@@ -1703,6 +1703,256 @@ var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
   });
 });
 
+app.post('/send-notification', (req, res) => {
+  var user_ids = [];
+  var finalresult = [];
+  var asyncTasks = [];
+  var getUrl = development_database_url + 'v1/query';
+
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "select",
+      "args": {
+        "table": "user",
+        "columns": [
+          "*", {
+            "name": "education",
+            "columns": ["*"]
+          }, {
+            "name": "experience",
+            "columns": ["*"]
+          }, {
+            "name": "interests",
+            "columns": ["*"]
+          }
+        ],
+        "where": {
+          "id": req.body.user_id
+        }
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (resData1) => {
+    console.log('resData1 : ');
+    request(getUrl, getoptions, res, (resData1) => {
+      console.log('response data : ', resData1);
+      var checkData = {
+        "columns": ["*"],
+        "where": {
+          user1: req.body.user_id,
+          is_liked: true
+        }
+      };
+      var url = 'api/1/table/like/select';
+
+      find(checkData, url, res, function(err, data1) {
+        if (err) {
+          res.json({
+            data: [],
+            error: {
+              code: 500,
+              message: 'Backend Error',
+              errors: err
+            }
+          });
+        }
+
+        for (var i = 0; i < data1.length; i++) {
+          user_ids.push(data1[i].user2);
+        }
+
+        console.log('data1 : ', data1);
+        var getUrl = development_database_url + 'v1/query';
+
+        var getoptions = {
+          method: 'POST',
+          headers: {
+            'x-hasura-role': 'admin',
+            'authorization': development_authToken,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            "type": "select",
+            "args": {
+              "table": "user",
+              "columns": [
+                "*", {
+                  "name": "education",
+                  "columns": ["*"]
+                }, {
+                  "name": "experience",
+                  "columns": ["*"]
+                }, {
+                  "name": "interests",
+                  "columns": ["*"]
+                }
+              ],
+              "where": {
+                "id": {
+                  '$in': user_ids
+                }
+              }
+            }
+          })
+        };
+        request(getUrl, getoptions, res, (resData2) => {
+
+          _.forEach(resData2, function(data) {
+            asyncTasks.push(function(callback) {
+              var user_interests = [];
+              var user2_experience = [];
+              var user2_education = [];
+              var user2_companyName = [];
+              var user2_designation = [];
+
+              for (var j = 0; j < data.interests.length; j++) {
+                user_interests.push(data.interests[
+                  j].interest);
+              }
+              console.log(data.experience);
+              for (var j = 0; j < data.experience.length; j++) {
+                user2_companyName.push(data.experience[
+                  j].company_name);
+                user2_designation.push(data.experience[
+                  j].designation);
+              }
+
+              for (var j = 0; j < data.education.length; j++) {
+                var education = new Object({
+                  f1: data.education[j].institute_name,
+                  id: data.education[j].id,
+                  user_id: data.education[j].user_id,
+                  f2: data.education[j].qualification
+                });
+                user2_education.push(education);
+              }
+
+              for (var j = 0; j < data.experience
+                .length; j++) {
+                var experience = new Object({
+                  f1: data.experience[j].company_name,
+                  id: data.experience[j].id,
+                  user_id: data.experience[j].user_id,
+                  f2: data.experience[j].designation
+                });
+                user2_experience.push(experience);
+              }
+              checkData = {
+                "columns": ["*"],
+                "where": {
+                  user1: req.body.user_id,
+                  user2: data.id,
+                  is_liked: true
+                }
+              };
+              var url = 'api/1/table/like/select';
+              var liked_12 = null;
+              find(checkData, url, res, function(
+                err,
+                data2) {
+                if (data2.length > 0)
+                  liked_12 = data2[0].is_liked;
+                checkData = {
+                  "columns": ["*"],
+                  "where": {
+                    user1: data.id,
+                    user2: req.body.user_id,
+                    is_liked: true
+                  }
+                };
+                var url =
+                  'api/1/table/like/select';
+                var liked_21 = null;
+                find(checkData, url, res,
+                  function(
+                    err,
+                    data3) {
+                    if (data3.length > 0)
+                      liked_21 = data3[0].is_liked;
+                    var user_details = new Object({
+                      user2: parseInt(
+                        data.id),
+                      user2_name: data.name,
+                      user2_city: data.city,
+                      user2_profile_pic: data
+                        .profile_pic,
+                      user2_intent: data.intent,
+                      user2_education: user2_education,
+                      user2_experience: user2_experience,
+                      user2_interest: user_interests,
+                      user2_facebook_id: data
+                        .facebook_id,
+                      liked_21: liked_21,
+                      liked_12: liked_12
+                    });
+                    finalresult.push(
+                      user_details);
+                    callback(null,
+                      finalresult)
+                  });
+              });
+            });
+          });
+          async.parallel(asyncTasks, function(err, result) {
+
+            const receiver = resData1[0].device_token;
+            const message = {
+              to: resData1[0].device_token,
+              collapse_key: 'my_collapse_key',
+              priority: 'high',
+              data: {
+                from_user: resData1[0].email,
+                from_username: resData1[0].name,
+                message: finalresult,
+                type: 'chat-notif'
+              }
+            };
+            if (resData1[0].device_type ===
+              'ios') {
+              message.notification = {
+                title: resData1[0].name,
+                body: finalresult,
+                sound: 'default',
+                badge: 1
+              };
+            }
+
+            fcm.send(message, (err, res) => {
+              if (err) {
+                console.log('err: ',
+                  err);
+                console.log('res: ',
+                  res);
+                console.log(
+                  'Something has gone wrong!'
+                );
+              } else {
+                console.log(
+                  'Successfully sent with response: ',
+                  res);
+                res.json({
+                  data: finalresult,
+                  error: {
+                    code: 200,
+                    message: 'success',
+                    errors: ""
+                  }
+                });
+              }
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
   // const userid = chunk.user_id;
@@ -1735,7 +1985,8 @@ const sockets = {};
 io.on('connection', (socket) => {
   console.log('User connected: ' + socket.id);
 
-  if (socket.handshake.headers['x-hasura-user-role'] === 'anonymous') {
+  if (socket.handshake.headers['x-hasura-user-role'] ===
+    'anonymous') {
     return;
   }
 
@@ -1785,105 +2036,116 @@ io.on('connection', (socket) => {
         body: JSON.stringify(connectionCheckData)
       };
 
-      request(connectionCheckUrl, connectionCheckOpts, null, (
-        checkResult) => {
-        if (checkResult === 0) {
-          socket.emit('chat message',
-            'You don\'t have a connection with user');
-        } else {
-          const user1 = (user.from < user.to) ? user.from :
-            user.to;
-          const user2 = (user.from < user.to) ? user.to :
-            user.from;
-          // const chattimestamp = (new Date()).toISOString();
-          const messageInsertData = JSON.stringify({
-            objects: [{
-              user1,
-              user2,
-              sender: user.from,
-                text: msg,
-                timestamp: chattimestamp
-            }]
-          });
+      request(connectionCheckUrl, connectionCheckOpts,
+        null, (
+          checkResult) => {
+          if (checkResult === 0) {
+            socket.emit('chat message',
+              'You don\'t have a connection with user'
+            );
+          } else {
+            const user1 = (user.from < user.to) ? user.from :
+              user.to;
+            const user2 = (user.from < user.to) ? user.to :
+              user.from;
+            // const chattimestamp = (new Date()).toISOString();
+            const messageInsertData = JSON.stringify({
+              objects: [{
+                user1,
+                user2,
+                sender: user.from,
+                  text: msg,
+                  timestamp: chattimestamp
+              }]
+            });
 
-          const messageInsertUrl = url +
-            '/api/1/table/message/insert';
-          const messageInsertOpts = {
-            method: 'POST',
-            headers,
-            body: messageInsertData
-          };
+            const messageInsertUrl = url +
+              '/api/1/table/message/insert';
+            const messageInsertOpts = {
+              method: 'POST',
+              headers,
+              body: messageInsertData
+            };
 
-          request(messageInsertUrl, messageInsertOpts, null, () => {
-            console.log('message:' + msg);
-            if (sockets[user.to]) {
-              const toSocket = sockets[user.to];
-              toSocket.emit('chat message', JSON.stringify({
-                from_user: user.from,
-                from_username: senderUsername,
-                message: msg,
-                timeStamp: chattimestamp
-              }));
-            } else { // No socket for the to user active at the moment
-              const tokenData = {
-                columns: ['device_token', 'device_type'],
-                where: {
-                  id: user.to
-                }
-              };
-              const getTokenUrl = url +
-                '/api/1/table/user/select';
-              const getTokenOpts = {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(tokenData)
-              };
-
-              request(getTokenUrl, getTokenOpts, null, (
-                tokenResult) => {
-                const receiver = tokenResult[0];
-                const message = {
-                  to: receiver.device_token,
-                  collapse_key: 'my_collapse_key',
-                  priority: 'high',
-                  data: {
+            request(messageInsertUrl, messageInsertOpts,
+              null, () => {
+                console.log('message:' + msg);
+                if (sockets[user.to]) {
+                  const toSocket = sockets[user.to];
+                  toSocket.emit('chat message', JSON.stringify({
                     from_user: user.from,
                     from_username: senderUsername,
                     message: msg,
-                    type: 'chat-notif'
-                  }
-                };
-                if (receiver.device_type === 'ios') {
-                  message.notification = {
-                    title: senderUsername,
-                    body: msg,
-                    sound: 'default',
-                    badge: 1
+                    timeStamp: chattimestamp
+                  }));
+                } else { // No socket for the to user active at the moment
+                  const tokenData = {
+                    columns: ['device_token',
+                      'device_type'
+                    ],
+                    where: {
+                      id: user.to
+                    }
                   };
-                }
+                  const getTokenUrl = url +
+                    '/api/1/table/user/select';
+                  const getTokenOpts = {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(tokenData)
+                  };
 
-                fcm.send(message, (err, res) => {
-                  if (err) {
-                    console.log('err: ', err);
-                    console.log('res: ', res);
-                    console.log(
-                      'Something has gone wrong!'
-                    );
-                  } else {
-                    console.log(
-                      'Successfully sent with response: ',
-                      res);
-                  }
-                });
+                  request(getTokenUrl, getTokenOpts,
+                    null, (
+                      tokenResult) => {
+                      const receiver = tokenResult[
+                        0];
+                      const message = {
+                        to: receiver.device_token,
+                        collapse_key: 'my_collapse_key',
+                        priority: 'high',
+                        data: {
+                          from_user: user.from,
+                          from_username: senderUsername,
+                          message: msg,
+                          type: 'chat-notif'
+                        }
+                      };
+                      if (receiver.device_type ===
+                        'ios') {
+                        message.notification = {
+                          title: senderUsername,
+                          body: msg,
+                          sound: 'default',
+                          badge: 1
+                        };
+                      }
+
+                      fcm.send(message, (err, res) => {
+                        if (err) {
+                          console.log('err: ',
+                            err);
+                          console.log('res: ',
+                            res);
+                          console.log(
+                            'Something has gone wrong!'
+                          );
+                        } else {
+                          console.log(
+                            'Successfully sent with response: ',
+                            res);
+                        }
+                      });
+                    });
+                }
               });
-            }
-          });
-        }
-      });
+          }
+        });
     } catch (e) {
       console.error(e);
       console.error(e.stack);
-      console.error('Some error in the "chat message" event');
+      console.error(
+        'Some error in the "chat message" event');
     }
   });
 
@@ -1902,7 +2164,8 @@ if (config.port) {
     if (err) {
       console.error(err);
     }
-    console.info('----\n==> ✅  %s is running, talking to API server.',
+    console.info(
+      '----\n==> ✅  %s is running, talking to API server.',
       config.app.title);
     console.info(
       '==> 💻  Open http://%s:%s in a browser to view the app.',
@@ -1910,5 +2173,6 @@ if (config.port) {
   });
 } else {
   console.error(
-    '==>     ERROR: No PORT environment variable has been specified');
+    '==>     ERROR: No PORT environment variable has been specified'
+  );
 }
