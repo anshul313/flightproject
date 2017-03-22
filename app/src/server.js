@@ -926,7 +926,7 @@ app.get('/frequent-fliers', (req, res) => {
   //     result.push(object);
   //     ids.push(parseInt(object.user_id));
   //   }
-  var ids = [46, 565, 302, 206, 535, 95, 159, 50];
+  var ids = [46, 565, 302, 206, 535, 95, 159, 50, 521, 215];
   var getoptions = {
     method: 'POST',
     headers: {
@@ -1707,41 +1707,7 @@ app.post('/send-notification', (req, res) => {
   var user_ids = [];
   var finalresult = [];
   var asyncTasks = [];
-  var getUrl = development_database_url + 'v1/query';
 
-  // var getoptions = {
-  //   method: 'POST',
-  //   headers: {
-  //     'x-hasura-role': 'admin',
-  //     'authorization': development_authToken,
-  //     'content-type': 'application/json'
-  //   },
-  //   body: JSON.stringify({
-  //     "type": "select",
-  //     "args": {
-  //       "table": "user",
-  //       "columns": [
-  //         "*", {
-  //           "name": "education",
-  //           "columns": ["*"]
-  //         }, {
-  //           "name": "experience",
-  //           "columns": ["*"]
-  //         }, {
-  //           "name": "interests",
-  //           "columns": ["*"]
-  //         }
-  //       ],
-  //       "where": {
-  //         "id": req.body.user_id
-  //       }
-  //     }
-  //   })
-  // };
-  // request(getUrl, getoptions, res, (resData1) => {
-  //   console.log('resData1 : ');
-  // request(getUrl, getoptions, res, (resData1) => {
-  //   console.log('response data : ', resData1);
   var checkData = {
     "columns": ["*"],
     "where": {
@@ -1910,8 +1876,6 @@ app.post('/send-notification', (req, res) => {
         });
       });
     });
-    // });
-    // });
   });
 });
 
