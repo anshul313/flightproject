@@ -1734,7 +1734,7 @@ app.post('/send-notification', (req, res) => {
       user_ids.push(data1[i].user1);
     }
 
-    console.log('data1 : ', data1);
+    // console.log('data1 : ', data1);
     var getUrl = development_database_url + 'v1/query';
 
     var getoptions = {
@@ -1791,7 +1791,7 @@ app.post('/send-notification', (req, res) => {
       };
       request(getUrl, getoptions, res, (resData3) => {
 
-        console.log('resData3 : ', resData3);
+        // console.log('resData3 : ', resData3);
 
         var user1_flight = resData3[0].id;
         var origin = resData3[0].origin;
@@ -1836,7 +1836,7 @@ app.post('/send-notification', (req, res) => {
         };
         request(getUrl, getoptions, res, (resData2) => {
 
-          console.log('resData2 : ', resData2);
+          // console.log('resData2 : ', resData2);
 
           _.forEach(resData2, function(data) {
             asyncTasks.push(function(callback) {
@@ -1898,9 +1898,11 @@ app.post('/send-notification', (req, res) => {
                 request(getUrl, getoptions, res, (
                   resData5) => {
 
-                  console.log('resData3 : ',
-                    resData5);
-
+                  // console.log('resData3 : ',
+                  //   resData5);
+                  // console.log(
+                  //   'user2_flight : ',
+                  //   resData5[0].id);
                   var user2_flight =
                     resData5[0].id;
                   var user2_origin =
@@ -1920,11 +1922,11 @@ app.post('/send-notification', (req, res) => {
                   var user2_education = [];
                   var user2_companyName = [];
                   var user2_designation = [];
-                  var user2_flight = [];
+                  // var user2_flight = [];
 
-                  console.log(
-                    'flight data : ',
-                    data.flights);
+                  // console.log(
+                  //   'flight data : ',
+                  //   data.flights);
 
                   for (var j = 0; j < data.interests
                     .length; j++) {
@@ -1932,7 +1934,7 @@ app.post('/send-notification', (req, res) => {
                       data.interests[
                         j].interest);
                   }
-                  console.log(data.experience);
+                  // console.log(data.experience);
                   for (var j = 0; j < data.experience
                     .length; j++) {
                     user2_companyName.push(
