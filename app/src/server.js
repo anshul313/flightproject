@@ -716,13 +716,13 @@ var find_data = function(flight_details_object, res, callback) {
     where: flight_details_object
   };
 
-  const url = development_database_url +
+  const url = production_database_url +
     'api/1/table/flights/select';
   const options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -742,7 +742,7 @@ var find_data = function(flight_details_object, res, callback) {
 };
 
 var insert_data = function(flight_details_object, res, callback) {
-  var insertUrl = development_database_url +
+  var insertUrl = production_database_url +
     'api/1/table/flights/insert';
   var insertOpts = {
     method: 'POST',
@@ -752,7 +752,7 @@ var insert_data = function(flight_details_object, res, callback) {
     }),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -900,7 +900,7 @@ app.get('/frequent-fliers', (req, res) => {
 
   var finalresult = [];
   var ids = [];
-  var getUrl = development_database_url + 'v1/query';
+  var getUrl = production_database_url + 'v1/query';
   // var getoptions = {
   //   method: 'POST',
   //   headers: {
@@ -931,7 +931,7 @@ app.get('/frequent-fliers', (req, res) => {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1022,13 +1022,13 @@ app.get('/frequent-fliers', (req, res) => {
 
 var update_data = function(updateData, url, res, callback) {
 
-  const updateUrl = development_database_url + url;
+  const updateUrl = production_database_url + url;
   const updateOpts = {
     method: 'POST',
     body: updateData,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -1162,47 +1162,47 @@ var find = function(checkData, url, res, callback) {
   });
 };
 
-app.get('/all-airports', routesVersioning({
-  "~1.0.0": respondV1
-}, NoMatchFoundCallback));
-
-function respondV1(req, res, next) {
-  const checkData = {
-    columns: ['*']
-  };
-  var url = 'api/1/table/airport/select';
-
-  find(checkData, url, res, function(err, data) {
-    if (err)
-      res.json({
-        data: [],
-        error: {
-          code: 500,
-          message: 'Backend Error',
-          errors: err
-        }
-      });
-    res.json({
-      data: data,
-      error: {
-        code: 200,
-        message: 'success',
-        errors: err
-      }
-    });
-  });
-}
-
-function NoMatchFoundCallback(req, res, next) {
-  res.json({
-    data: [],
-    error: {
-      code: 404,
-      message: 'version not found',
-      errors: ''
-    }
-  });
-}
+// app.get('/all-airports', routesVersioning({
+//   "~1.0.0": respondV1
+// }, NoMatchFoundCallback));
+//
+// function respondV1(req, res, next) {
+//   const checkData = {
+//     columns: ['*']
+//   };
+//   var url = 'api/1/table/airport/select';
+//
+//   find(checkData, url, res, function(err, data) {
+//     if (err)
+//       res.json({
+//         data: [],
+//         error: {
+//           code: 500,
+//           message: 'Backend Error',
+//           errors: err
+//         }
+//       });
+//     res.json({
+//       data: data,
+//       error: {
+//         code: 200,
+//         message: 'success',
+//         errors: err
+//       }
+//     });
+//   });
+// }
+//
+// function NoMatchFoundCallback(req, res, next) {
+//   res.json({
+//     data: [],
+//     error: {
+//       code: 404,
+//       message: 'version not found',
+//       errors: ''
+//     }
+//   });
+// }
 
 app.get('/airport-by-code', (req, res) => {
   var final = [];
