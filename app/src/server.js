@@ -694,9 +694,9 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
   // console.log('depTimeX : ', depTimeX)
   // console.log('arrTimeX : ', arrTimeX)
 
-  var result_depTime = moment.utc(depTimeX).format(
+  var result_depTime = moment.utc(depTime).format(
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-  var result_arrTime = moment.utc(arrTimeX).format(
+  var result_arrTime = moment.utc(arrTime).format(
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
   var result_depTime_local = moment.utc(depTimeX).format(
