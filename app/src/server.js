@@ -31,7 +31,7 @@ var routesVersioning = require('express-routes-versioning')();
 var moment = require('moment-timezone');
 var production_database_url = 'https://data.ailment92.hasura-app.io/';
 var development_database_url = 'https://data.stellar60.hasura-app.io/';
-var production_authToken = 'Bearer da6oyc1i8v5g8jbnlwxgmhf2fp67bx9x';
+var production_authToken = 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa';
 var development_authToken = 'Bearer o9mwref75mjk7rw42kyhvekhh2l3z23v';
 var _ = require('lodash');
 var fs = require('fs');
@@ -684,33 +684,25 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
   // console.log('arrTime : ', arrTime)
 
   var depTimeX = moment.tz(flight.departureTime,
-    originAirportObject.timeZoneRegionName
+    originAirportObject.timeZoneRegionName.toString()
   ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
   var arrTimeX = moment.tz(flight.arrivalTime,
-    destinationAirportObject.timeZoneRegionName
+    destinationAirportObject.timeZoneRegionName.toString()
   ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
-  console.log('depTimeX : ', depTimeX)
-  console.log('arrTimeX : ', arrTimeX)
+  // console.log('depTimeX : ', depTimeX)
+  // console.log('arrTimeX : ', arrTimeX)
 
-  var result_depTime = moment.utc(depTime).format(
+  var result_depTime = moment.utc(depTimeX).format(
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-  var result_arrTime = moment.utc(arrTime).format(
+  var result_arrTime = moment.utc(arrTimeX).format(
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-
-  // console.log('result_depTime : ', result_depTime);
-  // console.log('result_arrTime : ', result_arrTime);
-
 
   var result_depTime_local = moment.utc(depTimeX).format(
     "YYYY-MM-DD" + ' ' + "HH:mm:ss");
   var result_arrTime_local = moment.utc(arrTimeX).format(
     "YYYY-MM-DD" + ' ' + "HH:mm:ss");
-
-  // console.log('result_depTime_local : ', result_depTime_local);
-  // console.log('result_arrTime_local : ', result_arrTime_local);
-
 
   callback(result_arrTime, result_depTime, result_arrTime_local,
     result_depTime_local);
@@ -724,13 +716,13 @@ var find_data = function(flight_details_object, res, callback) {
     where: flight_details_object
   };
 
-  const url = production_database_url +
+  const url = development_database_url +
     'api/1/table/flights/select';
   const options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -750,7 +742,7 @@ var find_data = function(flight_details_object, res, callback) {
 };
 
 var insert_data = function(flight_details_object, res, callback) {
-  var insertUrl = production_database_url +
+  var insertUrl = development_database_url +
     'api/1/table/flights/insert';
   var insertOpts = {
     method: 'POST',
@@ -760,7 +752,7 @@ var insert_data = function(flight_details_object, res, callback) {
     }),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -777,12 +769,7 @@ var insert_data = function(flight_details_object, res, callback) {
   });
 }
 
-
-app.post('/flight-check', routesVersioning({
-  "~1.0.0": flight_check_function
-}, NoMatchFoundCallback));
-
-function flight_check_function(req, res, next) {
+app.post('/flight-check', (req, res) => {
   console.log('flight-check');
   var finalresult = [];
   const input = req.body;
@@ -849,7 +836,8 @@ function flight_check_function(req, res, next) {
 
           changeTime(flights[count], originAirportObject,
             destinationAirportObject,
-            function(result_arrTime, result_depTime, result_arrTime_local,
+            function(result_arrTime,
+              result_depTime, result_arrTime_local,
               result_depTime_local) {
 
               // console.log('flightName : ', flightName);
@@ -905,16 +893,14 @@ function flight_check_function(req, res, next) {
         }
       }
     });
-}
+});
 
 
-app.get('/frequent-fliers', routesVersioning({}, NoMatchFoundCallback));
-
-function frequent_fliers_function(req, res, next) {
+app.get('/frequent-fliers', (req, res) => {
 
   var finalresult = [];
   var ids = [];
-  var getUrl = production_database_url + 'v1/query';
+  var getUrl = development_database_url + 'v1/query';
   // var getoptions = {
   //   method: 'POST',
   //   headers: {
@@ -945,7 +931,7 @@ function frequent_fliers_function(req, res, next) {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': production_authToken,
+      'authorization': development_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1032,17 +1018,17 @@ function frequent_fliers_function(req, res, next) {
     res.send(finalresult);
   });
   // });
-}
+});
 
 var update_data = function(updateData, url, res, callback) {
 
-  const updateUrl = production_database_url + url;
+  const updateUrl = development_database_url + url;
   const updateOpts = {
     method: 'POST',
     body: updateData,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -1054,12 +1040,7 @@ var update_data = function(updateData, url, res, callback) {
   });
 }
 
-
-app.post('/image-upload', routesVersioning({
-  "~1.0.0": image_upload_function
-}, NoMatchFoundCallback));
-
-function image_upload_function(req, res, next) {
+app.post('/image-upload', (req, res) => {
   // console.log('userId :', req.body.userId);
   var filename = "";
   var image_url = '';
@@ -1103,7 +1084,7 @@ function image_upload_function(req, res, next) {
       }
     }
   });
-}
+});
 
 var s3Upload = function(readStream, fileName, req, res) {
   var bucket_name = 'levoprofilepics';
@@ -1161,13 +1142,13 @@ var s3Upload = function(readStream, fileName, req, res) {
 
 var find = function(checkData, url, res, callback) {
 
-  var req_url = production_database_url + url;
+  var req_url = development_database_url + url;
   console.log('req_url : ', req_url);
   var options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -1181,13 +1162,11 @@ var find = function(checkData, url, res, callback) {
   });
 };
 
-
-
 app.get('/all-airports', routesVersioning({
-  "~1.0.0": all_airports_function
+  "~1.0.0": respondV1
 }, NoMatchFoundCallback));
 
-function all_airports_function(req, res, next) {
+function respondV1(req, res, next) {
   const checkData = {
     columns: ['*']
   };
@@ -1214,17 +1193,6 @@ function all_airports_function(req, res, next) {
   });
 }
 
-function versionavailable(req, res, next) {
-  res.json({
-    data: [],
-    error: {
-      code: 700,
-      message: 'force update',
-      errors: ''
-    }
-  });
-}
-
 function NoMatchFoundCallback(req, res, next) {
   res.json({
     data: [],
@@ -1236,13 +1204,7 @@ function NoMatchFoundCallback(req, res, next) {
   });
 }
 
-
-app.get('/airport-by-code', routesVersioning({
-  "~1.0.0": airport_by_code_function
-}, NoMatchFoundCallback));
-
-function airport_by_code_function(req, res, next) {
-
+app.get('/airport-by-code', (req, res) => {
   var final = [];
   const checkData = {
     columns: ['*'],
@@ -1313,1023 +1275,803 @@ function airport_by_code_function(req, res, next) {
       });
     }
   });
-}
-
-
-app.post('/airport-user-enter', routesVersioning({
-  "~1.0.0": airport_user_enter_function
-}, NoMatchFoundCallback));
-
-function airport_user_enter_function(req, res, next) {
-
-  var airport_code = req.body.airport_code.toUpperCase();
-  var userid = req.body.user_id;
-
-  // const checkData = {
-  //   columns: ['*'],
-  //   where: {
-  //     user_id: userid
-  //   }
-  // };
-  // var url = 'api/1/table/airport_user/select';
-  //
-  // find(checkData, url, res, function(err, data) {
-  //   if (err) {
-  //     res.json({
-  //       data: [],
-  //       error: {
-  //         code: 500,
-  //         message: 'Backend Error',
-  //         errors: err
-  //       }
-  //     });
-  //   }
-  //   if (data.length == 0) {
-  const checkData = {
-    columns: ['*'],
-    where: {
-      airport_code: airport_code.toUpperCase()
-    }
-  };
-  var url = 'api/1/table/airport/select';
-
-  find(checkData, url, res, function(err, data1) {
-    if (err) {
-      res.json({
-        data: [],
-        error: {
-          code: 500,
-          message: 'Backend Error',
-          errors: err
-        }
-      });
-    }
-    var getUrl = production_database_url + 'v1/query';
-    var getoptions = {
-      method: 'POST',
-      headers: {
-        'x-hasura-role': 'admin',
-        'authorization': production_authToken,
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        "type": "delete",
-        "args": {
-          "table": "airport_user",
-          "where": {
-            user_id: userid
-          },
-          "returning": ["id"]
-        }
-      })
-    };
-    request(getUrl, getoptions, res, (resData6) => {
-      // console.log('response data 6 : ', resData6);
-      var insertUrl = production_database_url +
-        'api/1/table/airport_user/insert';
-
-      var user_airport_details_object = new Object({
-        user_id: userid,
-        airport_id: data1[0].id,
-        entry_time: new Date().getTime()
-      });
-
-      var insertOpts = {
-        method: 'POST',
-        body: JSON.stringify({
-          objects: [user_airport_details_object],
-          "returning": ["id"]
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': production_authToken,
-          'X-Hasura-Role': 'admin'
-        }
-      };
-
-      request_function(insertUrl, insertOpts, res, function(
-        err,
-        response) {
-        if (err) {
-          res.json({
-            data: [],
-            error: {
-              code: 500,
-              message: 'Backend Error',
-              errors: err
-            }
-          });
-        }
-        // console.log(response);
-        const checkData = {
-          columns: ['*'],
-          where: {
-            id: response.returning[0].id
-          }
-        };
-        var url = 'api/1/table/airport_user/select';
-
-        find(checkData, url, res, function(err, data2) {
-          if (err) {
-            res.json({
-              data: [],
-              error: {
-                code: 500,
-                message: 'Backend Error',
-                errors: err
-              }
-            });
-          }
-
-          res.json({
-            data: data1,
-            error: {
-              code: 200,
-              message: 'success',
-              errors: err
-            }
-          });
-        });
-      });
-    });
-  });
-  // } else {
-  //   console.log('you are here: ', data);
-  //   const checkData = {
-  //     columns: ['*'],
-  //     where: {
-  //       airport_code: airport_code
-  //     }
-  //   };
-  //   var url = 'api/1/table/airport/select';
-  //
-  //   find(checkData, url, res, function(err, doc) {
-  //     if (err) {
-  //       res.json({
-  //         data: [],
-  //         error: {
-  //           code: 500,
-  //           message: 'Backend Error',
-  //           errors: err
-  //         }
-  //       });
-  //     }
-  //     res.json({
-  //       data: doc,
-  //       error: {
-  //         code: 200,
-  //         message: 'success',
-  //         errors: err
-  //       }
-  //     });
-  //   });
-  // }
-  // });
-}
-
-
-app.post('/airport-user-exit', routesVersioning({
-  "~1.0.0": airport_user_exit_function
-}, NoMatchFoundCallback));
-
-function airport_user_exit_function(req, res, next) {
-
-
-  var userid = req.body.user_id;
-  var airport_code = req.body.airport_code.toUpperCase();
-  const checkData = {
-    columns: ['*'],
-    where: {
-      airport_code: airport_code
-    }
-  };
-  var url = 'api/1/table/airport/select';
-  find(checkData, url, res, function(err, data) {
-    if (err) {
-      res.json({
-        data: [],
-        error: {
-          code: 500,
-          message: 'Backend Error',
-          errors: err
-        }
-      });
-    }
-    var getUrl = production_database_url + 'v1/query';
-    var getoptions = {
-      method: 'POST',
-      headers: {
-        'x-hasura-role': 'admin',
-        'authorization': production_authToken,
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        "type": "delete",
-        "args": {
-          "table": "airport_user",
-          "where": {
-            "user_id": userid
-          },
-          "returning": ["id"]
-        }
-      })
-    };
-    request(getUrl, getoptions, res, (resData1) => {
-      console.log('response data : ', resData1);
-      res.json({
-        data: data,
-        error: {
-          code: 200,
-          message: 'success',
-          errors: ""
-        }
-      });
-    });
-  });
-}
-
-
-app.post('/airport-user-profile', routesVersioning({
-  "~1.0.0": airport_user_profile_function
-}, NoMatchFoundCallback));
-
-function airport_user_profile_function(req, res, next) {
-
-  var airport_code = req.body.airport_code.toUpperCase();
-  var userid = req.body.user_id;
-  var ids = [];
-  var finalresult = [];
-  var asyncTasks = [];
-  var checkData = {
-    "columns": [
-      "*", {
-        "name": "airport_user",
-        "columns": ["*"]
-      }
-    ],
-    where: {
-      airport_code: airport_code
-    }
-  };
-  var url = 'api/1/table/airport/select';
-
-  find(checkData, url, res, function(err, data) {
-    if (err) {
-      res.json({
-        data: [],
-        error: {
-          code: 500,
-          message: 'Backend Error',
-          errors: err
-        }
-      });
-    }
-    for (var i = 0; i < data[0].airport_user.length; i++) {
-      ids.push(data[0].airport_user[i].user_id);
-    }
-    checkData = {
-      "columns": ["*"],
-      "where": {
-        user1: userid,
-        user2: {
-          '$in': ids
-        },
-        is_liked: false
-      }
-    };
-    var url = 'api/1/table/like/select';
-
-    find(checkData, url, res, function(err, data1) {
-      if (err) {
-        res.json({
-          data: [],
-          error: {
-            code: 500,
-            message: 'Backend Error',
-            errors: err
-          }
-        });
-      }
-      var unlike_ids = [];
-      for (var i = 0; i < data1.length; i++) {
-        unlike_ids.push(data1[i].user2)
-      }
-      var temp = [];
-      temp.push(req.body.user_id)
-      var final_ids = _.differenceBy(ids, unlike_ids);
-      final_ids = _.differenceBy(ids, temp);
-
-      var getUrl = production_database_url + 'v1/query';
-
-      var getoptions = {
-        method: 'POST',
-        headers: {
-          'x-hasura-role': 'admin',
-          'authorization': production_authToken,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          "type": "select",
-          "args": {
-            "table": "user",
-            "columns": [
-              "*", {
-                "name": "education",
-                "columns": ["*"]
-              }, {
-                "name": "experience",
-                "columns": ["*"]
-              }, {
-                "name": "interests",
-                "columns": ["*"]
-              }
-            ],
-            "where": {
-              "id": {
-                '$in': final_ids
-              }
-            }
-          }
-        })
-      };
-      request(getUrl, getoptions, res, (resData1) => {
-        console.log('resData1 : ', resData1);
-
-        _.forEach(resData1, function(data) {
-          asyncTasks.push(function(callback) {
-            var user_interests = [];
-            var user2_experience = [];
-            var user2_education = [];
-            var user2_companyName = [];
-            var user2_designation = [];
-
-            for (var j = 0; j < data.interests.length; j++) {
-              user_interests.push(data.interests[j].interest);
-            }
-
-            for (var j = 0; j < data.experience.length; j++) {
-              user2_companyName.push(data.experience[
-                j].company_name);
-              user2_designation.push(data.experience[
-                j].designation);
-            }
-
-            for (var j = 0; j < data.education.length; j++) {
-              var education = new Object({
-                f1: data.education[j].institute_name,
-                id: data.education[j].id,
-                user_id: data.education[j].user_id,
-                f2: data.education[j].qualification
-              });
-              user2_education.push(education);
-            }
-
-            for (var j = 0; j < data.experience.length; j++) {
-              var experience = new Object({
-                f1: data.experience[j].company_name,
-                id: data.experience[j].id,
-                user_id: data.experience[j].user_id,
-                f2: data.experience[j].designation
-              });
-              user2_experience.push(experience);
-            }
-            checkData = {
-              "columns": ["*"],
-              "where": {
-                user1: userid,
-                user2: data.id,
-                is_liked: true
-              }
-            };
-            var url = 'api/1/table/like/select';
-            var liked_12 = null;
-            find(checkData, url, res, function(err,
-              data2) {
-              if (data2.length > 0)
-                liked_12 = data2[0].is_liked;
-              checkData = {
-                "columns": ["*"],
-                "where": {
-                  user1: data.id,
-                  user2: userid,
-                  is_liked: true
-                }
-              };
-              var url = 'api/1/table/like/select';
-              var liked_21 = null;
-              find(checkData, url, res, function(
-                err,
-                data3) {
-                if (data3.length > 0)
-                  liked_21 = data3[0].is_liked;
-                var user_details = new Object({
-                  user2: parseInt(data.id),
-                  user2_name: data.name,
-                  user2_city: data.city,
-                  user2_profile_pic: data.profile_pic,
-                  user2_intent: data.intent,
-                  user2_education: user2_education,
-                  user2_experience: user2_experience,
-                  user2_interest: user_interests,
-                  user2_facebook_id: data.facebook_id,
-                  liked_21: liked_21,
-                  liked_12: liked_12,
-                });
-                finalresult.push(user_details);
-                callback(null, finalresult)
-              });
-            });
-          });
-        });
-        async.parallel(asyncTasks, function(err, result) {
-          res.json({
-            data: finalresult,
-            error: {
-              code: 200,
-              message: 'success',
-              errors: ""
-            }
-          });
-        });
-      });
-    });
-  });
-}
-
-var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
-  var currentTime = new Date().getTime() - (3600000 * 4);
-  var getUrl = production_database_url + 'v1/query';
-  var getoptions = {
-    method: 'POST',
-    headers: {
-      'x-hasura-role': 'admin',
-      'authorization': production_authToken,
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify({
-      "type": "delete",
-      "args": {
-        "table": "airport_user",
-        "where": {
-          "entry_time": {
-            '$lt': currentTime
-          }
-        },
-        "returning": ["id"]
-      }
-    })
-  };
-  request(getUrl, getoptions, res, (resData1) => {
-    console.log('response data : ', resData1);
-  });
 });
 
-
-app.post('/send-notification', routesVersioning({
-  "~1.0.0": send_notification_function
-}, NoMatchFoundCallback));
-
-function send_notification_function(req, res, next) {
-  var user_ids = [];
-  var finalresult = [];
-  var asyncTasks = [];
-
-  var checkData = {
-    "columns": ["*"],
-    "where": {
-      user2: req.body.user_id,
-      is_liked: true
-    }
-  };
-  var url = 'api/1/table/like/select';
-
-  find(checkData, url, res, function(err, data1) {
-    if (err) {
-      res.json({
-        data: [],
-        error: {
-          code: 500,
-          message: 'Backend Error',
-          errors: err
-        }
-      });
-    }
-
-    for (var i = 0; i < data1.length; i++) {
-      user_ids.push(data1[i].user1);
-    }
-
-    // console.log('data1 : ', data1);
-    var getUrl = production_database_url + 'v1/query';
-
-    var getoptions = {
-      method: 'POST',
-      headers: {
-        'x-hasura-role': 'admin',
-        'authorization': production_authToken,
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        "type": "select",
-        "args": {
-          "table": "user",
-          "columns": [
-            "*", {
-              "name": "education",
-              "columns": ["*"]
-            }, {
-              "name": "experience",
-              "columns": ["*"]
-            }, {
-              "name": "interests",
-              "columns": ["*"]
-            }, {
-              "name": "flights",
-              "columns": ["*"]
-            }
-          ],
-          "where": {
-            "id": req.body.user_id
-          }
-        }
-      })
-    };
-    request(getUrl, getoptions, res, (resData1) => {
-      // console.log('resData1 : ', resData1);
-      var getoptions = {
-        method: 'POST',
-        headers: {
-          'x-hasura-role': 'admin',
-          'authorization': production_authToken,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          "type": "select",
-          "args": {
-            "table": "flights",
-            "columns": ["*"],
-            "where": {
-              "id": resData1[0].flights[0].flight_id
-            }
-          }
-        })
-      };
-      request(getUrl, getoptions, res, (resData3) => {
-
-        // console.log('resData3 : ', resData3);
-
-        var user1_flight = resData3[0].id;
-        var origin = resData3[0].origin;
-        var destination = resData3[0].destination;
-        var airline = resData3[0].airline;
-        var user1_time = resData3[0].departure;
-        var number = resData3[0].number;
-
-        var getoptions = {
-          method: 'POST',
-          headers: {
-            'x-hasura-role': 'admin',
-            'authorization': production_authToken,
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify({
-            "type": "select",
-            "args": {
-              "table": "user",
-              "columns": [
-                "*", {
-                  "name": "education",
-                  "columns": ["*"]
-                }, {
-                  "name": "experience",
-                  "columns": ["*"]
-                }, {
-                  "name": "interests",
-                  "columns": ["*"]
-                }, {
-                  "name": "flights",
-                  "columns": ["*"]
-                }
-              ],
-              "where": {
-                "id": {
-                  '$in': user_ids
-                }
-              }
-            }
-          })
-        };
-        request(getUrl, getoptions, res, (resData2) => {
-
-          // console.log('resData2 : ', resData2);
-
-          _.forEach(resData2, function(data) {
-            asyncTasks.push(function(callback) {
-
-              var getoptions = {
-                method: 'POST',
-                headers: {
-                  'x-hasura-role': 'admin',
-                  'authorization': production_authToken,
-                  'content-type': 'application/json'
-                },
-                body: JSON.stringify({
-                  "type": "select",
-                  "args": {
-                    "table": "user",
-                    "columns": [
-                      "*", {
-                        "name": "education",
-                        "columns": ["*"]
-                      }, {
-                        "name": "experience",
-                        "columns": ["*"]
-                      }, {
-                        "name": "interests",
-                        "columns": ["*"]
-                      }, {
-                        "name": "flights",
-                        "columns": ["*"]
-                      }
-                    ],
-                    "where": {
-                      "id": data.id
-                    }
-                  }
-                })
-              };
-              request(getUrl, getoptions, res, (
-                resData6) => {
-                // console.log('resData6 : ',
-                //   resData6);
-                if (data.length > 0) {
-                  var getoptions = {
-                    method: 'POST',
-                    headers: {
-                      'x-hasura-role': 'admin',
-                      'authorization': production_authToken,
-                      'content-type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                      "type": "select",
-                      "args": {
-                        "table": "flights",
-                        "columns": ["*"],
-                        "where": {
-                          "id": resData6[0]
-                            .flights[0].flight_id
-                        }
-                      }
-                    })
-                  };
-                  request(getUrl, getoptions, res, (
-                    resData5) => {
-
-                    // console.log('resData3 : ',
-                    //   resData5);
-                    // console.log(
-                    //   'user2_flight : ',
-                    //   resData5[0].id);
-                    var user2_flight =
-                      resData5[0].id;
-                    var user2_origin =
-                      resData5[0].origin;
-                    var user2_destination =
-                      resData5[0].destination;
-                    var user2_airline =
-                      resData5[0]
-                      .airline;
-                    var user2_time = resData5[
-                      0].departure;
-                    var user2_number =
-                      resData5[0].number;
-
-                    var user_interests = [];
-                    var user2_experience = [];
-                    var user2_education = [];
-                    var user2_companyName = [];
-                    var user2_designation = [];
-                    // var user2_flight = [];
-
-                    // console.log(
-                    //   'flight data : ',
-                    //   data.flights);
-
-                    for (var j = 0; j < data.interests
-                      .length; j++) {
-                      user_interests.push(
-                        data.interests[
-                          j].interest);
-                    }
-                    // console.log(data.experience);
-                    for (var j = 0; j < data.experience
-                      .length; j++) {
-                      user2_companyName.push(
-                        data.experience[
-                          j].company_name);
-                      user2_designation.push(
-                        data.experience[
-                          j].designation);
-                    }
-
-                    for (var j = 0; j < data.education
-                      .length; j++) {
-                      var education = new Object({
-                        f1: data.education[
-                          j].institute_name,
-                        id: data.education[
-                          j].id,
-                        user_id: data.education[
-                          j].user_id,
-                        f2: data.education[
-                          j].qualification
-                      });
-                      user2_education.push(
-                        education);
-                    }
-
-                    for (var j = 0; j < data.experience
-                      .length; j++) {
-                      var experience = new Object({
-                        f1: data.experience[
-                          j].company_name,
-                        id: data.experience[
-                          j].id,
-                        user_id: data.experience[
-                          j].user_id,
-                        f2: data.experience[
-                          j].designation
-                      });
-                      user2_experience.push(
-                        experience);
-                    }
-                    checkData = {
-                      "columns": ["*"],
-                      "where": {
-                        user1: req.body.user_id,
-                        user2: data.id,
-                        is_liked: true
-                      }
-                    };
-                    var url =
-                      'api/1/table/like/select';
-                    var liked_12 = null;
-                    find(checkData, url, res,
-                      function(
-                        err,
-                        data2) {
-                        if (data2.length >
-                          0)
-                          liked_12 = data2[
-                            0].is_liked;
-                        checkData = {
-                          "columns": ["*"],
-                          "where": {
-                            user1: data.id,
-                            user2: req.body
-                              .user_id,
-                            is_liked: true
-                          }
-                        };
-                        var url =
-                          'api/1/table/like/select';
-                        var liked_21 = null;
-                        find(checkData, url,
-                          res,
-                          function(
-                            err,
-                            data3) {
-                            if (data3.length >
-                              0)
-                              liked_21 =
-                              data3[0].is_liked;
-                            var
-                              user_details =
-                              new Object({
-                                user2: parseInt(
-                                  data
-                                  .id
-                                ),
-                                user2_name: data
-                                  .name,
-                                user2_city: data
-                                  .city,
-                                user2_profile_pic: data
-                                  .profile_pic,
-                                user2_intent: data
-                                  .intent,
-                                user2_education: user2_education,
-                                user2_experience: user2_experience,
-                                user2_interest: user_interests,
-                                user2_facebook_id: data
-                                  .facebook_id,
-                                liked_21: liked_21,
-                                liked_12: liked_12,
-                                user1_flight: user1_flight,
-                                origin: origin,
-                                destination: destination,
-                                airline: airline,
-                                user1_time: user1_time,
-                                number: number,
-                                user1: req
-                                  .body
-                                  .user_id,
-                                user2: data
-                                  .id,
-                                user2_flight: user2_flight,
-                                user2_origin: user2_origin,
-                                user2_destination: user2_destination,
-                                user2_airline: user2_airline,
-                                user2_time: user2_time,
-                                user2_number: user2_number,
-                                city: origin
-                              });
-                            finalresult.push(
-                              user_details
-                            );
-                            callback(null,
-                              finalresult
-                            )
-                          });
-                      });
-                  });
-                } else {
-                  var user2_flight = '';
-
-                  var user2_origin = '';
-
-                  var user2_destination = '';
-                  var user2_airline = '';
-                  var user2_time = '';
-                  var user2_number = '';
-
-                  var user_interests = [];
-                  var user2_experience = [];
-                  var user2_education = [];
-                  var user2_companyName = [];
-                  var user2_designation = [];
-                  // var user2_flight = [];
-
-                  // console.log(
-                  //   'flight data : ',
-                  //   data.flights);
-
-                  for (var j = 0; j < data.interests
-                    .length; j++) {
-                    user_interests.push(
-                      data.interests[
-                        j].interest);
-                  }
-                  // console.log(data.experience);
-                  for (var j = 0; j < data.experience
-                    .length; j++) {
-                    user2_companyName.push(
-                      data.experience[
-                        j].company_name);
-                    user2_designation.push(
-                      data.experience[
-                        j].designation);
-                  }
-
-                  for (var j = 0; j < data.education
-                    .length; j++) {
-                    var education = new Object({
-                      f1: data.education[
-                        j].institute_name,
-                      id: data.education[
-                        j].id,
-                      user_id: data.education[
-                        j].user_id,
-                      f2: data.education[
-                        j].qualification
-                    });
-                    user2_education.push(
-                      education);
-                  }
-
-                  for (var j = 0; j < data.experience
-                    .length; j++) {
-                    var experience = new Object({
-                      f1: data.experience[
-                        j].company_name,
-                      id: data.experience[
-                        j].id,
-                      user_id: data.experience[
-                        j].user_id,
-                      f2: data.experience[
-                        j].designation
-                    });
-                    user2_experience.push(
-                      experience);
-                  }
-                  checkData = {
-                    "columns": ["*"],
-                    "where": {
-                      user1: req.body.user_id,
-                      user2: data.id,
-                      is_liked: true
-                    }
-                  };
-                  var url =
-                    'api/1/table/like/select';
-                  var liked_12 = null;
-                  find(checkData, url, res,
-                    function(
-                      err,
-                      data2) {
-                      if (data2.length >
-                        0)
-                        liked_12 = data2[
-                          0].is_liked;
-                      checkData = {
-                        "columns": ["*"],
-                        "where": {
-                          user1: data.id,
-                          user2: req.body
-                            .user_id,
-                          is_liked: true
-                        }
-                      };
-                      var url =
-                        'api/1/table/like/select';
-                      var liked_21 = null;
-                      find(checkData, url,
-                        res,
-                        function(
-                          err,
-                          data3) {
-                          if (data3.length >
-                            0)
-                            liked_21 =
-                            data3[0].is_liked;
-                          var
-                            user_details =
-                            new Object({
-                              user2: parseInt(
-                                data
-                                .id
-                              ),
-                              user2_name: data
-                                .name,
-                              user2_city: data
-                                .city,
-                              user2_profile_pic: data
-                                .profile_pic,
-                              user2_intent: data
-                                .intent,
-                              user2_education: user2_education,
-                              user2_experience: user2_experience,
-                              user2_interest: user_interests,
-                              user2_facebook_id: data
-                                .facebook_id,
-                              liked_21: liked_21,
-                              liked_12: liked_12,
-                              user1_flight: user1_flight,
-                              origin: origin,
-                              destination: destination,
-                              airline: airline,
-                              user1_time: user1_time,
-                              number: number,
-                              user1: req
-                                .body
-                                .user_id,
-                              user2: data
-                                .id,
-                              user2_flight: user2_flight,
-                              user2_origin: user2_origin,
-                              user2_destination: user2_destination,
-                              user2_airline: user2_airline,
-                              user2_time: user2_time,
-                              user2_number: user2_number,
-                              city: origin
-                            });
-                          finalresult.push(
-                            user_details
-                          );
-                          callback(null,
-                            finalresult
-                          )
-                        });
-                    });
-                }
-              });
-            });
-          });
-          async.parallel(asyncTasks, function(err, result) {
-            res.json({
-              data: finalresult,
-              error: {
-                code: 200,
-                message: 'success',
-                errors: ""
-              }
-            });
-          });
-        });
-      });
-    });
-  });
-}
+// app.post('/airport-user-enter', (req, res) => {
+//   var airport_code = req.body.airport_code.toUpperCase();
+//   var userid = req.body.user_id;
+//
+//   const checkData = {
+//     columns: ['*'],
+//     where: {
+//       user_id: userid
+//     }
+//   };
+//   var url = 'api/1/table/airport_user/select';
+//
+//   find(checkData, url, res, function(err, data) {
+//     if (err) {
+//       res.json({
+//         data: [],
+//         error: {
+//           code: 500,
+//           message: 'Backend Error',
+//           errors: err
+//         }
+//       });
+//     }
+//     if (data.length == 0) {
+//       const checkData = {
+//         columns: ['*'],
+//         where: {
+//           airport_code: airport_code.toUpperCase()
+//         }
+//       };
+//       var url = 'api/1/table/airport/select';
+//
+//       find(checkData, url, res, function(err, data1) {
+//         if (err) {
+//           res.json({
+//             data: [],
+//             error: {
+//               code: 500,
+//               message: 'Backend Error',
+//               errors: err
+//             }
+//           });
+//         }
+//         var insertUrl = development_database_url +
+//           'api/1/table/airport_user/insert';
+//
+//         var user_airport_details_object = new Object({
+//           user_id: userid,
+//           airport_id: data1[0].id,
+//           entry_time: new Date().getTime()
+//         });
+//
+//         var insertOpts = {
+//           method: 'POST',
+//           body: JSON.stringify({
+//             objects: [user_airport_details_object],
+//             "returning": ["id"]
+//           }),
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'Authorization': development_authToken,
+//             'X-Hasura-Role': 'admin'
+//           }
+//         };
+//
+//         request_function(insertUrl, insertOpts, res, function(err,
+//           response) {
+//           if (err) {
+//             res.json({
+//               data: [],
+//               error: {
+//                 code: 500,
+//                 message: 'Backend Error',
+//                 errors: err
+//               }
+//             });
+//           }
+//           console.log(response);
+//           const checkData = {
+//             columns: ['*'],
+//             where: {
+//               id: response.returning[0].id
+//             }
+//           };
+//           var url = 'api/1/table/airport_user/select';
+//
+//           find(checkData, url, res, function(err, data2) {
+//             if (err) {
+//               res.json({
+//                 data: [],
+//                 error: {
+//                   code: 500,
+//                   message: 'Backend Error',
+//                   errors: err
+//                 }
+//               });
+//             }
+//
+//             res.json({
+//               data: data1,
+//               error: {
+//                 code: 200,
+//                 message: 'success',
+//                 errors: err
+//               }
+//             });
+//           });
+//         });
+//       });
+//     } else {
+//       console.log('you are here: ', data);
+//       const checkData = {
+//         columns: ['*'],
+//         where: {
+//           airport_code: airport_code
+//         }
+//       };
+//       var url = 'api/1/table/airport/select';
+//
+//       find(checkData, url, res, function(err, doc) {
+//         if (err) {
+//           res.json({
+//             data: [],
+//             error: {
+//               code: 500,
+//               message: 'Backend Error',
+//               errors: err
+//             }
+//           });
+//         }
+//         res.json({
+//           data: doc,
+//           error: {
+//             code: 200,
+//             message: 'success',
+//             errors: err
+//           }
+//         });
+//       });
+//     }
+//   });
+// });
+//
+// app.post('/airport-user-exit', (req, res) => {
+//   var userid = req.body.user_id;
+//   var airport_code = req.body.airport_code.toUpperCase();
+//   const checkData = {
+//     columns: ['*'],
+//     where: {
+//       airport_code: airport_code
+//     }
+//   };
+//   var url = 'api/1/table/airport/select';
+//   find(checkData, url, res, function(err, data) {
+//     if (err) {
+//       res.json({
+//         data: [],
+//         error: {
+//           code: 500,
+//           message: 'Backend Error',
+//           errors: err
+//         }
+//       });
+//     }
+//     var getUrl = development_database_url + 'v1/query';
+//     var getoptions = {
+//       method: 'POST',
+//       headers: {
+//         'x-hasura-role': 'admin',
+//         'authorization': development_authToken,
+//         'content-type': 'application/json'
+//       },
+//       body: JSON.stringify({
+//         "type": "delete",
+//         "args": {
+//           "table": "airport_user",
+//           "where": {
+//             "user_id": userid
+//           },
+//           "returning": ["id"]
+//         }
+//       })
+//     };
+//     request(getUrl, getoptions, res, (resData1) => {
+//       console.log('response data : ', resData1);
+//       res.json({
+//         data: data,
+//         error: {
+//           code: 200,
+//           message: 'success',
+//           errors: ""
+//         }
+//       });
+//     });
+//   });
+// });
+//
+// app.post('/airport-user-profile', (req, res) => {
+//   var airport_code = req.body.airport_code.toUpperCase();
+//   var userid = req.body.user_id;
+//   var ids = [];
+//   var finalresult = [];
+//   var asyncTasks = [];
+//   var checkData = {
+//     "columns": [
+//       "*", {
+//         "name": "airport_user",
+//         "columns": ["*"]
+//       }
+//     ],
+//     where: {
+//       airport_code: airport_code
+//     }
+//   };
+//   var url = 'api/1/table/airport/select';
+//
+//   find(checkData, url, res, function(err, data) {
+//     if (err) {
+//       res.json({
+//         data: [],
+//         error: {
+//           code: 500,
+//           message: 'Backend Error',
+//           errors: err
+//         }
+//       });
+//     }
+//     for (var i = 0; i < data[0].airport_user.length; i++) {
+//       ids.push(data[0].airport_user[i].user_id);
+//     }
+//     checkData = {
+//       "columns": ["*"],
+//       "where": {
+//         user1: userid,
+//         user2: {
+//           '$in': ids
+//         },
+//         is_liked: false
+//       }
+//     };
+//     var url = 'api/1/table/like/select';
+//
+//     find(checkData, url, res, function(err, data1) {
+//       if (err) {
+//         res.json({
+//           data: [],
+//           error: {
+//             code: 500,
+//             message: 'Backend Error',
+//             errors: err
+//           }
+//         });
+//       }
+//       var unlike_ids = [];
+//       for (var i = 0; i < data1.length; i++) {
+//         unlike_ids.push(data1[i].user2)
+//       }
+//       var temp = [];
+//       temp.push(req.body.user_id)
+//       var final_ids = _.differenceBy(ids, unlike_ids);
+//       final_ids = _.differenceBy(ids, temp);
+//
+//       var getUrl = development_database_url + 'v1/query';
+//
+//       var getoptions = {
+//         method: 'POST',
+//         headers: {
+//           'x-hasura-role': 'admin',
+//           'authorization': development_authToken,
+//           'content-type': 'application/json'
+//         },
+//         body: JSON.stringify({
+//           "type": "select",
+//           "args": {
+//             "table": "user",
+//             "columns": [
+//               "*", {
+//                 "name": "education",
+//                 "columns": ["*"]
+//               }, {
+//                 "name": "experience",
+//                 "columns": ["*"]
+//               }, {
+//                 "name": "interests",
+//                 "columns": ["*"]
+//               }
+//             ],
+//             "where": {
+//               "id": {
+//                 '$in': final_ids
+//               }
+//             }
+//           }
+//         })
+//       };
+//       request(getUrl, getoptions, res, (resData1) => {
+//         console.log('resData1 : ', resData1);
+//
+//         _.forEach(resData1, function(data) {
+//           asyncTasks.push(function(callback) {
+//             var user_interests = [];
+//             var user2_experience = [];
+//             var user2_education = [];
+//             var user2_companyName = [];
+//             var user2_designation = [];
+//
+//             for (var j = 0; j < data.interests.length; j++) {
+//               user_interests.push(data.interests[j].interest);
+//             }
+//
+//             for (var j = 0; j < data.experience.length; j++) {
+//               user2_companyName.push(data.experience[
+//                 j].company_name);
+//               user2_designation.push(data.experience[
+//                 j].designation);
+//             }
+//
+//             for (var j = 0; j < data.education.length; j++) {
+//               var education = new Object({
+//                 f1: data.education[j].institute_name,
+//                 id: data.education[j].id,
+//                 user_id: data.education[j].user_id,
+//                 f2: data.education[j].qualification
+//               });
+//               user2_education.push(education);
+//             }
+//
+//             for (var j = 0; j < data.experience.length; j++) {
+//               var experience = new Object({
+//                 f1: data.experience[j].company_name,
+//                 id: data.experience[j].id,
+//                 user_id: data.experience[j].user_id,
+//                 f2: data.experience[j].designation
+//               });
+//               user2_experience.push(experience);
+//             }
+//             checkData = {
+//               "columns": ["*"],
+//               "where": {
+//                 user1: userid,
+//                 user2: data.id,
+//                 is_liked: true
+//               }
+//             };
+//             var url = 'api/1/table/like/select';
+//             var liked_12 = null;
+//             find(checkData, url, res, function(err,
+//               data2) {
+//               if (data2.length > 0)
+//                 liked_12 = data2[0].is_liked;
+//               checkData = {
+//                 "columns": ["*"],
+//                 "where": {
+//                   user1: data.id,
+//                   user2: userid,
+//                   is_liked: true
+//                 }
+//               };
+//               var url = 'api/1/table/like/select';
+//               var liked_21 = null;
+//               find(checkData, url, res, function(
+//                 err,
+//                 data3) {
+//                 if (data3.length > 0)
+//                   liked_21 = data3[0].is_liked;
+//                 var user_details = new Object({
+//                   user2: parseInt(data.id),
+//                   user2_name: data.name,
+//                   user2_city: data.city,
+//                   user2_profile_pic: data.profile_pic,
+//                   user2_intent: data.intent,
+//                   user2_education: user2_education,
+//                   user2_experience: user2_experience,
+//                   user2_interest: user_interests,
+//                   user2_facebook_id: data.facebook_id,
+//                   liked_21: liked_21,
+//                   liked_12: liked_12,
+//                 });
+//                 finalresult.push(user_details);
+//                 callback(null, finalresult)
+//               });
+//             });
+//           });
+//         });
+//         async.parallel(asyncTasks, function(err, result) {
+//           res.json({
+//             data: finalresult,
+//             error: {
+//               code: 200,
+//               message: 'success',
+//               errors: ""
+//             }
+//           });
+//         });
+//       });
+//     });
+//   });
+// });
+//
+// var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
+//   var currentTime = new Date().getTime() - (3600000 * 4);
+//   var getUrl = development_database_url + 'v1/query';
+//   var getoptions = {
+//     method: 'POST',
+//     headers: {
+//       'x-hasura-role': 'admin',
+//       'authorization': development_authToken,
+//       'content-type': 'application/json'
+//     },
+//     body: JSON.stringify({
+//       "type": "delete",
+//       "args": {
+//         "table": "airport_user",
+//         "where": {
+//           "entry_time": {
+//             '$lt': currentTime
+//           }
+//         },
+//         "returning": ["id"]
+//       }
+//     })
+//   };
+//   request(getUrl, getoptions, res, (resData1) => {
+//     console.log('response data : ', resData1);
+//   });
+// });
+//
+// app.post('/send-notification', (req, res) => {
+//   var user_ids = [];
+//   var finalresult = [];
+//   var asyncTasks = [];
+//
+//   var checkData = {
+//     "columns": ["*"],
+//     "where": {
+//       user2: req.body.user_id,
+//       is_liked: true
+//     }
+//   };
+//   var url = 'api/1/table/like/select';
+//
+//   find(checkData, url, res, function(err, data1) {
+//     if (err) {
+//       res.json({
+//         data: [],
+//         error: {
+//           code: 500,
+//           message: 'Backend Error',
+//           errors: err
+//         }
+//       });
+//     }
+//
+//     for (var i = 0; i < data1.length; i++) {
+//       user_ids.push(data1[i].user1);
+//     }
+//
+//     console.log('data1 : ', data1);
+//     var getUrl = development_database_url + 'v1/query';
+//
+//     var getoptions = {
+//       method: 'POST',
+//       headers: {
+//         'x-hasura-role': 'admin',
+//         'authorization': development_authToken,
+//         'content-type': 'application/json'
+//       },
+//       body: JSON.stringify({
+//         "type": "select",
+//         "args": {
+//           "table": "user",
+//           "columns": [
+//             "*", {
+//               "name": "education",
+//               "columns": ["*"]
+//             }, {
+//               "name": "experience",
+//               "columns": ["*"]
+//             }, {
+//               "name": "interests",
+//               "columns": ["*"]
+//             }, {
+//               "name": "flights",
+//               "columns": ["*"]
+//             }
+//           ],
+//           "where": {
+//             "id": req.body.user_id
+//           }
+//         }
+//       })
+//     };
+//     request(getUrl, getoptions, res, (resData1) => {
+//
+//       var getoptions = {
+//         method: 'POST',
+//         headers: {
+//           'x-hasura-role': 'admin',
+//           'authorization': development_authToken,
+//           'content-type': 'application/json'
+//         },
+//         body: JSON.stringify({
+//           "type": "select",
+//           "args": {
+//             "table": "flights",
+//             "columns": ["*"],
+//             "where": {
+//               "id": resData1[0].flights[0].flight_id
+//             }
+//           }
+//         })
+//       };
+//       request(getUrl, getoptions, res, (resData3) => {
+//
+//         console.log('resData3 : ', resData3);
+//
+//         var user1_flight = resData3[0].id;
+//         var origin = resData3[0].origin;
+//         var destination = resData3[0].destination;
+//         var airline = resData3[0].airline;
+//         var user1_time = resData3[0].departure;
+//         var number = resData3[0].number;
+//
+//         var getoptions = {
+//           method: 'POST',
+//           headers: {
+//             'x-hasura-role': 'admin',
+//             'authorization': development_authToken,
+//             'content-type': 'application/json'
+//           },
+//           body: JSON.stringify({
+//             "type": "select",
+//             "args": {
+//               "table": "user",
+//               "columns": [
+//                 "*", {
+//                   "name": "education",
+//                   "columns": ["*"]
+//                 }, {
+//                   "name": "experience",
+//                   "columns": ["*"]
+//                 }, {
+//                   "name": "interests",
+//                   "columns": ["*"]
+//                 }, {
+//                   "name": "flights",
+//                   "columns": ["*"]
+//                 }
+//               ],
+//               "where": {
+//                 "id": {
+//                   '$in': user_ids
+//                 }
+//               }
+//             }
+//           })
+//         };
+//         request(getUrl, getoptions, res, (resData2) => {
+//
+//           console.log('resData2 : ', resData2);
+//
+//           _.forEach(resData2, function(data) {
+//             asyncTasks.push(function(callback) {
+//
+//               var getoptions = {
+//                 method: 'POST',
+//                 headers: {
+//                   'x-hasura-role': 'admin',
+//                   'authorization': development_authToken,
+//                   'content-type': 'application/json'
+//                 },
+//                 body: JSON.stringify({
+//                   "type": "select",
+//                   "args": {
+//                     "table": "user",
+//                     "columns": [
+//                       "*", {
+//                         "name": "education",
+//                         "columns": ["*"]
+//                       }, {
+//                         "name": "experience",
+//                         "columns": ["*"]
+//                       }, {
+//                         "name": "interests",
+//                         "columns": ["*"]
+//                       }, {
+//                         "name": "flights",
+//                         "columns": ["*"]
+//                       }
+//                     ],
+//                     "where": {
+//                       "id": data.id
+//                     }
+//                   }
+//                 })
+//               };
+//               request(getUrl, getoptions, res, (
+//                 resData6) => {
+//
+//                 var getoptions = {
+//                   method: 'POST',
+//                   headers: {
+//                     'x-hasura-role': 'admin',
+//                     'authorization': development_authToken,
+//                     'content-type': 'application/json'
+//                   },
+//                   body: JSON.stringify({
+//                     "type": "select",
+//                     "args": {
+//                       "table": "flights",
+//                       "columns": ["*"],
+//                       "where": {
+//                         "id": resData6[0]
+//                           .flights[0].flight_id
+//                       }
+//                     }
+//                   })
+//                 };
+//                 request(getUrl, getoptions, res, (
+//                   resData5) => {
+//
+//                   console.log('resData3 : ',
+//                     resData5);
+//
+//                   var user2_flight =
+//                     resData5[0].id;
+//                   var userorigin = resData5[0].origin;
+//                   var destination =
+//                     resData5[0].destination;
+//                   var airline = resData5[0]
+//                     .airline;
+//                   var user1_time = resData5[
+//                     0].departure;
+//                   var number = resData5[0].number;
+//
+//                   var user_interests = [];
+//                   var user2_experience = [];
+//                   var user2_education = [];
+//                   var user2_companyName = [];
+//                   var user2_designation = [];
+//                   var user2_flight = [];
+//
+//                   console.log(
+//                     'flight data : ',
+//                     data.flights);
+//
+//                   for (var j = 0; j < data.interests
+//                     .length; j++) {
+//                     user_interests.push(
+//                       data.interests[
+//                         j].interest);
+//                   }
+//                   console.log(data.experience);
+//                   for (var j = 0; j < data.experience
+//                     .length; j++) {
+//                     user2_companyName.push(
+//                       data.experience[
+//                         j].company_name);
+//                     user2_designation.push(
+//                       data.experience[
+//                         j].designation);
+//                   }
+//
+//                   for (var j = 0; j < data.education
+//                     .length; j++) {
+//                     var education = new Object({
+//                       f1: data.education[
+//                         j].institute_name,
+//                       id: data.education[
+//                         j].id,
+//                       user_id: data.education[
+//                         j].user_id,
+//                       f2: data.education[
+//                         j].qualification
+//                     });
+//                     user2_education.push(
+//                       education);
+//                   }
+//
+//                   for (var j = 0; j < data.experience
+//                     .length; j++) {
+//                     var experience = new Object({
+//                       f1: data.experience[
+//                         j].company_name,
+//                       id: data.experience[
+//                         j].id,
+//                       user_id: data.experience[
+//                         j].user_id,
+//                       f2: data.experience[
+//                         j].designation
+//                     });
+//                     user2_experience.push(
+//                       experience);
+//                   }
+//                   checkData = {
+//                     "columns": ["*"],
+//                     "where": {
+//                       user1: req.body.user_id,
+//                       user2: data.id,
+//                       is_liked: true
+//                     }
+//                   };
+//                   var url =
+//                     'api/1/table/like/select';
+//                   var liked_12 = null;
+//                   find(checkData, url, res,
+//                     function(
+//                       err,
+//                       data2) {
+//                       if (data2.length >
+//                         0)
+//                         liked_12 = data2[
+//                           0].is_liked;
+//                       checkData = {
+//                         "columns": ["*"],
+//                         "where": {
+//                           user1: data.id,
+//                           user2: req.body
+//                             .user_id,
+//                           is_liked: true
+//                         }
+//                       };
+//                       var url =
+//                         'api/1/table/like/select';
+//                       var liked_21 = null;
+//                       find(checkData, url,
+//                         res,
+//                         function(
+//                           err,
+//                           data3) {
+//                           if (data3.length >
+//                             0)
+//                             liked_21 =
+//                             data3[0].is_liked;
+//                           var
+//                             user_details =
+//                             new Object({
+//                               user2: parseInt(
+//                                 data
+//                                 .id
+//                               ),
+//                               user2_name: data
+//                                 .name,
+//                               user2_city: data
+//                                 .city,
+//                               user2_profile_pic: data
+//                                 .profile_pic,
+//                               user2_intent: data
+//                                 .intent,
+//                               user2_education: user2_education,
+//                               user2_experience: user2_experience,
+//                               user2_interest: user_interests,
+//                               user2_facebook_id: data
+//                                 .facebook_id,
+//                               liked_21: liked_21,
+//                               liked_12: liked_12,
+//                               user1_flight: user1_flight,
+//                               origin: origin,
+//                               destination: destination,
+//                               airline: airline,
+//                               user1_time: user1_time,
+//                               number: number,
+//                               user1: req
+//                                 .body
+//                                 .user_id,
+//                               user2: data
+//                                 .id
+//                             });
+//                           finalresult.push(
+//                             user_details
+//                           );
+//                           callback(null,
+//                             finalresult
+//                           )
+//                         });
+//                     });
+//                 });
+//               });
+//             });
+//           });
+//           async.parallel(asyncTasks, function(err, result) {
+//             res.json({
+//               data: finalresult,
+//               error: {
+//                 code: 200,
+//                 message: 'success',
+//                 errors: ""
+//               }
+//             });
+//           });
+//         });
+//       });
+//     });
+//   });
+// });
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
