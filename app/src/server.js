@@ -31,7 +31,7 @@ var routesVersioning = require('express-routes-versioning')();
 var moment = require('moment-timezone');
 var production_database_url = 'https://data.ailment92.hasura-app.io/';
 var development_database_url = 'https://data.stellar60.hasura-app.io/';
-var production_authToken = 'Bearer 287vcpq6gu1p367t89czx66n0jroy4aa';
+var production_authToken = 'Bearer da6oyc1i8v5g8jbnlwxgmhf2fp67bx9x';
 var development_authToken = 'Bearer o9mwref75mjk7rw42kyhvekhh2l3z23v';
 var _ = require('lodash');
 var fs = require('fs');
@@ -724,13 +724,13 @@ var find_data = function(flight_details_object, res, callback) {
     where: flight_details_object
   };
 
-  const url = development_database_url +
+  const url = production_database_url +
     'api/1/table/flights/select';
   const options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -750,7 +750,7 @@ var find_data = function(flight_details_object, res, callback) {
 };
 
 var insert_data = function(flight_details_object, res, callback) {
-  var insertUrl = development_database_url +
+  var insertUrl = production_database_url +
     'api/1/table/flights/insert';
   var insertOpts = {
     method: 'POST',
@@ -760,7 +760,7 @@ var insert_data = function(flight_details_object, res, callback) {
     }),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -914,7 +914,7 @@ function frequent_fliers_function(req, res, next) {
 
   var finalresult = [];
   var ids = [];
-  var getUrl = development_database_url + 'v1/query';
+  var getUrl = production_database_url + 'v1/query';
   // var getoptions = {
   //   method: 'POST',
   //   headers: {
@@ -945,7 +945,7 @@ function frequent_fliers_function(req, res, next) {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1036,13 +1036,13 @@ function frequent_fliers_function(req, res, next) {
 
 var update_data = function(updateData, url, res, callback) {
 
-  const updateUrl = development_database_url + url;
+  const updateUrl = production_database_url + url;
   const updateOpts = {
     method: 'POST',
     body: updateData,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -1161,13 +1161,13 @@ var s3Upload = function(readStream, fileName, req, res) {
 
 var find = function(checkData, url, res, callback) {
 
-  var req_url = development_database_url + url;
+  var req_url = production_database_url + url;
   console.log('req_url : ', req_url);
   var options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -1364,12 +1364,12 @@ function airport_user_enter_function(req, res, next) {
         }
       });
     }
-    var getUrl = development_database_url + 'v1/query';
+    var getUrl = production_database_url + 'v1/query';
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': development_authToken,
+        'authorization': production_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1385,7 +1385,7 @@ function airport_user_enter_function(req, res, next) {
     };
     request(getUrl, getoptions, res, (resData6) => {
       // console.log('response data 6 : ', resData6);
-      var insertUrl = development_database_url +
+      var insertUrl = production_database_url +
         'api/1/table/airport_user/insert';
 
       var user_airport_details_object = new Object({
@@ -1402,7 +1402,7 @@ function airport_user_enter_function(req, res, next) {
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': development_authToken,
+          'Authorization': production_authToken,
           'X-Hasura-Role': 'admin'
         }
       };
@@ -1515,12 +1515,12 @@ function airport_user_exit_function(req, res, next) {
         }
       });
     }
-    var getUrl = development_database_url + 'v1/query';
+    var getUrl = production_database_url + 'v1/query';
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': development_authToken,
+        'authorization': production_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1619,13 +1619,13 @@ function airport_user_profile_function(req, res, next) {
       var final_ids = _.differenceBy(ids, unlike_ids);
       final_ids = _.differenceBy(ids, temp);
 
-      var getUrl = development_database_url + 'v1/query';
+      var getUrl = production_database_url + 'v1/query';
 
       var getoptions = {
         method: 'POST',
         headers: {
           'x-hasura-role': 'admin',
-          'authorization': development_authToken,
+          'authorization': production_authToken,
           'content-type': 'application/json'
         },
         body: JSON.stringify({
@@ -1758,12 +1758,12 @@ function airport_user_profile_function(req, res, next) {
 
 var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
   var currentTime = new Date().getTime() - (3600000 * 4);
-  var getUrl = development_database_url + 'v1/query';
+  var getUrl = production_database_url + 'v1/query';
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1820,13 +1820,13 @@ function send_notification_function(req, res, next) {
     }
 
     // console.log('data1 : ', data1);
-    var getUrl = development_database_url + 'v1/query';
+    var getUrl = production_database_url + 'v1/query';
 
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': development_authToken,
+        'authorization': production_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1855,12 +1855,12 @@ function send_notification_function(req, res, next) {
       })
     };
     request(getUrl, getoptions, res, (resData1) => {
-
+      // console.log('resData1 : ', resData1);
       var getoptions = {
         method: 'POST',
         headers: {
           'x-hasura-role': 'admin',
-          'authorization': development_authToken,
+          'authorization': production_authToken,
           'content-type': 'application/json'
         },
         body: JSON.stringify({
@@ -1889,7 +1889,7 @@ function send_notification_function(req, res, next) {
           method: 'POST',
           headers: {
             'x-hasura-role': 'admin',
-            'authorization': development_authToken,
+            'authorization': production_authToken,
             'content-type': 'application/json'
           },
           body: JSON.stringify({
@@ -1930,7 +1930,7 @@ function send_notification_function(req, res, next) {
                 method: 'POST',
                 headers: {
                   'x-hasura-role': 'admin',
-                  'authorization': development_authToken,
+                  'authorization': production_authToken,
                   'content-type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -1960,47 +1960,208 @@ function send_notification_function(req, res, next) {
               };
               request(getUrl, getoptions, res, (
                 resData6) => {
+                // console.log('resData6 : ',
+                //   resData6);
+                if (data.length > 0) {
+                  var getoptions = {
+                    method: 'POST',
+                    headers: {
+                      'x-hasura-role': 'admin',
+                      'authorization': production_authToken,
+                      'content-type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      "type": "select",
+                      "args": {
+                        "table": "flights",
+                        "columns": ["*"],
+                        "where": {
+                          "id": resData6[0]
+                            .flights[0].flight_id
+                        }
+                      }
+                    })
+                  };
+                  request(getUrl, getoptions, res, (
+                    resData5) => {
 
-                var getoptions = {
-                  method: 'POST',
-                  headers: {
-                    'x-hasura-role': 'admin',
-                    'authorization': development_authToken,
-                    'content-type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    "type": "select",
-                    "args": {
-                      "table": "flights",
+                    // console.log('resData3 : ',
+                    //   resData5);
+                    // console.log(
+                    //   'user2_flight : ',
+                    //   resData5[0].id);
+                    var user2_flight =
+                      resData5[0].id;
+                    var user2_origin =
+                      resData5[0].origin;
+                    var user2_destination =
+                      resData5[0].destination;
+                    var user2_airline =
+                      resData5[0]
+                      .airline;
+                    var user2_time = resData5[
+                      0].departure;
+                    var user2_number =
+                      resData5[0].number;
+
+                    var user_interests = [];
+                    var user2_experience = [];
+                    var user2_education = [];
+                    var user2_companyName = [];
+                    var user2_designation = [];
+                    // var user2_flight = [];
+
+                    // console.log(
+                    //   'flight data : ',
+                    //   data.flights);
+
+                    for (var j = 0; j < data.interests
+                      .length; j++) {
+                      user_interests.push(
+                        data.interests[
+                          j].interest);
+                    }
+                    // console.log(data.experience);
+                    for (var j = 0; j < data.experience
+                      .length; j++) {
+                      user2_companyName.push(
+                        data.experience[
+                          j].company_name);
+                      user2_designation.push(
+                        data.experience[
+                          j].designation);
+                    }
+
+                    for (var j = 0; j < data.education
+                      .length; j++) {
+                      var education = new Object({
+                        f1: data.education[
+                          j].institute_name,
+                        id: data.education[
+                          j].id,
+                        user_id: data.education[
+                          j].user_id,
+                        f2: data.education[
+                          j].qualification
+                      });
+                      user2_education.push(
+                        education);
+                    }
+
+                    for (var j = 0; j < data.experience
+                      .length; j++) {
+                      var experience = new Object({
+                        f1: data.experience[
+                          j].company_name,
+                        id: data.experience[
+                          j].id,
+                        user_id: data.experience[
+                          j].user_id,
+                        f2: data.experience[
+                          j].designation
+                      });
+                      user2_experience.push(
+                        experience);
+                    }
+                    checkData = {
                       "columns": ["*"],
                       "where": {
-                        "id": resData6[0]
-                          .flights[0].flight_id
+                        user1: req.body.user_id,
+                        user2: data.id,
+                        is_liked: true
                       }
-                    }
-                  })
-                };
-                request(getUrl, getoptions, res, (
-                  resData5) => {
+                    };
+                    var url =
+                      'api/1/table/like/select';
+                    var liked_12 = null;
+                    find(checkData, url, res,
+                      function(
+                        err,
+                        data2) {
+                        if (data2.length >
+                          0)
+                          liked_12 = data2[
+                            0].is_liked;
+                        checkData = {
+                          "columns": ["*"],
+                          "where": {
+                            user1: data.id,
+                            user2: req.body
+                              .user_id,
+                            is_liked: true
+                          }
+                        };
+                        var url =
+                          'api/1/table/like/select';
+                        var liked_21 = null;
+                        find(checkData, url,
+                          res,
+                          function(
+                            err,
+                            data3) {
+                            if (data3.length >
+                              0)
+                              liked_21 =
+                              data3[0].is_liked;
+                            var
+                              user_details =
+                              new Object({
+                                user2: parseInt(
+                                  data
+                                  .id
+                                ),
+                                user2_name: data
+                                  .name,
+                                user2_city: data
+                                  .city,
+                                user2_profile_pic: data
+                                  .profile_pic,
+                                user2_intent: data
+                                  .intent,
+                                user2_education: user2_education,
+                                user2_experience: user2_experience,
+                                user2_interest: user_interests,
+                                user2_facebook_id: data
+                                  .facebook_id,
+                                liked_21: liked_21,
+                                liked_12: liked_12,
+                                user1_flight: user1_flight,
+                                origin: origin,
+                                destination: destination,
+                                airline: airline,
+                                user1_time: user1_time,
+                                number: number,
+                                user1: req
+                                  .body
+                                  .user_id,
+                                user2: data
+                                  .id,
+                                user2_flight: user2_flight,
+                                user2_origin: user2_origin,
+                                user2_destination: user2_destination,
+                                user2_airline: user2_airline,
+                                user2_time: user2_time,
+                                user2_number: user2_number,
+                                city: origin
+                              });
+                            finalresult.push(
+                              user_details
+                            );
+                            callback(null,
+                              finalresult
+                            )
+                          });
+                      });
+                  });
+                } else {
+                  var user2_flight = '';
 
-                  // console.log('resData3 : ',
-                  //   resData5);
-                  // console.log(
-                  //   'user2_flight : ',
-                  //   resData5[0].id);
-                  var user2_flight =
-                    resData5[0].id;
-                  var user2_origin =
-                    resData5[0].origin;
-                  var user2_destination =
-                    resData5[0].destination;
-                  var user2_airline =
-                    resData5[0]
-                    .airline;
-                  var user2_time = resData5[
-                    0].departure;
-                  var user2_number =
-                    resData5[0].number;
+                  var user2_origin = '';
+
+                  var user2_destination = '';
+                  var user2_airline = '';
+                  var user2_time = '';
+                  var user2_number = '';
 
                   var user_interests = [];
                   var user2_experience = [];
@@ -2150,7 +2311,7 @@ function send_notification_function(req, res, next) {
                           )
                         });
                     });
-                });
+                }
               });
             });
           });
