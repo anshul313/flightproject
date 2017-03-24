@@ -850,8 +850,7 @@ function flight_check_function(req, res, next) {
 
           changeTime(flights[count], originAirportObject,
             destinationAirportObject,
-            function(result_arrTime,
-              result_depTime, result_arrTime_local,
+            function(result_arrTime, result_depTime, result_arrTime_local,
               result_depTime_local) {
 
               // console.log('flightName : ', flightName);
