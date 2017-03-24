@@ -1019,7 +1019,14 @@ function frequent_fliers_function(req, res, next) {
 
       finalresult.push(user_details);
     }
-    res.send(finalresult);
+    res.json({
+      data: finalresult,
+      error: {
+        code: 200,
+        message: 'success',
+        errors: ""
+      }
+    });
   });
   // });
 }
