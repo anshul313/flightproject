@@ -769,7 +769,13 @@ var insert_data = function(flight_details_object, res, callback) {
   });
 }
 
-app.post('/flight-check', (req, res) => {
+
+app.post('/flight-check', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": flight_check_function
+}, NoMatchFoundCallback));
+
+function flight_check_function(req, res, next) {
   console.log('flight-check');
   var finalresult = [];
   const input = req.body;
@@ -893,10 +899,15 @@ app.post('/flight-check', (req, res) => {
         }
       }
     });
-});
+}
 
 
-app.get('/frequent-fliers', (req, res) => {
+app.get('/frequent-fliers', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": frequent_fliers_function
+}, NoMatchFoundCallback));
+
+function frequent_fliers_function(req, res, next) {
 
   var finalresult = [];
   var ids = [];
@@ -1018,7 +1029,7 @@ app.get('/frequent-fliers', (req, res) => {
     res.send(finalresult);
   });
   // });
-});
+}
 
 var update_data = function(updateData, url, res, callback) {
 
@@ -1040,7 +1051,13 @@ var update_data = function(updateData, url, res, callback) {
   });
 }
 
-app.post('/image-upload', (req, res) => {
+
+app.post('/image-upload', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": image_upload_function
+}, NoMatchFoundCallback));
+
+function image_upload_function(req, res, next) {
   // console.log('userId :', req.body.userId);
   var filename = "";
   var image_url = '';
@@ -1084,7 +1101,7 @@ app.post('/image-upload', (req, res) => {
       }
     }
   });
-});
+}
 
 var s3Upload = function(readStream, fileName, req, res) {
   var bucket_name = 'levoprofilepics';
@@ -1162,11 +1179,14 @@ var find = function(checkData, url, res, callback) {
   });
 };
 
+
+
 app.get('/all-airports', routesVersioning({
-  "~1.0.0": respondV1
+  "~1.0.0": versionavailable,
+  "~2.0.0": all_airports_function
 }, NoMatchFoundCallback));
 
-function respondV1(req, res, next) {
+function all_airports_function(req, res, next) {
   const checkData = {
     columns: ['*']
   };
@@ -1193,6 +1213,17 @@ function respondV1(req, res, next) {
   });
 }
 
+function versionavailable(req, res, next) {
+  res.json({
+    data: [],
+    error: {
+      code: 700,
+      message: 'force update',
+      errors: ''
+    }
+  });
+}
+
 function NoMatchFoundCallback(req, res, next) {
   res.json({
     data: [],
@@ -1204,7 +1235,14 @@ function NoMatchFoundCallback(req, res, next) {
   });
 }
 
-app.get('/airport-by-code', (req, res) => {
+
+app.get('/airport-by-code', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": airport_by_code_function
+}, NoMatchFoundCallback));
+
+function airport_by_code_function(req, res, next) {
+
   var final = [];
   const checkData = {
     columns: ['*'],
@@ -1275,9 +1313,16 @@ app.get('/airport-by-code', (req, res) => {
       });
     }
   });
-});
+}
 
-app.post('/airport-user-enter', (req, res) => {
+
+app.post('/airport-user-enter', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": airport_user_enter_function
+}, NoMatchFoundCallback));
+
+function airport_user_enter_function(req, res, next) {
+
   var airport_code = req.body.airport_code.toUpperCase();
   var userid = req.body.user_id;
 
@@ -1441,9 +1486,17 @@ app.post('/airport-user-enter', (req, res) => {
   //   });
   // }
   // });
-});
+}
 
-app.post('/airport-user-exit', (req, res) => {
+
+app.post('/airport-user-exit', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": airport_user_exit_function
+}, NoMatchFoundCallback));
+
+function airport_user_exit_function(req, res, next) {
+
+
   var userid = req.body.user_id;
   var airport_code = req.body.airport_code.toUpperCase();
   const checkData = {
@@ -1495,9 +1548,16 @@ app.post('/airport-user-exit', (req, res) => {
       });
     });
   });
-});
+}
 
-app.post('/airport-user-profile', (req, res) => {
+
+app.post('/airport-user-profile', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": airport_user_profile_function
+}, NoMatchFoundCallback));
+
+function airport_user_profile_function(req, res, next) {
+
   var airport_code = req.body.airport_code.toUpperCase();
   var userid = req.body.user_id;
   var ids = [];
@@ -1697,7 +1757,7 @@ app.post('/airport-user-profile', (req, res) => {
       });
     });
   });
-});
+}
 
 var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
   var currentTime = new Date().getTime() - (3600000 * 4);
@@ -1727,7 +1787,13 @@ var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
   });
 });
 
-app.post('/send-notification', (req, res) => {
+
+app.post('/send-notification', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": send_notification_function
+}, NoMatchFoundCallback));
+
+function send_notification_function(req, res, next) {
   var user_ids = [];
   var finalresult = [];
   var asyncTasks = [];
@@ -2106,7 +2172,7 @@ app.post('/send-notification', (req, res) => {
       });
     });
   });
-});
+}
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
