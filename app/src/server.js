@@ -685,11 +685,19 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
 
   var depTimeX = moment.tz(flight.departureTime,
     originAirportObject.timeZoneRegionName.toString()
-  ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+  ).format("YYYY-MM-DD" + ' ' + "HH:mm:ss");
 
   var arrTimeX = moment.tz(flight.arrivalTime,
     destinationAirportObject.timeZoneRegionName.toString()
-  ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+  ).format("YYYY-MM-DD" + ' ' + "HH:mm:ss");
+
+  // var depTimeX = moment.tz(flight.departureTime,
+  //   originAirportObject.timeZoneRegionName.toString()
+  // ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+  //
+  // var arrTimeX = moment.tz(flight.arrivalTime,
+  //   destinationAirportObject.timeZoneRegionName.toString()
+  // ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
   // console.log('depTimeX : ', depTimeX)
   // console.log('arrTimeX : ', arrTimeX)
@@ -698,11 +706,12 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
   var result_arrTime = moment.utc(arrTime).format(
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+  //
+  // var result_depTime_local = moment.utc(depTimeX).format(
+  //   "YYYY-MM-DD" + ' ' + "HH:mm:ss");
+  // var result_arrTime_local = moment.utc(arrTimeX).format(
+  //   "YYYY-MM-DD" + ' ' + "HH:mm:ss");
 
-  var result_depTime_local = moment.utc(depTimeX).format(
-    "YYYY-MM-DD" + ' ' + "HH:mm:ss");
-  var result_arrTime_local = moment.utc(arrTimeX).format(
-    "YYYY-MM-DD" + ' ' + "HH:mm:ss");
 
   callback(result_arrTime, result_depTime, result_arrTime_local,
     result_depTime_local);
@@ -871,7 +880,7 @@ function flight_check_function(req, res, next) {
 
               find_data(flight_details_object, res, function(err,
                 result) {
-                console.log('result : ', result);
+                // console.log('result : ', result);
                 if (err) {
                   res.send({
                     error_msg: result
@@ -884,7 +893,7 @@ function flight_check_function(req, res, next) {
                   if (finalresult.length == flights.length)
                     res.send(finalresult);
                 } else {
-                  console.log('insert data');
+                  // console.log('insert data');
                   insert_data(flight_details_object, res, function(
                     err, result) {
                     finalresult.push(result);
