@@ -771,7 +771,7 @@ var insert_data = function(flight_details_object, res, callback) {
 
 // app.post('/flight-check', (req, res) => {
 
-app.get('/flight-check', routesVersioning({
+app.post('/flight-check', routesVersioning({
   "~1.0.0": frequent_fliers_function
 }, NoMatchFoundCallback));
 
