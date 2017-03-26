@@ -704,7 +704,7 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
   var result_arrTime_local = moment.utc(arrTimeX).format(
     "YYYY-MM-DD" + ' ' + "HH:mm:ss");
 
-  callback(arrTime, depTime, result_arrTime_local,
+  callback(arrTimeX, depTimeX, result_arrTime_local,
     result_depTime_local);
 
 }
