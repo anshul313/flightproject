@@ -716,13 +716,13 @@ var find_data = function(flight_details_object, res, callback) {
     where: flight_details_object
   };
 
-  const url = production_database_url +
+  const url = development_database_url +
     'api/1/table/flights/select';
   const options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -742,7 +742,7 @@ var find_data = function(flight_details_object, res, callback) {
 };
 
 var insert_data = function(flight_details_object, res, callback) {
-  var insertUrl = production_database_url +
+  var insertUrl = development_database_url +
     'api/1/table/flights/insert';
   var insertOpts = {
     method: 'POST',
@@ -752,7 +752,7 @@ var insert_data = function(flight_details_object, res, callback) {
     }),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -769,7 +769,14 @@ var insert_data = function(flight_details_object, res, callback) {
   });
 }
 
-app.post('/flight-check', (req, res) => {
+// app.post('/flight-check', (req, res) => {
+
+app.get('/flight-check', routesVersioning({
+  "~1.0.0": frequent_fliers_function
+}, NoMatchFoundCallback));
+
+function flight_check_function(req, res, next) {
+
   console.log('flight-check');
   var finalresult = [];
   const input = req.body;
@@ -893,7 +900,7 @@ app.post('/flight-check', (req, res) => {
         }
       }
     });
-});
+}
 
 
 app.get('/frequent-fliers', routesVersioning({
@@ -904,7 +911,7 @@ function frequent_fliers_function(req, res, next) {
 
   var finalresult = [];
   var ids = [];
-  var getUrl = production_database_url + 'v1/query';
+  var getUrl = development_database_url + 'v1/query';
   // var getoptions = {
   //   method: 'POST',
   //   headers: {
@@ -935,7 +942,7 @@ function frequent_fliers_function(req, res, next) {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': production_authToken,
+      'authorization': development_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1033,13 +1040,13 @@ function frequent_fliers_function(req, res, next) {
 
 var update_data = function(updateData, url, res, callback) {
 
-  const updateUrl = production_database_url + url;
+  const updateUrl = development_database_url + url;
   const updateOpts = {
     method: 'POST',
     body: updateData,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -1158,13 +1165,13 @@ var s3Upload = function(readStream, fileName, req, res) {
 
 var find = function(checkData, url, res, callback) {
 
-  var req_url = production_database_url + url;
+  var req_url = development_database_url + url;
   console.log('req_url : ', req_url);
   var options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': production_authToken,
+      'Authorization': development_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -1361,12 +1368,12 @@ function airport_user_enter_function(req, res, next) {
         }
       });
     }
-    var getUrl = production_database_url + 'v1/query';
+    var getUrl = development_database_url + 'v1/query';
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': production_authToken,
+        'authorization': development_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1382,7 +1389,7 @@ function airport_user_enter_function(req, res, next) {
     };
     request(getUrl, getoptions, res, (resData6) => {
       // console.log('response data 6 : ', resData6);
-      var insertUrl = production_database_url +
+      var insertUrl = development_database_url +
         'api/1/table/airport_user/insert';
 
       var user_airport_details_object = new Object({
@@ -1399,7 +1406,7 @@ function airport_user_enter_function(req, res, next) {
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': production_authToken,
+          'Authorization': development_authToken,
           'X-Hasura-Role': 'admin'
         }
       };
@@ -1512,12 +1519,12 @@ function airport_user_exit_function(req, res, next) {
         }
       });
     }
-    var getUrl = production_database_url + 'v1/query';
+    var getUrl = development_database_url + 'v1/query';
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': production_authToken,
+        'authorization': development_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1616,13 +1623,13 @@ function airport_user_profile_function(req, res, next) {
       var final_ids = _.differenceBy(ids, unlike_ids);
       final_ids = _.differenceBy(ids, temp);
 
-      var getUrl = production_database_url + 'v1/query';
+      var getUrl = development_database_url + 'v1/query';
 
       var getoptions = {
         method: 'POST',
         headers: {
           'x-hasura-role': 'admin',
-          'authorization': production_authToken,
+          'authorization': development_authToken,
           'content-type': 'application/json'
         },
         body: JSON.stringify({
@@ -1755,12 +1762,12 @@ function airport_user_profile_function(req, res, next) {
 
 var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
   var currentTime = new Date().getTime() - (3600000 * 4);
-  var getUrl = production_database_url + 'v1/query';
+  var getUrl = development_database_url + 'v1/query';
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': production_authToken,
+      'authorization': development_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1817,13 +1824,13 @@ function send_notification_function(req, res, next) {
     }
 
     // console.log('data1 : ', data1);
-    var getUrl = production_database_url + 'v1/query';
+    var getUrl = development_database_url + 'v1/query';
 
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': production_authToken,
+        'authorization': development_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1857,7 +1864,7 @@ function send_notification_function(req, res, next) {
         method: 'POST',
         headers: {
           'x-hasura-role': 'admin',
-          'authorization': production_authToken,
+          'authorization': development_authToken,
           'content-type': 'application/json'
         },
         body: JSON.stringify({
@@ -1886,7 +1893,7 @@ function send_notification_function(req, res, next) {
           method: 'POST',
           headers: {
             'x-hasura-role': 'admin',
-            'authorization': production_authToken,
+            'authorization': development_authToken,
             'content-type': 'application/json'
           },
           body: JSON.stringify({
@@ -1927,7 +1934,7 @@ function send_notification_function(req, res, next) {
                 method: 'POST',
                 headers: {
                   'x-hasura-role': 'admin',
-                  'authorization': production_authToken,
+                  'authorization': development_authToken,
                   'content-type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -1964,7 +1971,7 @@ function send_notification_function(req, res, next) {
                     method: 'POST',
                     headers: {
                       'x-hasura-role': 'admin',
-                      'authorization': production_authToken,
+                      'authorization': development_authToken,
                       'content-type': 'application/json'
                     },
                     body: JSON.stringify({
