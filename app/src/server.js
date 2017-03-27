@@ -1587,26 +1587,25 @@ app.post('/airport-user-profile', routesVersioning({
 }, NoMatchFoundCallback));
 
 function airport_user_profile_function(req, res, next) {
-
+  // console.log('userid : ', req.body.user_id);
   var airport_code = req.body.airport_code.toUpperCase();
   var userid = req.body.user_id;
   var ids = [];
   var finalresult = [];
   var asyncTasks = [];
+  var startTime;
+  var endTime;
+
   var checkData = {
-    "columns": [
-      "*", {
-        "name": "airport_user",
-        "columns": ["*"]
-      }
-    ],
+    "columns": ["*"],
     where: {
-      airport_code: airport_code
+      user_id: userid
     }
   };
-  var url = 'api/1/table/airport/select';
+  var url = 'api/1/table/airport_user/select';
 
-  find(checkData, url, res, function(err, data) {
+  find(checkData, url, res, function(err, userData) {
+    // console.log('userData : ', userData);
     if (err) {
       res.json({
         data: [],
@@ -1617,175 +1616,255 @@ function airport_user_profile_function(req, res, next) {
         }
       });
     }
-    for (var i = 0; i < data[0].airport_user.length; i++) {
-      ids.push(data[0].airport_user[i].user_id);
-    }
-    checkData = {
-      "columns": ["*"],
-      "where": {
-        user1: userid,
-        user2: {
-          '$in': ids
-        },
-        is_liked: false
-      }
-    };
-    var url = 'api/1/table/like/select';
-
-    find(checkData, url, res, function(err, data1) {
-      if (err) {
-        res.json({
-          data: [],
-          error: {
-            code: 500,
-            message: 'Backend Error',
-            errors: err
-          }
-        });
-      }
-      var unlike_ids = [];
-      for (var i = 0; i < data1.length; i++) {
-        unlike_ids.push(data1[i].user2)
-      }
-      var temp = [];
-      temp.push(req.body.user_id)
-      var final_ids = _.differenceBy(ids, unlike_ids);
-      final_ids = _.differenceBy(ids, temp);
-
-      var getUrl = development_database_url + 'v1/query';
-
-      var getoptions = {
-        method: 'POST',
-        headers: {
-          'x-hasura-role': 'admin',
-          'authorization': development_authToken,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          "type": "select",
-          "args": {
-            "table": "user",
-            "columns": [
-              "*", {
-                "name": "education",
-                "columns": ["*"]
-              }, {
-                "name": "experience",
-                "columns": ["*"]
-              }, {
-                "name": "interests",
-                "columns": ["*"]
-              }
-            ],
-            "where": {
-              "id": {
-                '$in': final_ids
-              }
+    if (userData.length > 0) {
+      startTime = userData[0].entry_time;
+      // console.log('startTime : ', startTime);
+      endTime = userData[0].entry_time + (3600000 * 2);
+      var checkData = {
+        "columns": ["*"],
+        where: {
+          airport_id: userData[0].airport_id,
+          "$and": [{
+            entry_time: {
+              "$gte": startTime
             }
-          }
-        })
+          }, {
+            entry_time: {
+              "$lte": endTime
+            }
+          }]
+        }
       };
-      request(getUrl, getoptions, res, (resData1) => {
-        console.log('resData1 : ', resData1);
+      var url = 'api/1/table/airport_user/select';
 
-        _.forEach(resData1, function(data) {
-          asyncTasks.push(function(callback) {
-            var user_interests = [];
-            var user2_experience = [];
-            var user2_education = [];
-            var user2_companyName = [];
-            var user2_designation = [];
-
-            for (var j = 0; j < data.interests.length; j++) {
-              user_interests.push(data.interests[j].interest);
-            }
-
-            for (var j = 0; j < data.experience.length; j++) {
-              user2_companyName.push(data.experience[
-                j].company_name);
-              user2_designation.push(data.experience[
-                j].designation);
-            }
-
-            for (var j = 0; j < data.education.length; j++) {
-              var education = new Object({
-                f1: data.education[j].institute_name,
-                id: data.education[j].id,
-                user_id: data.education[j].user_id,
-                f2: data.education[j].qualification
-              });
-              user2_education.push(education);
-            }
-
-            for (var j = 0; j < data.experience.length; j++) {
-              var experience = new Object({
-                f1: data.experience[j].company_name,
-                id: data.experience[j].id,
-                user_id: data.experience[j].user_id,
-                f2: data.experience[j].designation
-              });
-              user2_experience.push(experience);
-            }
-            checkData = {
-              "columns": ["*"],
-              "where": {
-                user1: userid,
-                user2: data.id,
-                is_liked: true
-              }
-            };
-            var url = 'api/1/table/like/select';
-            var liked_12 = null;
-            find(checkData, url, res, function(err,
-              data2) {
-              if (data2.length > 0)
-                liked_12 = data2[0].is_liked;
-              checkData = {
-                "columns": ["*"],
-                "where": {
-                  user1: data.id,
-                  user2: userid,
-                  is_liked: true
-                }
-              };
-              var url = 'api/1/table/like/select';
-              var liked_21 = null;
-              find(checkData, url, res, function(
-                err,
-                data3) {
-                if (data3.length > 0)
-                  liked_21 = data3[0].is_liked;
-                var user_details = new Object({
-                  user2: parseInt(data.id),
-                  user2_name: data.name,
-                  user2_city: data.city,
-                  user2_profile_pic: data.profile_pic,
-                  user2_intent: data.intent,
-                  user2_education: user2_education,
-                  user2_experience: user2_experience,
-                  user2_interest: user_interests,
-                  user2_facebook_id: data.facebook_id,
-                  liked_21: liked_21,
-                  liked_12: liked_12,
-                });
-                finalresult.push(user_details);
-                callback(null, finalresult)
-              });
-            });
-          });
-        });
-        async.parallel(asyncTasks, function(err, result) {
+      find(checkData, url, res, function(err, data) {
+        // console.log('data : ', data);
+        if (err) {
           res.json({
-            data: finalresult,
+            data: [],
+            error: {
+              code: 500,
+              message: 'Backend Error',
+              errors: err
+            }
+          });
+        }
+        if (data.length > 0) {
+          for (var i = 0; i < data.length; i++) {
+            ids.push(data[i].user_id);
+          }
+          checkData = {
+            "columns": ["*"],
+            "where": {
+              user1: userid,
+              user2: {
+                '$in': ids
+              },
+              is_liked: false
+            }
+          };
+          var url = 'api/1/table/like/select';
+
+          find(checkData, url, res, function(err, data1) {
+            if (err) {
+              res.json({
+                data: [],
+                error: {
+                  code: 500,
+                  message: 'Backend Error',
+                  errors: err
+                }
+              });
+            }
+            if (data.length > 0) {
+              var unlike_ids = [];
+              for (var i = 0; i < data1.length; i++) {
+                unlike_ids.push(data1[i].user2)
+              }
+              var temp = [];
+              temp.push(req.body.user_id)
+              var final_ids = _.differenceBy(ids, unlike_ids);
+              final_ids = _.differenceBy(ids, temp);
+
+              var getUrl = development_database_url + 'v1/query';
+
+              var getoptions = {
+                method: 'POST',
+                headers: {
+                  'x-hasura-role': 'admin',
+                  'authorization': development_authToken,
+                  'content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                  "type": "select",
+                  "args": {
+                    "table": "user",
+                    "columns": [
+                      "*", {
+                        "name": "education",
+                        "columns": ["*"]
+                      }, {
+                        "name": "experience",
+                        "columns": ["*"]
+                      }, {
+                        "name": "interests",
+                        "columns": ["*"]
+                      }
+                    ],
+                    "where": {
+                      "id": {
+                        '$in': final_ids
+                      }
+                    }
+                  }
+                })
+              };
+              request(getUrl, getoptions, res, (resData1) => {
+                // console.log('resData1 : ', resData1);
+
+                _.forEach(resData1, function(data) {
+                  asyncTasks.push(function(callback) {
+                    var user_interests = [];
+                    var user2_experience = [];
+                    var user2_education = [];
+                    var user2_companyName = [];
+                    var user2_designation = [];
+
+                    for (var j = 0; j < data.interests.length; j++) {
+                      user_interests.push(data.interests[
+                          j]
+                        .interest);
+                    }
+
+                    for (var j = 0; j < data.experience
+                      .length; j++) {
+                      user2_companyName.push(data.experience[
+                        j].company_name);
+                      user2_designation.push(data.experience[
+                        j].designation);
+                    }
+
+                    for (var j = 0; j < data.education.length; j++) {
+                      var education = new Object({
+                        f1: data.education[j].institute_name,
+                        id: data.education[j].id,
+                        user_id: data.education[j].user_id,
+                        f2: data.education[j].qualification
+                      });
+                      user2_education.push(education);
+                    }
+
+                    for (var j = 0; j < data.experience
+                      .length; j++) {
+                      var experience = new Object({
+                        f1: data.experience[j].company_name,
+                        id: data.experience[j].id,
+                        user_id: data.experience[j]
+                          .user_id,
+                        f2: data.experience[j].designation
+                      });
+                      user2_experience.push(experience);
+                    }
+                    checkData = {
+                      "columns": ["*"],
+                      "where": {
+                        user1: userid,
+                        user2: data.id,
+                        is_liked: true
+                      }
+                    };
+                    var url = 'api/1/table/like/select';
+                    var liked_12 = null;
+                    find(checkData, url, res, function(
+                      err,
+                      data2) {
+                      if (data2.length > 0)
+                        liked_12 = data2[0].is_liked;
+                      checkData = {
+                        "columns": ["*"],
+                        "where": {
+                          user1: data.id,
+                          user2: userid,
+                          is_liked: true
+                        }
+                      };
+                      var url =
+                        'api/1/table/like/select';
+                      var liked_21 = null;
+                      find(checkData, url, res,
+                        function(
+                          err,
+                          data3) {
+                          if (data3.length > 0)
+                            liked_21 = data3[0].is_liked;
+                          var user_details = new Object({
+                            user2: parseInt(
+                              data.id),
+                            user2_name: data.name,
+                            user2_city: data.city,
+                            user2_profile_pic: data
+                              .profile_pic,
+                            user2_intent: data
+                              .intent,
+                            user2_education: user2_education,
+                            user2_experience: user2_experience,
+                            user2_interest: user_interests,
+                            user2_facebook_id: data
+                              .facebook_id,
+                            liked_21: liked_21,
+                            liked_12: liked_12,
+                          });
+                          finalresult.push(
+                            user_details);
+                          callback(null,
+                            finalresult)
+                        });
+                    });
+                  });
+                });
+                async.parallel(asyncTasks, function(err, result) {
+                  res.json({
+                    data: finalresult,
+                    error: {
+                      code: 200,
+                      message: 'success',
+                      errors: ""
+                    }
+                  });
+                });
+              });
+            } else {
+              res.json({
+                data: [],
+                error: {
+                  code: 200,
+                  message: 'success',
+                  errors: ""
+                }
+              });
+            }
+          });
+        } else {
+          res.json({
+            data: [],
             error: {
               code: 200,
               message: 'success',
               errors: ""
             }
           });
-        });
+        }
       });
-    });
+    } else {
+      res.json({
+        data: [],
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
+    }
   });
 }
 
@@ -2411,7 +2490,6 @@ function add_flight_function(req, res, next) {
         'X-Hasura-Role': 'admin'
       }
     };
-
     request_function(insertUrl, insertOpts, res, function(
       err,
       response) {
