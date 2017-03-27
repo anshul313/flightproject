@@ -895,8 +895,6 @@ function flight_check_function(req, res, next) {
                 departure_local: result_depTime_local
               });
 
-
-
               // console.log('arrival_local : ', result_arrTime_local);
               // console.log('departure_local : ', result_depTime_local);
 
