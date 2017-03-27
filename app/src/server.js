@@ -691,13 +691,13 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
     destinationAirportObject.timeZoneRegionName.toString()
   ).format("YYYY-MM-DD" + ' ' + "HH:mm:ss");
 
-  // var depTimeX = moment.tz(flight.departureTime,
-  //   originAirportObject.timeZoneRegionName.toString()
-  // ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-  //
-  // var arrTimeX = moment.tz(flight.arrivalTime,
-  //   destinationAirportObject.timeZoneRegionName.toString()
-  // ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+  var depTimeX1 = moment.tz(flight.departureTime,
+    originAirportObject.timeZoneRegionName.toString()
+  ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+  var arrTimeX1 = moment.tz(flight.arrivalTime,
+    destinationAirportObject.timeZoneRegionName.toString()
+  ).format("YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
 
   // console.log('depTimeX : ', depTimeX)
   // console.log('arrTimeX : ', arrTimeX)
@@ -706,14 +706,34 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
   var result_arrTime = moment.utc(arrTime).format(
     "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
-  //
+
+  var utc_depTime = moment.utc(depTimeX1).format(
+    "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+  var utc_arrTime = moment.utc(arrTimeX1).format(
+    "YYYY-MM-DD" + 'T' + "HH:mm:ss" + "Z");
+
+  console.log('result_depTime : ', result_depTime);
+  console.log('result_arrTime : ', result_arrTime);
+
+  console.log('utc_depTime : ', utc_depTime);
+  console.log('utc_arrTime : ', utc_arrTime);
+
+  var result_depTime_local = moment.utc(depTimeX).format(
+    "YYYY-MM-DD" + ' ' + "HH:mm:ss");
+  var result_arrTime_local = moment.utc(arrTimeX).format(
+    "YYYY-MM-DD" + ' ' + "HH:mm:ss");
+
   // var result_depTime_local = moment.utc(depTimeX).format(
   //   "YYYY-MM-DD" + ' ' + "HH:mm:ss");
   // var result_arrTime_local = moment.utc(arrTimeX).format(
   //   "YYYY-MM-DD" + ' ' + "HH:mm:ss");
 
+  var result_depTime_local = depTimeX;
+  var result_arrTime_local = arrTimeX;
 
-  callback(result_arrTime, result_depTime, result_arrTime_local,
+  callback(utc_depTime, utc_arrTime, result_arrTime, result_depTime,
+    result_arrTime_local,
     result_depTime_local);
 
 }
@@ -852,7 +872,7 @@ function flight_check_function(req, res, next) {
 
           changeTime(flights[count], originAirportObject,
             destinationAirportObject,
-            function(result_arrTime,
+            function(utc_depTime, utc_arrTime, result_arrTime,
               result_depTime, result_arrTime_local,
               result_depTime_local) {
 
@@ -867,13 +887,15 @@ function flight_check_function(req, res, next) {
                 airline: flightName,
                 origin_code: depCode,
                 destination_code: arrCode,
-                departure: result_depTime,
-                arrival: result_arrTime,
+                departure: utc_depTime,
+                arrival: utc_arrTime,
                 origin: origin,
                 destination: destination,
                 arrival_local: result_arrTime_local,
                 departure_local: result_depTime_local
               });
+
+
 
               // console.log('arrival_local : ', result_arrTime_local);
               // console.log('departure_local : ', result_depTime_local);
