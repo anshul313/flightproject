@@ -2364,6 +2364,79 @@ function send_notification_function(req, res, next) {
   });
 }
 
+app.post('/add-flight', routesVersioning({
+  "~1.0.0": add_flight_function
+}, NoMatchFoundCallback));
+
+function add_flight_function(req, res, next) {
+  var getUrl = development_database_url + 'v1/query';
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "delete",
+      "args": {
+        "table": "user_flight",
+        "where": {
+          user_id: parseInt(req.body.user_id),
+          flight_id: parseInt(req.body.flight_id),
+          pnr: req.body.pnr_number
+        }
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (resData6) => {
+    console.log('response data 6 : ', resData6);
+    var insertUrl = development_database_url +
+      'api/1/table/user_flight/insert';
+
+    var user_airport_details_object = new Object({
+      user_id: parseInt(req.body.user_id),
+      flight_id: parseInt(req.body.flight_id),
+      pnr: req.body.pnr_number
+    });
+
+    var insertOpts = {
+      method: 'POST',
+      body: JSON.stringify({
+        objects: [user_airport_details_object]
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': development_authToken,
+        'X-Hasura-Role': 'admin'
+      }
+    };
+
+    request_function(insertUrl, insertOpts, res, function(
+      err,
+      response) {
+      console.log('response : ', response);
+      if (err) {
+        res.json({
+          data: [],
+          error: {
+            code: 500,
+            message: 'Backend Error',
+            errors: err
+          }
+        });
+      }
+      res.json({
+        data: user_airport_details_object,
+        error: {
+          code: 200,
+          message: 'success',
+          errors: err
+        }
+      });
+    });
+  });
+}
 
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
