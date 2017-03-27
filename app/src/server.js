@@ -2187,7 +2187,7 @@ function send_notification_function(req, res, next) {
                       });
                   });
                 } else {
-                  var user2_flight = '';
+                  var user2_flight = null;
 
                   var user2_origin = '';
 
