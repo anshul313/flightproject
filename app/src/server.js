@@ -2359,13 +2359,13 @@ function send_notification_function(req, res, next) {
     }
 
     // console.log('data1 : ', data1);
-    var getUrl = development_database_url + 'v1/query';
+    var getUrl = production_database_url + 'v1/query';
 
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': development_authToken,
+        'authorization': production_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -2400,7 +2400,7 @@ function send_notification_function(req, res, next) {
           method: 'POST',
           headers: {
             'x-hasura-role': 'admin',
-            'authorization': development_authToken,
+            'authorization': production_authToken,
             'content-type': 'application/json'
           },
           body: JSON.stringify({
@@ -2429,7 +2429,7 @@ function send_notification_function(req, res, next) {
             method: 'POST',
             headers: {
               'x-hasura-role': 'admin',
-              'authorization': development_authToken,
+              'authorization': production_authToken,
               'content-type': 'application/json'
             },
             body: JSON.stringify({
@@ -2470,7 +2470,7 @@ function send_notification_function(req, res, next) {
                   method: 'POST',
                   headers: {
                     'x-hasura-role': 'admin',
-                    'authorization': development_authToken,
+                    'authorization': production_authToken,
                     'content-type': 'application/json'
                   },
                   body: JSON.stringify({
@@ -2507,7 +2507,7 @@ function send_notification_function(req, res, next) {
                       method: 'POST',
                       headers: {
                         'x-hasura-role': 'admin',
-                        'authorization': development_authToken,
+                        'authorization': production_authToken,
                         'content-type': 'application/json'
                       },
                       body: JSON.stringify({
