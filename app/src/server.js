@@ -1402,73 +1402,53 @@ function airport_by_code_function(req, res, next) {
               }
             });
           }
-          if (data.length > 0) {
-            if (data[0].user_flight.length > 0) {
-              for (var i = 0; i < data[0].user_flight.length; i++) {
-                flight_user_ids.push(data[0].user_flight[i].user_id)
+          if ((data.length > 0) && (data[0].user_flight.length > 0)) {
+            for (var i = 0; i < data[0].user_flight.length; i++) {
+              flight_user_ids.push(data[0].user_flight[i].user_id)
+            }
+          }
+          // console.log('flight_ids :', flight_user_ids);
+          var checkData = {
+            "columns": ["*"],
+            where: {
+              airport_id: airport_id
+            }
+          };
+          var url = 'api/1/table/airport_user/select';
+
+          find(checkData, url, res, function(err,
+            airportUserData) {
+
+            if (airportUserData.length > 0) {
+              for (var i = 0; i < airportUserData.length; i++) {
+                airport_user_ids.push(
+                  airportUserData[i].user_id)
               }
-              // console.log('flight_ids :', flight_user_ids);
-              var checkData = {
-                "columns": ["*"],
-                where: {
-                  airport_id: airport_id
-                }
-              };
-              var url = 'api/1/table/airport_user/select';
+              // console.log('airport_user_ids :', airport_user_ids);
+              var other = _.concat(airport_user_ids,
+                flight_user_ids);
 
-              find(checkData, url, res, function(err,
-                airportUserData) {
-
-                if (airportUserData.length > 0) {
-                  for (var i = 0; i < airportUserData.length; i++) {
-                    airport_user_ids.push(
-                      airportUserData[i].user_id)
-                  }
-                  // console.log('airport_user_ids :', airport_user_ids);
-                  var other = _.concat(airport_user_ids,
-                    flight_user_ids);
-
-                  var finaldata = new Object({
-                    long: airportdata[0].long,
-                    time: airportdata[0].time,
-                    lat: airportdata[0].lat,
-                    city: airportdata[0].city,
-                    id: airportdata[0].id,
-                    airport_name: airportdata[0].airport_name,
-                    airport_code: airportdata[0].airport_code,
-                    total_user: other.length
-                  });
-                  finalresult.push(finaldata);
-                  res.json({
-                    data: finalresult,
-                    error: {
-                      code: 200,
-                      message: 'success',
-                      errors: err
-                    }
-                  });
-                }
+              var finaldata = new Object({
+                long: airportdata[0].long,
+                time: airportdata[0].time,
+                lat: airportdata[0].lat,
+                city: airportdata[0].city,
+                id: airportdata[0].id,
+                airport_name: airportdata[0].airport_name,
+                airport_code: airportdata[0].airport_code,
+                total_user: other.length
               });
-            } else {
+              finalresult.push(finaldata);
               res.json({
                 data: finalresult,
                 error: {
                   code: 200,
                   message: 'success',
-                  errors: ""
+                  errors: err
                 }
               });
             }
-          } else {
-            res.json({
-              data: finalresult,
-              error: {
-                code: 200,
-                message: 'success',
-                errors: ""
-              }
-            });
-          }
+          });
         });
 
       });
@@ -1676,10 +1656,11 @@ function airport_user_exit_function(req, res, next) {
 
 
 app.post('/airport-user-profile', routesVersioning({
-  "~1.0.0": airport_user_profile1_function
+  "~1.0.0": airport_user_profile_function
 }, NoMatchFoundCallback));
 
-function airport_user_profile1_function(req, res, next) {
+function airport_user_profile_function(req, res, next) {
+  console.log('airport_user_profile_function');
   var airport_code = req.body.airport_code.toUpperCase();
   var userid = req.body.user_id;
   var ids = [];
@@ -1731,317 +1712,297 @@ function airport_user_profile1_function(req, res, next) {
         }
       });
     }
-    if (data.length > 0) {
-      if (data[0].user_flight.length > 0) {
-        for (var i = 0; i < data[0].user_flight.length; i++) {
-          flight_user_ids.push(data[0].user_flight[i].user_id)
-        }
-        // console.log('flight_ids :', flight_user_ids);
+    if ((data.length > 0) && (data[0].user_flight.length > 0)) {
+      for (var i = 0; i < data[0].user_flight.length; i++) {
+        flight_user_ids.push(data[0].user_flight[i].user_id)
+      }
+    }
+    console.log('flight_ids :', flight_user_ids);
+    var checkData = {
+      "columns": ["*"],
+      where: {
+        airport_code: airport_code
+      }
+    };
+    var url = 'api/1/table/airport/select';
+
+    find(checkData, url, res, function(err, airportData) {
+      console.log('airportData :', airportData);
+      if (airportData.length > 0) {
+        var airport_id = airportData[0].id;
         var checkData = {
           "columns": ["*"],
           where: {
-            airport_code: airport_code
+            airport_id: airport_id
           }
         };
-        var url = 'api/1/table/airport/select';
+        var url = 'api/1/table/airport_user/select';
 
-        find(checkData, url, res, function(err, airportData) {
-          // console.log('airportData :', airportData);
-          if (airportData.length > 0) {
-            var airport_id = airportData[0].id;
-            var checkData = {
-              "columns": ["*"],
-              where: {
-                airport_id: airport_id
-              }
-            };
-            var url = 'api/1/table/airport_user/select';
+        find(checkData, url, res, function(err, airportUserData) {
 
-            find(checkData, url, res, function(err, airportUserData) {
-
-              if (airportUserData.length > 0) {
-                for (var i = 0; i < airportUserData.length; i++) {
-                  airport_user_ids.push(airportUserData[i].user_id)
+          if (airportUserData.length > 0) {
+            for (var i = 0; i < airportUserData.length; i++) {
+              airport_user_ids.push(airportUserData[i].user_id)
+            }
+            console.log('airport_user_ids :', airport_user_ids);
+            var other = _.concat(airport_user_ids,
+              flight_user_ids);
+            console.log('other :', other);
+            if (other.length > 0) {
+              checkData = {
+                "columns": ["*"],
+                "where": {
+                  user1: userid,
+                  user2: {
+                    '$in': other
+                  },
+                  is_liked: false
                 }
-                // console.log('airport_user_ids :', airport_user_ids);
-                var other = _.concat(airport_user_ids,
-                  flight_user_ids);
-                // console.log('other :', other);
-                if (other.length > 0) {
-                  checkData = {
-                    "columns": ["*"],
-                    "where": {
-                      user1: userid,
-                      user2: {
-                        '$in': other
-                      },
-                      is_liked: false
-                    }
-                  };
-                  var url = 'api/1/table/like/select';
+              };
+              var url = 'api/1/table/like/select';
 
-                  find(checkData, url, res, function(err, data1) {
-                    if (err) {
-                      res.json({
-                        data: [],
-                        error: {
-                          code: 500,
-                          message: 'Backend Error',
-                          errors: err
-                        }
-                      });
+              find(checkData, url, res, function(err, data1) {
+                if (err) {
+                  res.json({
+                    data: [],
+                    error: {
+                      code: 500,
+                      message: 'Backend Error',
+                      errors: err
                     }
-                    var unlike_ids = [];
-                    if (data1.length > 0) {
-                      for (var i = 0; i < data1.length; i++) {
-                        unlike_ids.push(data1[i].user2)
+                  });
+                }
+                var unlike_ids = [];
+                if (data1.length > 0) {
+                  for (var i = 0; i < data1.length; i++) {
+                    unlike_ids.push(data1[i].user2)
+                  }
+                }
+                var temp = [];
+                temp.push(req.body.user_id)
+                var final_ids = _.differenceBy(other,
+                  unlike_ids);
+                final_ids = _.differenceBy(other, temp);
+
+                var getUrl = development_database_url +
+                  'v1/query';
+
+                var getoptions = {
+                  method: 'POST',
+                  headers: {
+                    'x-hasura-role': 'admin',
+                    'authorization': development_authToken,
+                    'content-type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    "type": "select",
+                    "args": {
+                      "table": "user",
+                      "columns": [
+                        "*", {
+                          "name": "education",
+                          "columns": ["*"]
+                        }, {
+                          "name": "experience",
+                          "columns": ["*"]
+                        }, {
+                          "name": "interests",
+                          "columns": ["*"]
+                        }
+                      ],
+                      "where": {
+                        "id": {
+                          '$in': final_ids
+                        }
                       }
                     }
-                    var temp = [];
-                    temp.push(req.body.user_id)
-                    var final_ids = _.differenceBy(other,
-                      unlike_ids);
-                    final_ids = _.differenceBy(other, temp);
+                  })
+                };
+                request(getUrl, getoptions, res, (
+                  resData1) => {
+                  // console.log('resData1 : ', resData1);
 
-                    var getUrl = development_database_url +
-                      'v1/query';
+                  _.forEach(resData1, function(data) {
+                    asyncTasks.push(function(
+                      callback) {
+                      var user_interests = [];
+                      var user2_experience = [];
+                      var user2_education = [];
+                      var user2_companyName = [];
+                      var user2_designation = [];
 
-                    var getoptions = {
-                      method: 'POST',
-                      headers: {
-                        'x-hasura-role': 'admin',
-                        'authorization': development_authToken,
-                        'content-type': 'application/json'
-                      },
-                      body: JSON.stringify({
-                        "type": "select",
-                        "args": {
-                          "table": "user",
-                          "columns": [
-                            "*", {
-                              "name": "education",
-                              "columns": ["*"]
-                            }, {
-                              "name": "experience",
-                              "columns": ["*"]
-                            }, {
-                              "name": "interests",
-                              "columns": ["*"]
-                            }
-                          ],
-                          "where": {
-                            "id": {
-                              '$in': final_ids
-                            }
-                          }
+                      for (var j = 0; j <
+                        data.interests
+                        .length; j++) {
+                        user_interests.push(
+                          data.interests[
+                            j]
+                          .interest);
+                      }
+
+                      for (var j = 0; j <
+                        data.experience
+                        .length; j++) {
+                        user2_companyName.push(
+                          data.experience[
+                            j].company_name
+                        );
+                        user2_designation.push(
+                          data.experience[
+                            j].designation);
+                      }
+
+                      for (var j = 0; j <
+                        data.education
+                        .length; j++) {
+                        var education = new Object({
+                          f1: data.education[
+                            j].institute_name,
+                          id: data.education[
+                            j].id,
+                          user_id: data.education[
+                            j].user_id,
+                          f2: data.education[
+                            j].qualification
+                        });
+                        user2_education.push(
+                          education);
+                      }
+
+                      for (var j = 0; j <
+                        data.experience
+                        .length; j++) {
+                        var experience = new Object({
+                          f1: data.experience[
+                            j].company_name,
+                          id: data.experience[
+                            j].id,
+                          user_id: data.experience[
+                              j]
+                            .user_id,
+                          f2: data.experience[
+                            j].designation
+                        });
+                        user2_experience.push(
+                          experience);
+                      }
+                      checkData = {
+                        "columns": ["*"],
+                        "where": {
+                          user1: userid,
+                          user2: data.id,
+                          is_liked: true
                         }
-                      })
-                    };
-                    request(getUrl, getoptions, res, (
-                      resData1) => {
-                      // console.log('resData1 : ', resData1);
-
-                      _.forEach(resData1, function(data) {
-                        asyncTasks.push(function(
-                          callback) {
-                          var user_interests = [];
-                          var user2_experience = [];
-                          var user2_education = [];
-                          var user2_companyName = [];
-                          var user2_designation = [];
-
-                          for (var j = 0; j <
-                            data.interests
-                            .length; j++) {
-                            user_interests.push(
-                              data.interests[
-                                j]
-                              .interest);
-                          }
-
-                          for (var j = 0; j <
-                            data.experience
-                            .length; j++) {
-                            user2_companyName.push(
-                              data.experience[
-                                j].company_name
-                            );
-                            user2_designation.push(
-                              data.experience[
-                                j].designation);
-                          }
-
-                          for (var j = 0; j <
-                            data.education
-                            .length; j++) {
-                            var education = new Object({
-                              f1: data.education[
-                                j].institute_name,
-                              id: data.education[
-                                j].id,
-                              user_id: data.education[
-                                j].user_id,
-                              f2: data.education[
-                                j].qualification
-                            });
-                            user2_education.push(
-                              education);
-                          }
-
-                          for (var j = 0; j <
-                            data.experience
-                            .length; j++) {
-                            var experience = new Object({
-                              f1: data.experience[
-                                j].company_name,
-                              id: data.experience[
-                                j].id,
-                              user_id: data.experience[
-                                  j]
-                                .user_id,
-                              f2: data.experience[
-                                j].designation
-                            });
-                            user2_experience.push(
-                              experience);
-                          }
+                      };
+                      var url =
+                        'api/1/table/like/select';
+                      var liked_12 = null;
+                      find(checkData, url,
+                        res,
+                        function(
+                          err,
+                          data2) {
+                          if (data2.length >
+                            0)
+                            liked_12 =
+                            data2[
+                              0].is_liked;
                           checkData = {
-                            "columns": ["*"],
+                            "columns": [
+                              "*"
+                            ],
                             "where": {
-                              user1: userid,
-                              user2: data.id,
+                              user1: data
+                                .id,
+                              user2: userid,
                               is_liked: true
                             }
                           };
                           var url =
                             'api/1/table/like/select';
-                          var liked_12 = null;
-                          find(checkData, url,
+                          var liked_21 =
+                            null;
+                          find(checkData,
+                            url,
                             res,
                             function(
                               err,
-                              data2) {
-                              if (data2.length >
+                              data3) {
+                              if (data3.length >
                                 0)
-                                liked_12 =
-                                data2[
-                                  0].is_liked;
-                              checkData = {
-                                "columns": [
-                                  "*"
-                                ],
-                                "where": {
-                                  user1: data
-                                    .id,
-                                  user2: userid,
-                                  is_liked: true
-                                }
-                              };
-                              var url =
-                                'api/1/table/like/select';
-                              var liked_21 =
-                                null;
-                              find(checkData,
-                                url,
-                                res,
-                                function(
-                                  err,
-                                  data3) {
-                                  if (data3.length >
-                                    0)
-                                    liked_21 =
-                                    data3[0].is_liked;
-                                  var
-                                    user_details =
-                                    new Object({
-                                      user2: parseInt(
-                                        data
-                                        .id
-                                      ),
-                                      user2_name: data
-                                        .name,
-                                      user2_city: data
-                                        .city,
-                                      user2_profile_pic: data
-                                        .profile_pic,
-                                      user2_intent: data
-                                        .intent,
-                                      user2_education: user2_education,
-                                      user2_experience: user2_experience,
-                                      user2_interest: user_interests,
-                                      user2_facebook_id: data
-                                        .facebook_id,
-                                      liked_21: liked_21,
-                                      liked_12: liked_12,
-                                    });
-                                  finalresult
-                                    .push(
-                                      user_details
-                                    );
-                                  callback(
-                                    null,
-                                    finalresult
-                                  )
+                                liked_21 =
+                                data3[0].is_liked;
+                              var
+                                user_details =
+                                new Object({
+                                  user2: parseInt(
+                                    data
+                                    .id
+                                  ),
+                                  user2_name: data
+                                    .name,
+                                  user2_city: data
+                                    .city,
+                                  user2_profile_pic: data
+                                    .profile_pic,
+                                  user2_intent: data
+                                    .intent,
+                                  user2_education: user2_education,
+                                  user2_experience: user2_experience,
+                                  user2_interest: user_interests,
+                                  user2_facebook_id: data
+                                    .facebook_id,
+                                  liked_21: liked_21,
+                                  liked_12: liked_12,
                                 });
+                              finalresult
+                                .push(
+                                  user_details
+                                );
+                              callback(
+                                null,
+                                finalresult
+                              )
                             });
                         });
-                      });
-                      async.parallel(asyncTasks, function(
-                        err, result) {
-                        res.json({
-                          data: finalresult,
-                          error: {
-                            code: 200,
-                            message: 'success',
-                            errors: ""
-                          }
-                        });
-                      });
                     });
                   });
-                } else {
-                  res.json({
-                    data: finalresult,
-                    error: {
-                      code: 200,
-                      message: 'success',
-                      errors: ""
-                    }
+                  async.parallel(asyncTasks, function(
+                    err, result) {
+                    res.json({
+                      data: finalresult,
+                      error: {
+                        code: 200,
+                        message: 'success',
+                        errors: ""
+                      }
+                    });
                   });
+                });
+              });
+            } else {
+              res.json({
+                data: finalresult,
+                error: {
+                  code: 200,
+                  message: 'success',
+                  errors: ""
                 }
-              }
-            });
-          } else {
-            res.json({
-              data: finalresult,
-              error: {
-                code: 500,
-                message: 'Backend Error',
-                errors: "airport not found"
-              }
-            });
+              });
+            }
           }
         });
       } else {
         res.json({
           data: finalresult,
           error: {
-            code: 200,
-            message: 'success',
-            errors: ""
+            code: 500,
+            message: 'Backend Error',
+            errors: "airport not found"
           }
         });
       }
-    } else {
-      res.json({
-        data: finalresult,
-        error: {
-          code: 200,
-          message: 'success',
-          errors: ""
-        }
-      });
-    }
+    });
   });
 }
 
