@@ -1314,6 +1314,8 @@ app.get('/airport-by-code', routesVersioning({
 
 function airport_by_code_function(req, res, next) {
 
+  var user_id = parseInt(req.query.user_id);
+  console.log('user_id : ', user_id);
   var airport_code = req.query.airport_code.toUpperCase();
   var finalresult = [];
   var asyncTasks = [];
@@ -1424,33 +1426,37 @@ function airport_by_code_function(req, res, next) {
                 airport_user_ids.push(
                   airportUserData[i].user_id)
               }
-              // console.log('airport_user_ids :', airport_user_ids);
-              var other = _.concat(airport_user_ids,
-                flight_user_ids);
-
-              var finaldata = new Object({
-                long: airportdata[0].long,
-                time: airportdata[0].time,
-                lat: airportdata[0].lat,
-                city: airportdata[0].city,
-                id: airportdata[0].id,
-                airport_name: airportdata[0].airport_name,
-                airport_code: airportdata[0].airport_code,
-                total_user: other.length
-              });
-              finalresult.push(finaldata);
-              res.json({
-                data: finalresult,
-                error: {
-                  code: 200,
-                  message: 'success',
-                  errors: err
-                }
-              });
             }
+            // console.log('airport_user_ids :',
+            //   airport_user_ids);
+            var other = _.concat(airport_user_ids,
+              flight_user_ids);
+
+            var temp = [];
+            temp.push(user_id);
+            other = _.differenceBy(other, temp);
+
+            var finaldata = new Object({
+              long: airportdata[0].long,
+              time: airportdata[0].time,
+              lat: airportdata[0].lat,
+              city: airportdata[0].city,
+              id: airportdata[0].id,
+              airport_name: airportdata[0].airport_name,
+              airport_code: airportdata[0].airport_code,
+              total_user: other.length
+            });
+            finalresult.push(finaldata);
+            res.json({
+              data: finalresult,
+              error: {
+                code: 200,
+                message: 'success',
+                errors: err
+              }
+            });
           });
         });
-
       });
     } else {
       res.json({
