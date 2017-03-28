@@ -3079,6 +3079,51 @@ function add_flight_function(req, res, next) {
   });
 }
 
+app.get('/get-user-flight', routesVersioning({
+  "~1.0.0": get_user_flight_function
+}, NoMatchFoundCallback));
+
+function get_user_flight_function(req, res, next) {
+
+  url = 'api/1/table/user_flight/select';
+  const checkData = {
+    "columns": [
+      "*"
+      // , {
+      //   "name": "flights",
+      //   "columns": ["*"]
+      // }, {
+      //   "name": "user",
+      //   "columns": ["*"]
+      // }
+    ],
+    where: {
+      user_id: parseInt(req.query.user_id)
+    }
+  };
+
+  find(checkData, url, res, function(err, result) {
+    if (err)
+      res.json({
+        data: [],
+        error: {
+          code: 500,
+          message: 'Backend Error',
+          errors: err
+        }
+      });
+    res.json({
+      data: result,
+      error: {
+        code: 200,
+        message: 'success',
+        errors: ""
+      }
+    });
+  });
+
+}
+
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
   // const userid = chunk.user_id;
