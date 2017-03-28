@@ -2395,6 +2395,7 @@ function send_notification_function(req, res, next) {
     };
     request(getUrl, getoptions, res, (resData1) => {
       if (resData1.length > 0) {
+        if (resData1[0].flights.length > 0) {
         console.log('resData1 : ', resData1);
         var getoptions = {
           method: 'POST',
@@ -2414,6 +2415,7 @@ function send_notification_function(req, res, next) {
             }
           })
         };
+
         request(getUrl, getoptions, res, (resData3) => {
 
           // console.log('resData3 : ', resData3);
@@ -2893,6 +2895,16 @@ function send_notification_function(req, res, next) {
             });
           });
         });
+      } else {
+        res.json({
+          data: finalresult,
+          error: {
+            code: 200,
+            message: 'success',
+            errors: ""
+          }
+        })
+      }
       } else {
         res.json({
           data: finalresult,
