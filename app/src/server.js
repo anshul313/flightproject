@@ -3233,6 +3233,7 @@ function add_flight_function(req, res, next) {
               }
             });
           }
+
           finalresult.push(user_airport_details_object);
           callback(null, finalresult);
         });
@@ -3257,19 +3258,11 @@ app.get('/get-user-flight', routesVersioning({
 }, NoMatchFoundCallback));
 
 function get_user_flight_function(req, res, next) {
-
-  url = 'api/1/table/user_flight/select';
-  const checkData = {
-    "columns": [
-      "*"
-      // , {
-      //   "name": "flights",
-      //   "columns": ["*"]
-      // }, {
-      //   "name": "user",
-      //   "columns": ["*"]
-      // }
-    ],
+  var asyncTasks = [];
+  var finalresult = [];
+  var url = 'api/1/table/user_flight/select';
+  var checkData = {
+    "columns": ["*"],
     where: {
       user_id: parseInt(req.query.user_id)
     }
@@ -3285,16 +3278,50 @@ function get_user_flight_function(req, res, next) {
           errors: err
         }
       });
-    res.json({
-      data: result,
-      error: {
-        code: 200,
-        message: 'success',
-        errors: ""
-      }
+    _.forEach(result, function(data) {
+      asyncTasks.push(function(callback) {
+        var getUrl = development_database_url + 'v1/query';
+        var getoptions = {
+          method: 'POST',
+          headers: {
+            'x-hasura-role': 'admin',
+            'authorization': development_authToken,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            "type": "select",
+            "args": {
+              "table": "flights",
+              "columns": ["*"],
+              "where": {
+                "id": parseInt(data.flight_id)
+              }
+            }
+          })
+        };
+
+        request(getUrl, getoptions, res, (flight_details) => {
+          var user_airport_details_object = new Object({
+            flight_id: parseInt(data.flight_id),
+            pnr: data.pnr,
+            flights: flight_details[0]
+          });
+          finalresult.push(user_airport_details_object);
+          callback(null, finalresult);
+        });
+      });
+    });
+    async.parallel(asyncTasks, function(err, result) {
+      res.json({
+        data: finalresult,
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
     });
   });
-
 }
 
 app.post('/send-feedback', (req, res) => {
