@@ -724,7 +724,6 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
   var result_arrTime_local = moment.utc(arrTimeX).format(
     "YYYY-MM-DD" + ' ' + "HH:mm:ss");
 
-<<<<<<< HEAD
   // var result_depTime_local = moment.utc(depTimeX).format(
   //   "YYYY-MM-DD" + ' ' + "HH:mm:ss");
   // var result_arrTime_local = moment.utc(arrTimeX).format(
@@ -735,9 +734,6 @@ var changeTime = function(flight, originAirportObject, destinationAirportObject,
 
   callback(utc_depTime, utc_arrTime, result_arrTime, result_depTime,
     result_arrTime_local,
-=======
-  callback(arrTimeX, depTimeX, result_arrTime_local,
->>>>>>> ccb17a105199608f35cf0518544e8d12f672f32a
     result_depTime_local);
 
 }
