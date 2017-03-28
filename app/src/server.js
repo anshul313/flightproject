@@ -1314,7 +1314,19 @@ app.get('/airport-by-code', routesVersioning({
 
 function airport_by_code_function(req, res, next) {
 
-  var final = [];
+  var airport_code = req.query.airport_code.toUpperCase();
+  var finalresult = [];
+  var asyncTasks = [];
+  var today = new Date();
+  var day = today.getUTCDate();
+  var startTime = moment.utc().format();
+  var timestring1 = moment(startTime);
+  timestring1 = timestring1.add(moment.duration(2, 'hours'));
+  var endTime = moment.utc(timestring1).format();
+  var flight_user_ids = [];
+  var airport_user_ids = [];
+  var airport_id;
+
   const checkData = {
     columns: ['*'],
     where: {
@@ -1323,7 +1335,7 @@ function airport_by_code_function(req, res, next) {
   };
   var url = 'api/1/table/airport/select';
 
-  find(checkData, url, res, function(err, data) {
+  find(checkData, url, res, function(err, airportdata) {
 
     if (err) {
       res.json({
@@ -1335,15 +1347,16 @@ function airport_by_code_function(req, res, next) {
         }
       });
     }
-    if (data.length > 0) {
+    if (airportdata.length > 0) {
+      airport_id = airportdata[0].id;
       url = 'api/1/table/airport_user/select';
       const checkData = {
         columns: ['*'],
         where: {
-          airport_id: data[0].id
+          airport_id: airportdata[0].id
         }
       };
-      find(checkData, url, res, function(err, data1) {
+      find(checkData, url, res, function(err, airport_user_data) {
         if (err)
           res.json({
             data: [],
@@ -1353,25 +1366,111 @@ function airport_by_code_function(req, res, next) {
               errors: err
             }
           });
-        var finaldata = new Object({
-          long: data[0].long,
-          time: data[0].time,
-          lat: data[0].lat,
-          city: data[0].city,
-          id: data[0].id,
-          airport_name: data[0].airport_name,
-          airport_code: data[0].airport_code,
-          total_user: data1.length
-        });
-        final.push(finaldata);
-        res.json({
-          data: final,
-          error: {
-            code: 200,
-            message: 'success',
-            errors: err
+
+        var checkData = {
+          "columns": [
+            "*", {
+              "name": "user_flight",
+              "columns": ["*"]
+            }
+          ],
+          where: {
+            origin_code: airport_code,
+            "$and": [{
+              departure: {
+                "$gte": startTime
+              }
+            }, {
+              departure: {
+                "$lte": endTime
+              }
+            }]
+          }
+        };
+
+        var url = 'api/1/table/flights/select';
+
+        find(checkData, url, res, function(err, data) {
+          // console.log('data : ', data);
+          if (err) {
+            res.json({
+              data: [],
+              error: {
+                code: 500,
+                message: 'Backend Error',
+                errors: err
+              }
+            });
+          }
+          if (data.length > 0) {
+            if (data[0].user_flight.length > 0) {
+              for (var i = 0; i < data[0].user_flight.length; i++) {
+                flight_user_ids.push(data[0].user_flight[i].user_id)
+              }
+              // console.log('flight_ids :', flight_user_ids);
+              var checkData = {
+                "columns": ["*"],
+                where: {
+                  airport_id: airport_id
+                }
+              };
+              var url = 'api/1/table/airport_user/select';
+
+              find(checkData, url, res, function(err,
+                airportUserData) {
+
+                if (airportUserData.length > 0) {
+                  for (var i = 0; i < airportUserData.length; i++) {
+                    airport_user_ids.push(
+                      airportUserData[i].user_id)
+                  }
+                  // console.log('airport_user_ids :', airport_user_ids);
+                  var other = _.concat(airport_user_ids,
+                    flight_user_ids);
+
+                  var finaldata = new Object({
+                    long: airportdata[0].long,
+                    time: airportdata[0].time,
+                    lat: airportdata[0].lat,
+                    city: airportdata[0].city,
+                    id: airportdata[0].id,
+                    airport_name: airportdata[0].airport_name,
+                    airport_code: airportdata[0].airport_code,
+                    total_user: other.length
+                  });
+                  finalresult.push(finaldata);
+                  res.json({
+                    data: finalresult,
+                    error: {
+                      code: 200,
+                      message: 'success',
+                      errors: err
+                    }
+                  });
+                }
+              });
+            } else {
+              res.json({
+                data: finalresult,
+                error: {
+                  code: 200,
+                  message: 'success',
+                  errors: ""
+                }
+              });
+            }
+          } else {
+            res.json({
+              data: finalresult,
+              error: {
+                code: 200,
+                message: 'success',
+                errors: ""
+              }
+            });
           }
         });
+
       });
     } else {
       res.json({
@@ -1617,6 +1716,7 @@ function airport_user_profile1_function(req, res, next) {
       }]
     }
   };
+
   var url = 'api/1/table/flights/select';
 
   find(checkData, url, res, function(err, data) {
@@ -1737,7 +1837,8 @@ function airport_user_profile1_function(req, res, next) {
                         }
                       })
                     };
-                    request(getUrl, getoptions, res, (resData1) => {
+                    request(getUrl, getoptions, res, (
+                      resData1) => {
                       // console.log('resData1 : ', resData1);
 
                       _.forEach(resData1, function(data) {
@@ -1749,7 +1850,8 @@ function airport_user_profile1_function(req, res, next) {
                           var user2_companyName = [];
                           var user2_designation = [];
 
-                          for (var j = 0; j < data.interests
+                          for (var j = 0; j <
+                            data.interests
                             .length; j++) {
                             user_interests.push(
                               data.interests[
@@ -1757,17 +1859,20 @@ function airport_user_profile1_function(req, res, next) {
                               .interest);
                           }
 
-                          for (var j = 0; j < data.experience
+                          for (var j = 0; j <
+                            data.experience
                             .length; j++) {
                             user2_companyName.push(
                               data.experience[
-                                j].company_name);
+                                j].company_name
+                            );
                             user2_designation.push(
                               data.experience[
                                 j].designation);
                           }
 
-                          for (var j = 0; j < data.education
+                          for (var j = 0; j <
+                            data.education
                             .length; j++) {
                             var education = new Object({
                               f1: data.education[
@@ -1783,7 +1888,8 @@ function airport_user_profile1_function(req, res, next) {
                               education);
                           }
 
-                          for (var j = 0; j < data.experience
+                          for (var j = 0; j <
+                            data.experience
                             .length; j++) {
                             var experience = new Object({
                               f1: data.experience[
@@ -1810,26 +1916,33 @@ function airport_user_profile1_function(req, res, next) {
                           var url =
                             'api/1/table/like/select';
                           var liked_12 = null;
-                          find(checkData, url, res,
+                          find(checkData, url,
+                            res,
                             function(
                               err,
                               data2) {
                               if (data2.length >
                                 0)
-                                liked_12 = data2[
+                                liked_12 =
+                                data2[
                                   0].is_liked;
                               checkData = {
-                                "columns": ["*"],
+                                "columns": [
+                                  "*"
+                                ],
                                 "where": {
-                                  user1: data.id,
+                                  user1: data
+                                    .id,
                                   user2: userid,
                                   is_liked: true
                                 }
                               };
                               var url =
                                 'api/1/table/like/select';
-                              var liked_21 = null;
-                              find(checkData, url,
+                              var liked_21 =
+                                null;
+                              find(checkData,
+                                url,
                                 res,
                                 function(
                                   err,
@@ -1861,10 +1974,12 @@ function airport_user_profile1_function(req, res, next) {
                                       liked_21: liked_21,
                                       liked_12: liked_12,
                                     });
-                                  finalresult.push(
-                                    user_details
-                                  );
-                                  callback(null,
+                                  finalresult
+                                    .push(
+                                      user_details
+                                    );
+                                  callback(
+                                    null,
                                     finalresult
                                   )
                                 });
