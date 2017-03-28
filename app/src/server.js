@@ -1786,6 +1786,548 @@ app.post('/send-notification', routesVersioning({
   "~1.0.0": send_notification_function
 }, NoMatchFoundCallback));
 
+// function send_notification_function(req, res, next) {
+//   var user_ids = [];
+//   var finalresult = [];
+//   var asyncTasks = [];
+//
+//   var checkData = {
+//     "columns": ["*"],
+//     "where": {
+//       user2: req.body.user_id,
+//       is_liked: true
+//     }
+//   };
+//   var url = 'api/1/table/like/select';
+//
+//   find(checkData, url, res, function(err, data1) {
+//     if (err) {
+//       res.json({
+//         data: [],
+//         error: {
+//           code: 500,
+//           message: 'Backend Error',
+//           errors: err
+//         }
+//       });
+//     }
+//
+//     for (var i = 0; i < data1.length; i++) {
+//       user_ids.push(data1[i].user1);
+//     }
+//
+//     // console.log('data1 : ', data1);
+//     var getUrl = production_database_url + 'v1/query';
+//
+//     var getoptions = {
+//       method: 'POST',
+//       headers: {
+//         'x-hasura-role': 'admin',
+//         'authorization': production_authToken,
+//         'content-type': 'application/json'
+//       },
+//       body: JSON.stringify({
+//         "type": "select",
+//         "args": {
+//           "table": "user",
+//           "columns": [
+//             "*", {
+//               "name": "education",
+//               "columns": ["*"]
+//             }, {
+//               "name": "experience",
+//               "columns": ["*"]
+//             }, {
+//               "name": "interests",
+//               "columns": ["*"]
+//             }, {
+//               "name": "flights",
+//               "columns": ["*"]
+//             }
+//           ],
+//           "where": {
+//             "id": req.body.user_id
+//           }
+//         }
+//       })
+//     };
+//     request(getUrl, getoptions, res, (resData1) => {
+//       // console.log('resData1 : ', resData1);
+//       var getoptions = {
+//         method: 'POST',
+//         headers: {
+//           'x-hasura-role': 'admin',
+//           'authorization': production_authToken,
+//           'content-type': 'application/json'
+//         },
+//         body: JSON.stringify({
+//           "type": "select",
+//           "args": {
+//             "table": "flights",
+//             "columns": ["*"],
+//             "where": {
+//               "id": resData1[0].flights[0].flight_id
+//             }
+//           }
+//         })
+//       };
+//       request(getUrl, getoptions, res, (resData3) => {
+//
+//         // console.log('resData3 : ', resData3);
+//
+//         var user1_flight = resData3[0].id;
+//         var origin = resData3[0].origin;
+//         var destination = resData3[0].destination;
+//         var airline = resData3[0].airline;
+//         var user1_time = resData3[0].departure;
+//         var number = resData3[0].number;
+//
+//         var getoptions = {
+//           method: 'POST',
+//           headers: {
+//             'x-hasura-role': 'admin',
+//             'authorization': production_authToken,
+//             'content-type': 'application/json'
+//           },
+//           body: JSON.stringify({
+//             "type": "select",
+//             "args": {
+//               "table": "user",
+//               "columns": [
+//                 "*", {
+//                   "name": "education",
+//                   "columns": ["*"]
+//                 }, {
+//                   "name": "experience",
+//                   "columns": ["*"]
+//                 }, {
+//                   "name": "interests",
+//                   "columns": ["*"]
+//                 }, {
+//                   "name": "flights",
+//                   "columns": ["*"]
+//                 }
+//               ],
+//               "where": {
+//                 "id": {
+//                   '$in': user_ids
+//                 }
+//               }
+//             }
+//           })
+//         };
+//         request(getUrl, getoptions, res, (resData2) => {
+//
+//           // console.log('resData2 : ', resData2);
+//
+//           _.forEach(resData2, function(data) {
+//             asyncTasks.push(function(callback) {
+//
+//               var getoptions = {
+//                 method: 'POST',
+//                 headers: {
+//                   'x-hasura-role': 'admin',
+//                   'authorization': production_authToken,
+//                   'content-type': 'application/json'
+//                 },
+//                 body: JSON.stringify({
+//                   "type": "select",
+//                   "args": {
+//                     "table": "user",
+//                     "columns": [
+//                       "*", {
+//                         "name": "education",
+//                         "columns": ["*"]
+//                       }, {
+//                         "name": "experience",
+//                         "columns": ["*"]
+//                       }, {
+//                         "name": "interests",
+//                         "columns": ["*"]
+//                       }, {
+//                         "name": "flights",
+//                         "columns": ["*"]
+//                       }
+//                     ],
+//                     "where": {
+//                       "id": data.id
+//                     }
+//                   }
+//                 })
+//               };
+//               request(getUrl, getoptions, res, (
+//                 resData6) => {
+//                 // console.log('resData6 : ',
+//                 //   resData6);
+//                 if (data.length > 0) {
+//                   var getoptions = {
+//                     method: 'POST',
+//                     headers: {
+//                       'x-hasura-role': 'admin',
+//                       'authorization': production_authToken,
+//                       'content-type': 'application/json'
+//                     },
+//                     body: JSON.stringify({
+//                       "type": "select",
+//                       "args": {
+//                         "table": "flights",
+//                         "columns": ["*"],
+//                         "where": {
+//                           "id": resData6[0]
+//                             .flights[0].flight_id
+//                         }
+//                       }
+//                     })
+//                   };
+//                   request(getUrl, getoptions, res, (
+//                     resData5) => {
+//
+//                     // console.log('resData3 : ',
+//                     //   resData5);
+//                     // console.log(
+//                     //   'user2_flight : ',
+//                     //   resData5[0].id);
+//                     var user2_flight =
+//                       resData5[0].id;
+//                     var user2_origin =
+//                       resData5[0].origin;
+//                     var user2_destination =
+//                       resData5[0].destination;
+//                     var user2_airline =
+//                       resData5[0]
+//                       .airline;
+//                     var user2_time = resData5[
+//                       0].departure;
+//                     var user2_number =
+//                       resData5[0].number;
+//
+//                     var user_interests = [];
+//                     var user2_experience = [];
+//                     var user2_education = [];
+//                     var user2_companyName = [];
+//                     var user2_designation = [];
+//                     // var user2_flight = [];
+//
+//                     // console.log(
+//                     //   'flight data : ',
+//                     //   data.flights);
+//
+//                     for (var j = 0; j < data.interests
+//                       .length; j++) {
+//                       user_interests.push(
+//                         data.interests[
+//                           j].interest);
+//                     }
+//                     // console.log(data.experience);
+//                     for (var j = 0; j < data.experience
+//                       .length; j++) {
+//                       user2_companyName.push(
+//                         data.experience[
+//                           j].company_name);
+//                       user2_designation.push(
+//                         data.experience[
+//                           j].designation);
+//                     }
+//
+//                     for (var j = 0; j < data.education
+//                       .length; j++) {
+//                       var education = new Object({
+//                         f1: data.education[
+//                           j].institute_name,
+//                         id: data.education[
+//                           j].id,
+//                         user_id: data.education[
+//                           j].user_id,
+//                         f2: data.education[
+//                           j].qualification
+//                       });
+//                       user2_education.push(
+//                         education);
+//                     }
+//
+//                     for (var j = 0; j < data.experience
+//                       .length; j++) {
+//                       var experience = new Object({
+//                         f1: data.experience[
+//                           j].company_name,
+//                         id: data.experience[
+//                           j].id,
+//                         user_id: data.experience[
+//                           j].user_id,
+//                         f2: data.experience[
+//                           j].designation
+//                       });
+//                       user2_experience.push(
+//                         experience);
+//                     }
+//                     checkData = {
+//                       "columns": ["*"],
+//                       "where": {
+//                         user1: req.body.user_id,
+//                         user2: data.id,
+//                         is_liked: true
+//                       }
+//                     };
+//                     var url =
+//                       'api/1/table/like/select';
+//                     var liked_12 = null;
+//                     find(checkData, url, res,
+//                       function(
+//                         err,
+//                         data2) {
+//                         if (data2.length >
+//                           0)
+//                           liked_12 = data2[
+//                             0].is_liked;
+//                         checkData = {
+//                           "columns": ["*"],
+//                           "where": {
+//                             user1: data.id,
+//                             user2: req.body
+//                               .user_id,
+//                             is_liked: true
+//                           }
+//                         };
+//                         var url =
+//                           'api/1/table/like/select';
+//                         var liked_21 = null;
+//                         find(checkData, url,
+//                           res,
+//                           function(
+//                             err,
+//                             data3) {
+//                             if (data3.length >
+//                               0)
+//                               liked_21 =
+//                               data3[0].is_liked;
+//                             var
+//                               user_details =
+//                               new Object({
+//                                 user2: parseInt(
+//                                   data
+//                                   .id
+//                                 ),
+//                                 user2_name: data
+//                                   .name,
+//                                 user2_city: data
+//                                   .city,
+//                                 user2_profile_pic: data
+//                                   .profile_pic,
+//                                 user2_intent: data
+//                                   .intent,
+//                                 user2_education: user2_education,
+//                                 user2_experience: user2_experience,
+//                                 user2_interest: user_interests,
+//                                 user2_facebook_id: data
+//                                   .facebook_id,
+//                                 liked_21: liked_21,
+//                                 liked_12: liked_12,
+//                                 user1_flight: user1_flight,
+//                                 origin: origin,
+//                                 destination: destination,
+//                                 airline: airline,
+//                                 user1_time: user1_time,
+//                                 number: number,
+//                                 user1: req
+//                                   .body
+//                                   .user_id,
+//                                 user2: data
+//                                   .id,
+//                                 user2_flight: user2_flight,
+//                                 user2_origin: user2_origin,
+//                                 user2_destination: user2_destination,
+//                                 user2_airline: user2_airline,
+//                                 user2_time: user2_time,
+//                                 user2_number: user2_number,
+//                                 city: origin
+//                               });
+//                             finalresult.push(
+//                               user_details
+//                             );
+//                             callback(null,
+//                               finalresult
+//                             )
+//                           });
+//                       });
+//                   });
+//                 } else {
+//                   var user2_flight = '';
+//
+//                   var user2_origin = '';
+//
+//                   var user2_destination = '';
+//                   var user2_airline = '';
+//                   var user2_time = '';
+//                   var user2_number = '';
+//
+//                   var user_interests = [];
+//                   var user2_experience = [];
+//                   var user2_education = [];
+//                   var user2_companyName = [];
+//                   var user2_designation = [];
+//                   // var user2_flight = [];
+//
+//                   // console.log(
+//                   //   'flight data : ',
+//                   //   data.flights);
+//
+//                   for (var j = 0; j < data.interests
+//                     .length; j++) {
+//                     user_interests.push(
+//                       data.interests[
+//                         j].interest);
+//                   }
+//                   // console.log(data.experience);
+//                   for (var j = 0; j < data.experience
+//                     .length; j++) {
+//                     user2_companyName.push(
+//                       data.experience[
+//                         j].company_name);
+//                     user2_designation.push(
+//                       data.experience[
+//                         j].designation);
+//                   }
+//
+//                   for (var j = 0; j < data.education
+//                     .length; j++) {
+//                     var education = new Object({
+//                       f1: data.education[
+//                         j].institute_name,
+//                       id: data.education[
+//                         j].id,
+//                       user_id: data.education[
+//                         j].user_id,
+//                       f2: data.education[
+//                         j].qualification
+//                     });
+//                     user2_education.push(
+//                       education);
+//                   }
+//
+//                   for (var j = 0; j < data.experience
+//                     .length; j++) {
+//                     var experience = new Object({
+//                       f1: data.experience[
+//                         j].company_name,
+//                       id: data.experience[
+//                         j].id,
+//                       user_id: data.experience[
+//                         j].user_id,
+//                       f2: data.experience[
+//                         j].designation
+//                     });
+//                     user2_experience.push(
+//                       experience);
+//                   }
+//                   checkData = {
+//                     "columns": ["*"],
+//                     "where": {
+//                       user1: req.body.user_id,
+//                       user2: data.id,
+//                       is_liked: true
+//                     }
+//                   };
+//                   var url =
+//                     'api/1/table/like/select';
+//                   var liked_12 = null;
+//                   find(checkData, url, res,
+//                     function(
+//                       err,
+//                       data2) {
+//                       if (data2.length >
+//                         0)
+//                         liked_12 = data2[
+//                           0].is_liked;
+//                       checkData = {
+//                         "columns": ["*"],
+//                         "where": {
+//                           user1: data.id,
+//                           user2: req.body
+//                             .user_id,
+//                           is_liked: true
+//                         }
+//                       };
+//                       var url =
+//                         'api/1/table/like/select';
+//                       var liked_21 = null;
+//                       find(checkData, url,
+//                         res,
+//                         function(
+//                           err,
+//                           data3) {
+//                           if (data3.length >
+//                             0)
+//                             liked_21 =
+//                             data3[0].is_liked;
+//                           var
+//                             user_details =
+//                             new Object({
+//                               user2: parseInt(
+//                                 data
+//                                 .id
+//                               ),
+//                               user2_name: data
+//                                 .name,
+//                               user2_city: data
+//                                 .city,
+//                               user2_profile_pic: data
+//                                 .profile_pic,
+//                               user2_intent: data
+//                                 .intent,
+//                               user2_education: user2_education,
+//                               user2_experience: user2_experience,
+//                               user2_interest: user_interests,
+//                               user2_facebook_id: data
+//                                 .facebook_id,
+//                               liked_21: liked_21,
+//                               liked_12: liked_12,
+//                               user1_flight: user1_flight,
+//                               origin: origin,
+//                               destination: destination,
+//                               airline: airline,
+//                               user1_time: user1_time,
+//                               number: number,
+//                               user1: req
+//                                 .body
+//                                 .user_id,
+//                               user2: data
+//                                 .id,
+//                               user2_flight: user2_flight,
+//                               user2_origin: user2_origin,
+//                               user2_destination: user2_destination,
+//                               user2_airline: user2_airline,
+//                               user2_time: user2_time,
+//                               user2_number: user2_number,
+//                               city: origin
+//                             });
+//                           finalresult.push(
+//                             user_details
+//                           );
+//                           callback(null,
+//                             finalresult
+//                           )
+//                         });
+//                     });
+//                 }
+//               });
+//             });
+//           });
+//           async.parallel(asyncTasks, function(err, result) {
+//             res.json({
+//               data: finalresult,
+//               error: {
+//                 code: 200,
+//                 message: 'success',
+//                 errors: ""
+//               }
+//             });
+//           });
+//         });
+//       });
+//     });
+//   });
+// }
+
 function send_notification_function(req, res, next) {
   var user_ids = [];
   var finalresult = [];
@@ -1817,13 +2359,13 @@ function send_notification_function(req, res, next) {
     }
 
     // console.log('data1 : ', data1);
-    var getUrl = production_database_url + 'v1/query';
+    var getUrl = development_database_url + 'v1/query';
 
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': production_authToken,
+        'authorization': development_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1852,154 +2394,340 @@ function send_notification_function(req, res, next) {
       })
     };
     request(getUrl, getoptions, res, (resData1) => {
-      // console.log('resData1 : ', resData1);
-      var getoptions = {
-        method: 'POST',
-        headers: {
-          'x-hasura-role': 'admin',
-          'authorization': production_authToken,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          "type": "select",
-          "args": {
-            "table": "flights",
-            "columns": ["*"],
-            "where": {
-              "id": resData1[0].flights[0].flight_id
-            }
-          }
-        })
-      };
-      request(getUrl, getoptions, res, (resData3) => {
-
-        // console.log('resData3 : ', resData3);
-
-        var user1_flight = resData3[0].id;
-        var origin = resData3[0].origin;
-        var destination = resData3[0].destination;
-        var airline = resData3[0].airline;
-        var user1_time = resData3[0].departure;
-        var number = resData3[0].number;
-
+      if (resData1.length > 0) {
+        console.log('resData1 : ', resData1);
         var getoptions = {
           method: 'POST',
           headers: {
             'x-hasura-role': 'admin',
-            'authorization': production_authToken,
+            'authorization': development_authToken,
             'content-type': 'application/json'
           },
           body: JSON.stringify({
             "type": "select",
             "args": {
-              "table": "user",
-              "columns": [
-                "*", {
-                  "name": "education",
-                  "columns": ["*"]
-                }, {
-                  "name": "experience",
-                  "columns": ["*"]
-                }, {
-                  "name": "interests",
-                  "columns": ["*"]
-                }, {
-                  "name": "flights",
-                  "columns": ["*"]
-                }
-              ],
+              "table": "flights",
+              "columns": ["*"],
               "where": {
-                "id": {
-                  '$in': user_ids
-                }
+                "id": resData1[0].flights[0].flight_id
               }
             }
           })
         };
-        request(getUrl, getoptions, res, (resData2) => {
+        request(getUrl, getoptions, res, (resData3) => {
 
-          // console.log('resData2 : ', resData2);
+          // console.log('resData3 : ', resData3);
 
-          _.forEach(resData2, function(data) {
-            asyncTasks.push(function(callback) {
+          var user1_flight = resData3[0].id;
+          var origin = resData3[0].origin;
+          var destination = resData3[0].destination;
+          var airline = resData3[0].airline;
+          var user1_time = resData3[0].departure;
+          var number = resData3[0].number;
 
-              var getoptions = {
-                method: 'POST',
-                headers: {
-                  'x-hasura-role': 'admin',
-                  'authorization': production_authToken,
-                  'content-type': 'application/json'
-                },
-                body: JSON.stringify({
-                  "type": "select",
-                  "args": {
-                    "table": "user",
-                    "columns": [
-                      "*", {
-                        "name": "education",
-                        "columns": ["*"]
-                      }, {
-                        "name": "experience",
-                        "columns": ["*"]
-                      }, {
-                        "name": "interests",
-                        "columns": ["*"]
-                      }, {
-                        "name": "flights",
-                        "columns": ["*"]
-                      }
-                    ],
-                    "where": {
-                      "id": data.id
-                    }
+          var getoptions = {
+            method: 'POST',
+            headers: {
+              'x-hasura-role': 'admin',
+              'authorization': development_authToken,
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              "type": "select",
+              "args": {
+                "table": "user",
+                "columns": [
+                  "*", {
+                    "name": "education",
+                    "columns": ["*"]
+                  }, {
+                    "name": "experience",
+                    "columns": ["*"]
+                  }, {
+                    "name": "interests",
+                    "columns": ["*"]
+                  }, {
+                    "name": "flights",
+                    "columns": ["*"]
                   }
-                })
-              };
-              request(getUrl, getoptions, res, (
-                resData6) => {
-                // console.log('resData6 : ',
-                //   resData6);
-                if (data.length > 0) {
-                  var getoptions = {
-                    method: 'POST',
-                    headers: {
-                      'x-hasura-role': 'admin',
-                      'authorization': production_authToken,
-                      'content-type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                      "type": "select",
-                      "args": {
-                        "table": "flights",
+                ],
+                "where": {
+                  "id": {
+                    '$in': user_ids
+                  }
+                }
+              }
+            })
+          };
+          request(getUrl, getoptions, res, (resData2) => {
+
+            // console.log('resData2 : ', resData2);
+
+            _.forEach(resData2, function(data) {
+              asyncTasks.push(function(callback) {
+
+                var getoptions = {
+                  method: 'POST',
+                  headers: {
+                    'x-hasura-role': 'admin',
+                    'authorization': development_authToken,
+                    'content-type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    "type": "select",
+                    "args": {
+                      "table": "user",
+                      "columns": [
+                        "*", {
+                          "name": "education",
+                          "columns": ["*"]
+                        }, {
+                          "name": "experience",
+                          "columns": ["*"]
+                        }, {
+                          "name": "interests",
+                          "columns": ["*"]
+                        }, {
+                          "name": "flights",
+                          "columns": ["*"]
+                        }
+                      ],
+                      "where": {
+                        "id": data.id
+                      }
+                    }
+                  })
+                };
+                request(getUrl, getoptions, res, (
+                  resData6) => {
+                  // console.log('resData6 : ',
+                  //   resData6);
+                  if (resData6.length > 0) {
+                    var getoptions = {
+                      method: 'POST',
+                      headers: {
+                        'x-hasura-role': 'admin',
+                        'authorization': development_authToken,
+                        'content-type': 'application/json'
+                      },
+                      body: JSON.stringify({
+                        "type": "select",
+                        "args": {
+                          "table": "flights",
+                          "columns": ["*"],
+                          "where": {
+                            "id": resData6[0]
+                              .flights[0].flight_id
+                          }
+                        }
+                      })
+                    };
+                    request(getUrl, getoptions, res, (
+                      resData5) => {
+                      if (resData5.length > 0) {
+                        // console.log('resData3 : ',
+                        //   resData5);
+                        // console.log(
+                        //   'user2_flight : ',
+                        //   resData5[0].id);
+                        var user2_flight =
+                          resData5[0].id;
+                        var user2_origin =
+                          resData5[0].origin;
+                        var user2_destination =
+                          resData5[0].destination;
+                        var user2_airline =
+                          resData5[0]
+                          .airline;
+                        var user2_time =
+                          resData5[
+                            0].departure;
+                        var user2_number =
+                          resData5[0].number;
+                      } else {
+                        var user2_flight =
+                          null;
+                        var user2_origin = '';
+                        var user2_destination =
+                          '';
+                        var user2_airline = '';
+                        var user2_time = '';
+                        var user2_number = ''
+                      }
+
+                      var user_interests = [];
+                      var user2_experience = [];
+                      var user2_education = [];
+                      var user2_companyName = [];
+                      var user2_designation = [];
+                      // var user2_flight = [];
+
+                      // console.log(
+                      //   'flight data : ',
+                      //   data.flights);
+
+                      for (var j = 0; j <
+                        data.interests
+                        .length; j++) {
+                        user_interests.push(
+                          data.interests[
+                            j].interest);
+                      }
+                      // console.log(data.experience);
+                      for (var j = 0; j <
+                        data.experience
+                        .length; j++) {
+                        user2_companyName.push(
+                          data.experience[
+                            j].company_name
+                        );
+                        user2_designation.push(
+                          data.experience[
+                            j].designation);
+                      }
+
+                      for (var j = 0; j <
+                        data.education
+                        .length; j++) {
+                        var education = new Object({
+                          f1: data.education[
+                            j].institute_name,
+                          id: data.education[
+                            j].id,
+                          user_id: data.education[
+                            j].user_id,
+                          f2: data.education[
+                            j].qualification
+                        });
+                        user2_education.push(
+                          education);
+                      }
+
+                      for (var j = 0; j <
+                        data.experience
+                        .length; j++) {
+                        var experience = new Object({
+                          f1: data.experience[
+                            j].company_name,
+                          id: data.experience[
+                            j].id,
+                          user_id: data.experience[
+                            j].user_id,
+                          f2: data.experience[
+                            j].designation
+                        });
+                        user2_experience.push(
+                          experience);
+                      }
+                      checkData = {
                         "columns": ["*"],
                         "where": {
-                          "id": resData6[0]
-                            .flights[0].flight_id
+                          user1: req.body.user_id,
+                          user2: data.id,
+                          is_liked: true
                         }
-                      }
-                    })
-                  };
-                  request(getUrl, getoptions, res, (
-                    resData5) => {
+                      };
+                      var url =
+                        'api/1/table/like/select';
+                      var liked_12 = null;
+                      find(checkData, url,
+                        res,
+                        function(
+                          err,
+                          data2) {
+                          if (data2.length >
+                            0)
+                            liked_12 =
+                            data2[
+                              0].is_liked;
+                          checkData = {
+                            "columns": [
+                              "*"
+                            ],
+                            "where": {
+                              user1: data
+                                .id,
+                              user2: req.body
+                                .user_id,
+                              is_liked: true
+                            }
+                          };
+                          var url =
+                            'api/1/table/like/select';
+                          var liked_21 =
+                            null;
+                          find(checkData,
+                            url,
+                            res,
+                            function(
+                              err,
+                              data3) {
+                              if (data3.length >
+                                0)
+                                liked_21 =
+                                data3[0].is_liked;
+                              var
+                                user_details =
+                                new Object({
+                                  user2: parseInt(
+                                    data
+                                    .id
+                                  ),
+                                  user2_name: data
+                                    .name,
+                                  user2_city: data
+                                    .city,
+                                  user2_profile_pic: data
+                                    .profile_pic,
+                                  user2_intent: data
+                                    .intent,
+                                  user2_education: user2_education,
+                                  user2_experience: user2_experience,
+                                  user2_interest: user_interests,
+                                  user2_facebook_id: data
+                                    .facebook_id,
+                                  liked_21: liked_21,
+                                  liked_12: liked_12,
+                                  user1_flight: user1_flight,
+                                  origin: origin,
+                                  destination: destination,
+                                  airline: airline,
+                                  user1_time: user1_time,
+                                  number: number,
+                                  user1: req
+                                    .body
+                                    .user_id,
+                                  user2: data
+                                    .id,
+                                  user2_flight: user2_flight,
+                                  user2_origin: user2_origin,
+                                  user2_destination: user2_destination,
+                                  user2_airline: user2_airline,
+                                  user2_time: user2_time,
+                                  user2_number: user2_number,
+                                  city: origin
+                                });
+                              finalresult
+                                .push(
+                                  user_details
+                                );
+                              callback(
+                                null,
+                                finalresult
+                              )
+                            });
+                        });
 
-                    // console.log('resData3 : ',
-                    //   resData5);
-                    // console.log(
-                    //   'user2_flight : ',
-                    //   resData5[0].id);
-                    var user2_flight =
-                      resData5[0].id;
-                    var user2_origin =
-                      resData5[0].origin;
-                    var user2_destination =
-                      resData5[0].destination;
-                    var user2_airline =
-                      resData5[0]
-                      .airline;
-                    var user2_time = resData5[
-                      0].departure;
-                    var user2_number =
-                      resData5[0].number;
+                    });
+                  } else {
+                    var user2_flight = null;
+
+                    var user2_origin = '';
+
+                    var user2_destination = '';
+                    var user2_airline = '';
+                    var user2_time = '';
+                    var user2_number = '';
 
                     var user_interests = [];
                     var user2_experience = [];
@@ -2149,181 +2877,32 @@ function send_notification_function(req, res, next) {
                             )
                           });
                       });
-                  });
-                } else {
-                  var user2_flight = '';
-
-                  var user2_origin = '';
-
-                  var user2_destination = '';
-                  var user2_airline = '';
-                  var user2_time = '';
-                  var user2_number = '';
-
-                  var user_interests = [];
-                  var user2_experience = [];
-                  var user2_education = [];
-                  var user2_companyName = [];
-                  var user2_designation = [];
-                  // var user2_flight = [];
-
-                  // console.log(
-                  //   'flight data : ',
-                  //   data.flights);
-
-                  for (var j = 0; j < data.interests
-                    .length; j++) {
-                    user_interests.push(
-                      data.interests[
-                        j].interest);
                   }
-                  // console.log(data.experience);
-                  for (var j = 0; j < data.experience
-                    .length; j++) {
-                    user2_companyName.push(
-                      data.experience[
-                        j].company_name);
-                    user2_designation.push(
-                      data.experience[
-                        j].designation);
-                  }
-
-                  for (var j = 0; j < data.education
-                    .length; j++) {
-                    var education = new Object({
-                      f1: data.education[
-                        j].institute_name,
-                      id: data.education[
-                        j].id,
-                      user_id: data.education[
-                        j].user_id,
-                      f2: data.education[
-                        j].qualification
-                    });
-                    user2_education.push(
-                      education);
-                  }
-
-                  for (var j = 0; j < data.experience
-                    .length; j++) {
-                    var experience = new Object({
-                      f1: data.experience[
-                        j].company_name,
-                      id: data.experience[
-                        j].id,
-                      user_id: data.experience[
-                        j].user_id,
-                      f2: data.experience[
-                        j].designation
-                    });
-                    user2_experience.push(
-                      experience);
-                  }
-                  checkData = {
-                    "columns": ["*"],
-                    "where": {
-                      user1: req.body.user_id,
-                      user2: data.id,
-                      is_liked: true
-                    }
-                  };
-                  var url =
-                    'api/1/table/like/select';
-                  var liked_12 = null;
-                  find(checkData, url, res,
-                    function(
-                      err,
-                      data2) {
-                      if (data2.length >
-                        0)
-                        liked_12 = data2[
-                          0].is_liked;
-                      checkData = {
-                        "columns": ["*"],
-                        "where": {
-                          user1: data.id,
-                          user2: req.body
-                            .user_id,
-                          is_liked: true
-                        }
-                      };
-                      var url =
-                        'api/1/table/like/select';
-                      var liked_21 = null;
-                      find(checkData, url,
-                        res,
-                        function(
-                          err,
-                          data3) {
-                          if (data3.length >
-                            0)
-                            liked_21 =
-                            data3[0].is_liked;
-                          var
-                            user_details =
-                            new Object({
-                              user2: parseInt(
-                                data
-                                .id
-                              ),
-                              user2_name: data
-                                .name,
-                              user2_city: data
-                                .city,
-                              user2_profile_pic: data
-                                .profile_pic,
-                              user2_intent: data
-                                .intent,
-                              user2_education: user2_education,
-                              user2_experience: user2_experience,
-                              user2_interest: user_interests,
-                              user2_facebook_id: data
-                                .facebook_id,
-                              liked_21: liked_21,
-                              liked_12: liked_12,
-                              user1_flight: user1_flight,
-                              origin: origin,
-                              destination: destination,
-                              airline: airline,
-                              user1_time: user1_time,
-                              number: number,
-                              user1: req
-                                .body
-                                .user_id,
-                              user2: data
-                                .id,
-                              user2_flight: user2_flight,
-                              user2_origin: user2_origin,
-                              user2_destination: user2_destination,
-                              user2_airline: user2_airline,
-                              user2_time: user2_time,
-                              user2_number: user2_number,
-                              city: origin
-                            });
-                          finalresult.push(
-                            user_details
-                          );
-                          callback(null,
-                            finalresult
-                          )
-                        });
-                    });
+                });
+              });
+            });
+            async.parallel(asyncTasks, function(err, result) {
+              res.json({
+                data: finalresult,
+                error: {
+                  code: 200,
+                  message: 'success',
+                  errors: ""
                 }
               });
             });
           });
-          async.parallel(asyncTasks, function(err, result) {
-            res.json({
-              data: finalresult,
-              error: {
-                code: 200,
-                message: 'success',
-                errors: ""
-              }
-            });
-          });
         });
-      });
+      } else {
+        res.json({
+          data: finalresult,
+          error: {
+            code: 200,
+            message: 'success',
+            errors: ""
+          }
+        })
+      }
     });
   });
 }
