@@ -2049,7 +2049,7 @@ function send_notification_function(req, res, next) {
                   resData6) => {
                   // console.log('resData6 : ',
                   //   resData6);
-                  if (data.length > 0) {
+                  if (resData6.length > 0) {
                     var getoptions = {
                       method: 'POST',
                       headers: {
