@@ -3324,6 +3324,47 @@ function get_user_flight_function(req, res, next) {
   });
 }
 
+app.post('/remove-user-flight', routesVersioning({
+  "~1.0.0": remove_user_flight_function
+}, NoMatchFoundCallback));
+
+function remove_user_flight_function(req, res, next) {
+  var getUrl = development_database_url + 'v1/query';
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "delete",
+      "args": {
+        "table": "user_flight",
+        "where": {
+          user_id: parseInt(req.body.user_id),
+          flight_id: parseInt(req.body.flight_id),
+          pnr: req.body.pnr_number
+        }
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (resData6) => {
+    res.json({
+      data: {
+        user_id: parseInt(req.body.user_id),
+        flight_id: parseInt(req.body.flight_id),
+        pnr: req.body.pnr
+      },
+      error: {
+        code: 200,
+        message: 'success',
+        errors: ""
+      }
+    });
+  });
+}
+
 app.post('/send-feedback', (req, res) => {
   const chunk = req.body;
   // const userid = chunk.user_id;
