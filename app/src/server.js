@@ -660,14 +660,7 @@ var flightStat = function(flightCode, flightNumber, departYear, departMonth,
 
   request_function(url1, options, res, function(err, flight_data) {
     if (err)
-      return res.json({
-        data: [],
-        error: {
-          code: 500,
-          message: 'database server Error',
-          errors: err
-        }
-      });
+      return callback(true, null);
     return callback(null, flight_data);
   });
 }
@@ -805,14 +798,15 @@ var insert_data = function(flight_details_object, res, callback) {
   });
 }
 
-// app.post('/flight-check', (req, res) => {
 
-app.post('/flight-check', routesVersioning({
-  "~1.0.0": flight_check_function,
-  "~2.0.0": flight_check_function
-}, NoMatchFoundCallback));
+// app.post('/flight-check', routesVersioning({
+//   "~1.0.0": flight_check_function,
+//   "~2.0.0": flight_check_function
+// }, NoMatchFoundCallback));
+//
+// function flight_check_function(req, res, next) {
 
-function flight_check_function(req, res, next) {
+app.post('/flight-check', (req, res) => {
 
   console.log('flight-check');
   var finalresult = [];
@@ -945,7 +939,7 @@ function flight_check_function(req, res, next) {
         }
       }
     });
-}
+});
 
 
 app.get('/frequent-fliers', routesVersioning({
@@ -1416,7 +1410,8 @@ function airport_by_code_function(req, res, next) {
               }
             });
           }
-          if ((data.length > 0) && (data[0].user_flight.length > 0)) {
+          if ((data.length > 0) && (data[0].user_flight.length >
+              0)) {
             for (var i = 0; i < data[0].user_flight.length; i++) {
               flight_user_ids.push(data[0].user_flight[i].user_id)
             }
@@ -2251,19 +2246,24 @@ function send_notification_function(req, res, next) {
                           "type": "select",
                           "args": {
                             "table": "flights",
-                            "columns": ["*"],
+                            "columns": [
+                              "*"
+                            ],
                             "where": {
                               "id": resData6[
                                   0]
-                                .flights[0].flight_id
+                                .flights[
+                                  0].flight_id
                             }
                           }
                         })
                       };
-                      request(getUrl, getoptions,
+                      request(getUrl,
+                        getoptions,
                         res, (
                           resData5) => {
-                          if (resData5.length > 0) {
+                          if (resData5.length >
+                            0) {
                             // console.log('resData3 : ',
                             //   resData5);
                             // console.log(
@@ -2273,7 +2273,8 @@ function send_notification_function(req, res, next) {
                               resData5[0].id;
                             var user2_origin =
                               resData5[0].origin;
-                            var user2_destination =
+                            var
+                              user2_destination =
                               resData5[0].destination;
                             var user2_airline =
                               resData5[0]
@@ -2286,20 +2287,26 @@ function send_notification_function(req, res, next) {
                           } else {
                             var user2_flight =
                               null;
-                            var user2_origin = '';
-                            var user2_destination =
+                            var user2_origin =
+                              '';
+                            var
+                              user2_destination =
                               '';
                             var user2_airline =
                               '';
-                            var user2_time = '';
-                            var user2_number = ''
+                            var user2_time =
+                              '';
+                            var user2_number =
+                              ''
                           }
 
                           var user_interests = [];
                           var user2_experience = [];
                           var user2_education = [];
-                          var user2_companyName = [];
-                          var user2_designation = [];
+                          var
+                            user2_companyName = [];
+                          var
+                            user2_designation = [];
                           // var user2_flight = [];
 
                           // console.log(
@@ -2311,34 +2318,40 @@ function send_notification_function(req, res, next) {
                             .length; j++) {
                             user_interests.push(
                               data.interests[
-                                j].interest);
+                                j].interest
+                            );
                           }
                           // console.log(data.experience);
                           for (var j = 0; j <
                             data.experience
                             .length; j++) {
-                            user2_companyName.push(
-                              data.experience[
-                                j].company_name
-                            );
-                            user2_designation.push(
-                              data.experience[
-                                j].designation);
+                            user2_companyName
+                              .push(
+                                data.experience[
+                                  j].company_name
+                              );
+                            user2_designation
+                              .push(
+                                data.experience[
+                                  j].designation
+                              );
                           }
 
                           for (var j = 0; j <
                             data.education
                             .length; j++) {
-                            var education = new Object({
-                              f1: data.education[
-                                j].institute_name,
-                              id: data.education[
-                                j].id,
-                              user_id: data.education[
-                                j].user_id,
-                              f2: data.education[
-                                j].qualification
-                            });
+                            var education =
+                              new Object({
+                                f1: data.education[
+                                  j].institute_name,
+                                id: data.education[
+                                  j].id,
+                                user_id: data
+                                  .education[
+                                    j].user_id,
+                                f2: data.education[
+                                  j].qualification
+                              });
                             user2_education.push(
                               education);
                           }
@@ -2346,23 +2359,26 @@ function send_notification_function(req, res, next) {
                           for (var j = 0; j <
                             data.experience
                             .length; j++) {
-                            var experience = new Object({
-                              f1: data.experience[
-                                j].company_name,
-                              id: data.experience[
-                                j].id,
-                              user_id: data.experience[
-                                j].user_id,
-                              f2: data.experience[
-                                j].designation
-                            });
+                            var experience =
+                              new Object({
+                                f1: data.experience[
+                                  j].company_name,
+                                id: data.experience[
+                                  j].id,
+                                user_id: data
+                                  .experience[
+                                    j].user_id,
+                                f2: data.experience[
+                                  j].designation
+                              });
                             user2_experience.push(
                               experience);
                           }
                           checkData = {
                             "columns": ["*"],
                             "where": {
-                              user1: req.body.user_id,
+                              user1: req.body
+                                .user_id,
                               user2: data.id,
                               is_liked: true
                             }
@@ -2387,7 +2403,8 @@ function send_notification_function(req, res, next) {
                                 "where": {
                                   user1: data
                                     .id,
-                                  user2: req.body
+                                  user2: req
+                                    .body
                                     .user_id,
                                   is_liked: true
                                 }
@@ -2396,16 +2413,20 @@ function send_notification_function(req, res, next) {
                                 'api/1/table/like/select';
                               var liked_21 =
                                 null;
-                              find(checkData,
+                              find(
+                                checkData,
                                 url,
                                 res,
                                 function(
                                   err,
                                   data3) {
-                                  if (data3.length >
+                                  if (
+                                    data3
+                                    .length >
                                     0)
                                     liked_21 =
-                                    data3[0].is_liked;
+                                    data3[
+                                      0].is_liked;
                                   var
                                     user_details =
                                     new Object({
@@ -2451,10 +2472,11 @@ function send_notification_function(req, res, next) {
                                     .push(
                                       user_details
                                     );
-                                  callback(
-                                    null,
-                                    finalresult
-                                  )
+                                  callback
+                                    (
+                                      null,
+                                      finalresult
+                                    )
                                 });
                             });
 
@@ -2464,7 +2486,8 @@ function send_notification_function(req, res, next) {
 
                       var user2_origin = '';
 
-                      var user2_destination = '';
+                      var user2_destination =
+                        '';
                       var user2_airline = '';
                       var user2_time = '';
                       var user2_number = '';
@@ -2621,7 +2644,8 @@ function send_notification_function(req, res, next) {
                   });
                 });
               });
-              async.parallel(asyncTasks, function(err, result) {
+              async.parallel(asyncTasks, function(err,
+                result) {
                 res.json({
                   data: finalresult,
                   error: {
@@ -2689,43 +2713,48 @@ function add_flight_function(req, res, next) {
           }
         })
       };
-      request(getUrl, getoptions, res, (resData6) => {
-        var insertUrl = development_database_url +
-          'api/1/table/user_flight/insert';
-        var user_airport_details_object = new Object({
-          user_id: parseInt(data.user_id),
-          flight_id: parseInt(data.flight_id),
-          pnr: data.pnr_number
-        });
+      request_function(getUrl, getoptions, res, function(err,
+        resData6) {
+        console.log('err1 : ', err);
+        if (!err) {
+          var insertUrl = development_database_url +
+            'api/1/table/user_flight/insert';
+          var user_airport_details_object = new Object({
+            user_id: parseInt(data.user_id),
+            flight_id: parseInt(data.flight_id),
+            pnr: data.pnr_number
+          });
 
-        var insertOpts = {
-          method: 'POST',
-          body: JSON.stringify({
-            objects: [user_airport_details_object]
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': development_authToken,
-            'X-Hasura-Role': 'admin'
-          }
-        };
-        request_function(insertUrl, insertOpts, res, function(
-          err,
-          response) {
-          if (err) {
-            res.json({
-              data: [],
-              error: {
-                code: 500,
-                message: 'Backend Error',
-                errors: err
-              }
-            });
-          }
-
-          finalresult.push(user_airport_details_object);
-          callback(null, finalresult);
-        });
+          var insertOpts = {
+            method: 'POST',
+            body: JSON.stringify({
+              objects: [user_airport_details_object]
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': development_authToken,
+              'X-Hasura-Role': 'admin'
+            }
+          };
+          request_function(insertUrl, insertOpts, res, function(
+            err,
+            response) {
+            console.log('err2 : ', err);
+            if (err) {
+              res.json({
+                data: [],
+                error: {
+                  code: 500,
+                  message: 'Backend Error',
+                  errors: err
+                }
+              });
+            } else {
+              finalresult.push(user_airport_details_object);
+              callback(null, finalresult);
+            }
+          });
+        }
       });
     });
   });
