@@ -897,7 +897,8 @@ app.post('/flight-check', (req, res) => {
 
 
 app.get('/frequent-fliers', routesVersioning({
-  "~1.0.0": frequent_fliers_function
+  "~1.0.0": frequent_fliers_function,
+  "~2.0.0": frequent_fliers_function
 }, NoMatchFoundCallback));
 
 function frequent_fliers_function(req, res, next) {
@@ -1053,7 +1054,8 @@ var update_data = function(updateData, url, res, callback) {
 
 
 app.post('/image-upload', routesVersioning({
-  "~1.0.0": image_upload_function
+  "~1.0.0": image_upload_function,
+  "~2.0.0": image_upload_function
 }, NoMatchFoundCallback));
 
 function image_upload_function(req, res, next) {
@@ -1181,7 +1183,8 @@ var find = function(checkData, url, res, callback) {
 
 
 app.get('/all-airports', routesVersioning({
-  "~1.0.0": all_airports_function
+  "~1.0.0": all_airports_function,
+  "~2.0.0": all_airports_function
 }, NoMatchFoundCallback));
 
 function all_airports_function(req, res, next) {
@@ -1235,7 +1238,8 @@ function NoMatchFoundCallback(req, res, next) {
 
 
 app.get('/airport-by-code', routesVersioning({
-  "~1.0.0": airport_by_code_function
+  "~1.0.0": airport_by_code_function,
+  "~2.0.0": airport_by_code_function
 }, NoMatchFoundCallback));
 
 function airport_by_code_function(req, res, next) {
@@ -1314,7 +1318,8 @@ function airport_by_code_function(req, res, next) {
 
 
 app.post('/airport-user-enter', routesVersioning({
-  "~1.0.0": airport_user_enter_function
+  "~1.0.0": airport_user_enter_function,
+  "~2.0.0": airport_user_enter_function
 }, NoMatchFoundCallback));
 
 function airport_user_enter_function(req, res, next) {
@@ -1486,7 +1491,8 @@ function airport_user_enter_function(req, res, next) {
 
 
 app.post('/airport-user-exit', routesVersioning({
-  "~1.0.0": airport_user_exit_function
+  "~1.0.0": airport_user_exit_function,
+  "~2.0.0": airport_user_exit_function
 }, NoMatchFoundCallback));
 
 function airport_user_exit_function(req, res, next) {
@@ -1547,7 +1553,8 @@ function airport_user_exit_function(req, res, next) {
 
 
 app.post('/airport-user-profile', routesVersioning({
-  "~1.0.0": airport_user_profile_function
+  "~1.0.0": airport_user_profile_function,
+  "~2.0.0": airport_user_profile_function
 }, NoMatchFoundCallback));
 
 function airport_user_profile_function(req, res, next) {
@@ -1783,7 +1790,8 @@ var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
 
 
 app.post('/send-notification', routesVersioning({
-  "~1.0.0": send_notification_function
+  "~1.0.0": send_notification_function,
+  "~2.0.0": send_notification_function
 }, NoMatchFoundCallback));
 
 // function send_notification_function(req, res, next) {
