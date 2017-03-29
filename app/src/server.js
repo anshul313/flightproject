@@ -660,7 +660,14 @@ var flightStat = function(flightCode, flightNumber, departYear, departMonth,
 
   request_function(url1, options, res, function(err, flight_data) {
     if (err)
-      return callback(true, err);
+      return res.json({
+        data: [],
+        error: {
+          code: 500,
+          message: 'database server Error',
+          errors: err
+        }
+      });
     return callback(null, flight_data);
   });
 }
