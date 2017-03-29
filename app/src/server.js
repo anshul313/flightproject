@@ -2693,6 +2693,8 @@ function add_flight_function(req, res, next) {
   var userdata = req.body;
   _.forEach(userdata, function(data) {
     asyncTasks.push(function(callback) {
+      // console.log('flight_id : ', parseInt(data.flight_id));
+      // console.log('user_id : ', parseInt(data.user_id));
       var getUrl = development_database_url + 'v1/query';
       var getoptions = {
         method: 'POST',
@@ -2714,73 +2716,56 @@ function add_flight_function(req, res, next) {
         })
       };
       request(getUrl, getoptions, res, (resData1) => {
-        if (resData1.length == 0) {
-          var getoptions = {
+        // console.log('resData1', resData1);
+        if (resData1.length > 0) {
+          callback(null, finalresult);
+        } else {
+
+          var insertUrl = development_database_url +
+            'api/1/table/user_flight/insert';
+          var user_airport_details_object = new Object({
+            user_id: parseInt(data.user_id),
+            flight_id: parseInt(data.flight_id),
+            pnr: data.pnr_number
+          });
+
+          var insertOpts = {
             method: 'POST',
-            headers: {
-              'x-hasura-role': 'admin',
-              'authorization': development_authToken,
-              'content-type': 'application/json'
-            },
             body: JSON.stringify({
-              "type": "delete",
-              "args": {
-                "table": "user_flight",
-                "where": {
-                  user_id: parseInt(data.user_id),
-                  flight_id: parseInt(data.flight_id),
-                  pnr: data.pnr_number
-                }
-              }
-            })
-          };
-          request_function(getUrl, getoptions, res, function(err,
-            resData6) {
-            console.log('err1 : ', err);
-            if (!err) {
-              var insertUrl = development_database_url +
-                'api/1/table/user_flight/insert';
-              var user_airport_details_object = new Object({
+              objects: [{
                 user_id: parseInt(data.user_id),
                 flight_id: parseInt(data.flight_id),
                 pnr: data.pnr_number
-              });
-
-              var insertOpts = {
-                method: 'POST',
-                body: JSON.stringify({
-                  objects: [user_airport_details_object]
-                }),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': development_authToken,
-                  'X-Hasura-Role': 'admin'
-                }
-              };
-              request_function(insertUrl, insertOpts, res,
-                function(
-                  err,
-                  response) {
-                  console.log('err2 : ', err);
-                  if (err) {
-                    res.json({
-                      data: [],
-                      error: {
-                        code: 500,
-                        message: 'Backend Error',
-                        errors: err
-                      }
-                    });
-                  } else {
-                    finalresult.push(
-                      user_airport_details_object);
-                    callback(null, finalresult);
+              }]
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': development_authToken,
+              'X-Hasura-Role': 'admin'
+            }
+          };
+          // console.log('user_airport_details',
+          //   user_airport_details_object);
+          request_function(insertUrl, insertOpts, res,
+            function(
+              err,
+              response) {
+              // console.log('err2 : ', err);
+              if (err) {
+                res.json({
+                  data: [],
+                  error: {
+                    code: 500,
+                    message: 'Backend Error',
+                    errors: err
                   }
                 });
-            }
-          });
-        } else {
-          callback(null, finalresult);
+              } else {
+                finalresult.push(
+                  user_airport_details_object);
+                callback(null, finalresult);
+              }
+            });
         }
       });
     });
