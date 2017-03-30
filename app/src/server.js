@@ -943,7 +943,7 @@ app.post('/flight-check', (req, res) => {
 
 
 app.get('/frequent-fliers', routesVersioning({
-  "~1.0.0": frequent_fliers_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": frequent_fliers_function
 }, NoMatchFoundCallback));
 
@@ -1111,7 +1111,7 @@ var update_data = function(updateData, url, res, callback) {
 
 
 app.post('/image-upload', routesVersioning({
-  "~1.0.0": image_upload_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": image_upload_function
 }, NoMatchFoundCallback));
 
@@ -1259,7 +1259,7 @@ var find = function(checkData, url, res, callback) {
 
 
 app.get('/all-airports', routesVersioning({
-  "~1.0.0": all_airports_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": all_airports_function
 }, NoMatchFoundCallback));
 
@@ -1314,7 +1314,7 @@ function NoMatchFoundCallback(req, res, next) {
 
 
 app.get('/airport-by-code', routesVersioning({
-  "~1.0.0": airport_by_code_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": airport_by_code_function
 }, NoMatchFoundCallback));
 
@@ -1480,7 +1480,7 @@ function airport_by_code_function(req, res, next) {
 
 
 app.post('/airport-user-enter', routesVersioning({
-  "~1.0.0": airport_user_enter_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": airport_user_enter_function
 }, NoMatchFoundCallback));
 
@@ -1600,7 +1600,7 @@ function airport_user_enter_function(req, res, next) {
 
 
 app.post('/airport-user-exit', routesVersioning({
-  "~1.0.0": airport_user_exit_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": airport_user_exit_function
 }, NoMatchFoundCallback));
 
@@ -1671,7 +1671,7 @@ function airport_user_exit_function(req, res, next) {
 
 
 app.post('/airport-user-profile', routesVersioning({
-  "~1.0.0": airport_user_profile_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": airport_user_profile_function
 }, NoMatchFoundCallback));
 
@@ -2022,37 +2022,37 @@ function airport_user_profile_function(req, res, next) {
   });
 }
 
-// var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
-//   var currentTime = new Date().getTime() - (3600000 * 4);
-//   var getUrl = development_database_url + 'v1/query';
-//   var getoptions = {
-//     method: 'POST',
-//     headers: {
-//       'x-hasura-role': 'admin',
-//       'authorization': development_authToken,
-//       'content-type': 'application/json'
-//     },
-//     body: JSON.stringify({
-//       "type": "delete",
-//       "args": {
-//         "table": "airport_user",
-//         "where": {
-//           "entry_time": {
-//             '$lt': currentTime
-//           }
-//         },
-//         "returning": ["id"]
-//       }
-//     })
-//   };
-//   request(getUrl, getoptions, res, (resData1) => {
-//     console.log('response data : ', resData1);
-//   });
-// });
+var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
+  var currentTime = new Date().getTime() - (3600000 * 4);
+  var getUrl = development_database_url + 'v1/query';
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "delete",
+      "args": {
+        "table": "airport_user",
+        "where": {
+          "entry_time": {
+            '$lt': currentTime
+          }
+        },
+        "returning": ["id"]
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (resData1) => {
+    console.log('response data : ', resData1);
+  });
+});
 
 
 app.post('/send-notification', routesVersioning({
-  "~1.0.0": send_notification_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": send_notification_function
 }, NoMatchFoundCallback));
 
@@ -2683,7 +2683,7 @@ function send_notification_function(req, res, next) {
 
 
 app.post('/add-flight', routesVersioning({
-  "~1.0.0": add_flight_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": add_flight_function
 }, NoMatchFoundCallback));
 
@@ -2784,7 +2784,7 @@ function add_flight_function(req, res, next) {
 }
 
 app.get('/get-user-flight', routesVersioning({
-  "~1.0.0": get_user_flight_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": get_user_flight_function
 }, NoMatchFoundCallback));
 
@@ -2856,7 +2856,7 @@ function get_user_flight_function(req, res, next) {
 }
 
 app.post('/remove-user-flight', routesVersioning({
-  "~1.0.0": remove_user_flight_function,
+  "~1.0.0": versionavailable,
   "~2.0.0": remove_user_flight_function
 }, NoMatchFoundCallback));
 
