@@ -1223,7 +1223,7 @@ var s3Upload = function(readStream, fileName, req, res) {
       //   error: false
       // });
       res.json({
-        data: "image uploaded successfully",
+        data: image_url,
         error: {
           code: 200,
           message: 'success',
