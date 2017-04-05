@@ -1640,7 +1640,8 @@ function airport_user_exit_function(req, res, next) {
           "args": {
             "table": "airport_user",
             "where": {
-              "user_id": userid
+              "user_id": userid,
+              airport_id: data[0].id
             },
             "returning": ["id"]
           }
