@@ -1680,7 +1680,7 @@ app.post('/airport-user-profile', routesVersioning({
 }, NoMatchFoundCallback));
 
 function airport_user_profile_function(req, res, next) {
-  console.log('airport_user_profile_function');
+  // console.log('airport_user_profile_function');
   var airport_code = req.body.airport_code.toUpperCase();
   var userid = req.body.user_id;
   var ids = [];
