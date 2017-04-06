@@ -1690,7 +1690,7 @@ function airport_user_profile_function(req, res, next) {
   var day = today.getUTCDate();
   var startTime = moment.utc().format();
   var timestring1 = moment(startTime);
-  timestring1 = timestring1.add(moment.duration(2, 'hours'));
+  timestring1 = timestring1.add(moment.duration(4, 'hours'));
   var endTime = moment.utc(timestring1).format();
   var flight_user_ids = [];
   var airport_user_ids = [];
