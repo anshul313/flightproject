@@ -2694,7 +2694,7 @@ app.post('/add-flight', routesVersioning({
 function add_flight_function(req, res, next) {
   var finalresult = [];
   var asyncTasks = [];
-  var userdata = req.body;
+  var userdata = req.body.flights;
   _.forEach(userdata, function(data) {
     asyncTasks.push(function(callback) {
       // console.log('flight_id : ', parseInt(data.flight_id));
@@ -2730,7 +2730,7 @@ function add_flight_function(req, res, next) {
           var user_airport_details_object = new Object({
             user_id: parseInt(data.user_id),
             flight_id: parseInt(data.flight_id),
-            pnr: data.pnr_number
+            pnr: data.pnr
           });
 
           var insertOpts = {
@@ -2739,7 +2739,7 @@ function add_flight_function(req, res, next) {
               objects: [{
                 user_id: parseInt(data.user_id),
                 flight_id: parseInt(data.flight_id),
-                pnr: data.pnr_number
+                pnr: data.pnr
               }]
             }),
             headers: {
