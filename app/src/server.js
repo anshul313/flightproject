@@ -50,6 +50,13 @@ else
 // Parse JSON bodies
 app.use(bodyParser.json());
 app.use('/static', Express.static('static'));
+app.use(bodyParser.json({
+  limit: '5mb'
+}));
+app.use(bodyParser.urlencoded({
+  limit: '5mb',
+  extended: true
+}));
 
 const headers = {
   'Content-Type': 'application/json'
