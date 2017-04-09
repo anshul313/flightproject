@@ -50,10 +50,10 @@ else
 // Parse JSON bodies
 app.use('/static', Express.static('static'));
 app.use(bodyParser.json({
-  limit: '100mb'
+  limit: '50mb'
 }));
 app.use(bodyParser.urlencoded({
-  limit: '100mb',
+  limit: '50mb',
   extended: true
 }));
 
