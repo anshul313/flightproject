@@ -1132,7 +1132,7 @@ function image_upload_function(req, res, next) {
   });
   var uploadfile = multer({
     storage: storage,
-    size: 1024 * 1024 * 10
+    size: 1024 * 1024 * 1024 * 10
   }).single('file');
   uploadfile(req, res, function(err) {
     if (err) {
@@ -2892,6 +2892,48 @@ function remove_user_flight_function(req, res, next) {
         flight_id: parseInt(req.body.flight_id),
         pnr: req.body.pnr
       },
+      error: {
+        code: 200,
+        message: 'success',
+        errors: ""
+      }
+    });
+  });
+}
+
+app.get('/update-flight-time', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": update_flight_time_function
+}, NoMatchFoundCallback));
+
+function update_flight_time_function(req, res, next) {
+  var asyncTasks = [];
+  var finalresult = [];
+  var url = 'api/1/table/flight/select';
+  var checkData = {
+    "columns": ["*"]
+  };
+
+  find(checkData, url, res, function(err, result) {
+    if (err)
+      res.json({
+        data: [],
+        error: {
+          code: 500,
+          message: 'Backend Error',
+          errors: err
+        }
+      });
+    _.forEach(result, function(data) {
+      asyncTasks.push(function(callback) {
+
+        callback(null, finalresult);
+      });
+    });
+  });
+  async.parallel(asyncTasks, function(err, result) {
+    res.json({
+      data: finalresult,
       error: {
         code: 200,
         message: 'success',
