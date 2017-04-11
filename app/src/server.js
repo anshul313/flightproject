@@ -1697,7 +1697,10 @@ function airport_user_profile_function(req, res, next) {
   var startTime = moment.utc().format();
   var timestring1 = moment(startTime);
   timestring1 = timestring1.add(moment.duration(4, 'hours'));
+  var timestring2 = moment(startTime);
+  timestring1 = timestring2.subtract(moment.duration(4, 'hours'));
   var endTime = moment.utc(timestring1).format();
+  var startTime1 = moment.utc(timestring2).format();
   var flight_user_ids = [];
   var airport_user_ids = [];
   // console.log('startTime : ', startTime);
@@ -1711,15 +1714,30 @@ function airport_user_profile_function(req, res, next) {
       }
     ],
     where: {
-      origin_code: airport_code,
-      "$and": [{
-        departure: {
-          "$gte": startTime
-        }
+      "$or": [{
+        "$and": [{
+          departure: {
+            "$gte": startTime
+          }
+        }, {
+          departure: {
+            "$lte": endTime
+          }
+        }, {
+          origin_code: airport_code
+        }]
       }, {
-        departure: {
-          "$lte": endTime
-        }
+        "$and": [{
+          arrival: {
+            "$gte": startTime1
+          }
+        }, {
+          arrival: {
+            "$lte": endTime
+          }
+        }, {
+          destination_code: airport_code
+        }]
       }]
     }
   };
@@ -2016,6 +2034,15 @@ function airport_user_profile_function(req, res, next) {
                 }
               });
             }
+          } else {
+            res.json({
+              data: finalresult,
+              error: {
+                code: 200,
+                message: 'success',
+                errors: ""
+              }
+            });
           }
         });
       } else {
