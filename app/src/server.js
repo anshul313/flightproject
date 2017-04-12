@@ -814,12 +814,16 @@ var insert_data = function(flight_details_object, res, callback) {
 
 app.post('/flight-check', (req, res) => {
 
-  console.log('flight-check');
+  // console.log('flight-check');
   var finalresult = [];
   const input = req.body;
   input.flight_number = input.flight_number.toUpperCase();
   var flightCode = (input.flight_number.substring(0, 2)).toUpperCase();
   var flightNumber = input.flight_number.substring(2);
+  if (flightNumber[0] === '0')
+    flightNumber = flightNumber.substring(1);
+  var finalFlightNumber = flightCode + flightNumber;
+  // console.log('finalFlightNumber : ', finalFlightNumber);
   var check = moment(input.today_date.toString(), 'YYYY/MM/DD');
   var departMonth = check.format('M')
   var departDay = check.format('D')
@@ -891,7 +895,7 @@ app.post('/flight-check', (req, res) => {
               // console.log('result_depTime : ', result_depTime);
 
               var flight_details_object = new Object({
-                number: input.flight_number,
+                number: finalFlightNumber,
                 airline: flightName,
                 origin_code: depCode,
                 destination_code: arrCode,
