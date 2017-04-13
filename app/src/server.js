@@ -2938,6 +2938,294 @@ function remove_user_flight_function(req, res, next) {
   });
 }
 
+app.post('/user-flight-exit', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": user_flight_exit_function
+}, NoMatchFoundCallback));
+
+function user_flight_exit_function(req, res, next) {
+
+  var flightId = parseInt(req.body.flight_id);
+  var userId = parseInt(req.body.user_id);
+  var pnr = req.body.pnr;
+  const checkData = {
+    columns: ['*', {
+      "name": "flights",
+      "columns": ["*"]
+    }],
+    where: {
+      flight_id: flightId,
+      user_id: userId,
+      pnr: pnr
+    }
+  };
+  var url = 'api/1/table/user_flight/select';
+  find(checkData, url, res, function(err, data) {
+    if (err) {
+      res.json({
+        data: [],
+        error: {
+          code: 500,
+          message: 'Backend Error',
+          errors: err
+        }
+      });
+    }
+    if (data.length > 0) {
+      var getUrl = development_database_url + 'v1/query';
+      var getoptions = {
+        method: 'POST',
+        headers: {
+          'x-hasura-role': 'admin',
+          'authorization': development_authToken,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          "type": "delete",
+          "args": {
+            "table": "user_flight",
+            "where": {
+              flight_id: flightId,
+              user_id: userId,
+              pnr: pnr
+            }
+          }
+        })
+      };
+      request(getUrl, getoptions, res, (resData1) => {
+        res.json({
+          data: data[0].flights,
+          error: {
+            code: 200,
+            message: 'success',
+            errors: ""
+          }
+        });
+      });
+    } else {
+      res.json({
+        data: [],
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
+    }
+  });
+}
+
+app.get('/get-user-details', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": get_user_detail_function
+}, NoMatchFoundCallback));
+
+function get_user_detail_function(req, res, next) {
+  var getUrl = development_database_url +
+    'v1/query';
+
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "select",
+      "args": {
+        "table": "user",
+        "columns": [
+          "*", {
+            "name": "education",
+            "columns": ["*"]
+          }, {
+            "name": "experience",
+            "columns": ["*"]
+          }, {
+            "name": "interests",
+            "columns": ["*"]
+          }
+        ],
+        "where": {
+          "id": parseInt(req.query.user_id)
+        }
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (
+    userdata) => {
+    if (userdata.length > 0) {
+      var data = userdata[0];
+
+
+      var user_interests = [];
+      var user2_experience = [];
+      var user2_education = [];
+      // var user2_companyName = [];
+      // var user2_designation = [];
+
+      for (var j = 0; j < data.interests
+        .length; j++) {
+        user_interests.push(
+          data.interests[
+            j].interest);
+      }
+
+      for (var j = 0; j < data.education
+        .length; j++) {
+        var education = new Object({
+          f1: data.education[
+            j].institute_name,
+          id: data.education[
+            j].id,
+          user_id: data.education[
+            j].user_id,
+          f2: data.education[
+            j].qualification
+        });
+        user2_education.push(
+          education);
+      }
+
+      for (var j = 0; j < data.experience
+        .length; j++) {
+        var experience = new Object({
+          f1: data.experience[
+            j].company_name,
+          id: data.experience[
+            j].id,
+          user_id: data.experience[
+            j].user_id,
+          f2: data.experience[
+            j].designation
+        });
+        user2_experience.push(
+          experience);
+      }
+      var
+        user_details =
+        new Object({
+          user_id: parseInt(
+            data
+            .id
+          ),
+          user_name: data
+            .name,
+          user_city: data
+            .city,
+          user_profile_pic: data
+            .profile_pic,
+          user_intent: data
+            .intent,
+          user_education: user2_education,
+          user_experience: user2_experience,
+          user_interest: user_interests,
+          user_facebook_id: data
+            .facebook_id
+        });
+      res.json({
+        data: [user_details],
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
+    } else {
+      res.json({
+        data: [],
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
+    }
+  });
+}
+
+app.get('/get-all-cities', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": get_all_cities_function
+}, NoMatchFoundCallback));
+
+function get_all_cities_function(req, res, next) {
+  var getUrl = development_database_url +
+    'v1/query';
+
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "select",
+      "args": {
+        "table": "airport",
+        "columns": ["*"]
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (data) => {
+    var cities = [];
+    for (var i = 0; i < data.length; i++)
+      cities.push(data[i].city);
+
+    res.json({
+      data: cities,
+      error: {
+        code: 200,
+        message: 'success',
+        errors: ""
+      }
+    });
+  });
+}
+
+app.get('/get-all-interest', routesVersioning({
+  "~1.0.0": versionavailable,
+  "~2.0.0": get_all_interest_function
+}, NoMatchFoundCallback));
+
+function get_all_interest_function(req, res, next) {
+  var getUrl = development_database_url +
+    'v1/query';
+
+  var getoptions = {
+    method: 'POST',
+    headers: {
+      'x-hasura-role': 'admin',
+      'authorization': development_authToken,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      "type": "select",
+      "args": {
+        "table": "user_interest",
+        "columns": ["*"]
+      }
+    })
+  };
+  request(getUrl, getoptions, res, (data) => {
+    var interests = [];
+    for (var i = 0; i < data.length; i++) {
+      if (interests.indexOf(data[i].interest) === -1)
+        interests.push(data[i].interest);
+    }
+    res.json({
+      data: interests,
+      error: {
+        code: 200,
+        message: 'success',
+        errors: ""
+      }
+    });
+  });
+}
+
 app.get('/update-flight-time', routesVersioning({
   "~1.0.0": versionavailable,
   "~2.0.0": update_flight_time_function
