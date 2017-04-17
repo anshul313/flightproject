@@ -645,11 +645,18 @@ app.post('/mutual-friends', (req, res) => {
           -1)) {
         previous = paging['previous'];
       }
-      res.json([{
-        friend: finalData,
-        next: next,
-        previous: previous
-      }]);
+      res.json({
+        data: {
+          friend: finalData,
+          next: next,
+          previous: previous
+        },
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
     });
   }
   if (input.previous != '') {
@@ -677,11 +684,18 @@ app.post('/mutual-friends', (req, res) => {
           -1)) {
         previous = paging['previous'];
       }
-      res.json([{
-        friend: finalData,
-        next: next,
-        previous: previous
-      }]);
+      res.json({
+        data: {
+          friend: finalData,
+          next: next,
+          previous: previous
+        },
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
     });
   }
   if (input.previous === '' && input.next === '') {
@@ -716,11 +730,18 @@ app.post('/mutual-friends', (req, res) => {
           -1)) {
         previous = paging['previous'];
       }
-      res.json([{
-        friend: finalData,
-        next: next,
-        previous: previous
-      }]);
+      res.json({
+        data: {
+          friend: finalData,
+          next: next,
+          previous: previous
+        },
+        error: {
+          code: 200,
+          message: 'success',
+          errors: ""
+        }
+      });
     });
   }
 });
