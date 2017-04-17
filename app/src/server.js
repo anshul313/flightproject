@@ -647,7 +647,7 @@ app.post('/mutual-friends', (req, res) => {
       }
       res.json({
         data: {
-          friend: finalData,
+          friends: finalData,
           next: next,
           previous: previous
         },
@@ -686,7 +686,7 @@ app.post('/mutual-friends', (req, res) => {
       }
       res.json({
         data: {
-          friend: finalData,
+          friends: finalData,
           next: next,
           previous: previous
         },
@@ -732,7 +732,7 @@ app.post('/mutual-friends', (req, res) => {
       }
       res.json({
         data: {
-          friend: finalData,
+          friends: finalData,
           next: next,
           previous: previous
         },
