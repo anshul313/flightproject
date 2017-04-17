@@ -620,26 +620,109 @@ app.get('/linkedin-profile/:token', (req, res) => {
 
 app.post('/mutual-friends', (req, res) => {
   const input = req.body;
-  const secret = 'b3fe1de6674a29c50b98837e030ec15a';
-  // 3i7ca5ub8r6586ol5wpvyfm5b61om0hc live Token
-  // b3fe1de6674a29c50b98837e030ec15a staging Token
-  const hash = crypto.createHmac('sha256', secret).update(input.userToken).digest(
-    'hex');
-
-  const url =
-    `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28100%29%29&access_token=${input.userToken}&appsecret_proof=${hash}`;
-  const options = {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + input.myToken
-    }
-  };
-  request(url, options, res, (data) => {
-    console.log(JSON.stringify(data));
-    res.set('Content-Type', 'application/json');
-    res.send(JSON.stringify(data));
-  });
+  if (input.next != '') {
+    var url = input.next;
+    var options = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + input.myToken
+      }
+    };
+    request(url, options, res, (data) => {
+      res.set('Content-Type', 'application/json');
+      var finalData = data.data;
+      var paging = data.paging;
+      var next = '';
+      var previous = '';
+      if (paging.hasOwnProperty('next') && (paging[
+            'next'] !=
+          -1)) {
+        next = paging['next'];
+      }
+      if (paging.hasOwnProperty('previous') && (paging[
+            'previous'] !=
+          -1)) {
+        previous = paging['previous'];
+      }
+      res.json([{
+        friend: finalData,
+        next: next,
+        previous: previous
+      }]);
+    });
+  }
+  if (input.previous != '') {
+    var url = input.previous;
+    var options = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + input.myToken
+      }
+    };
+    request(url, options, res, (data) => {
+      res.set('Content-Type', 'application/json');
+      var finalData = data.data;
+      var paging = data.paging;
+      var next = '';
+      var previous = '';
+      if (paging.hasOwnProperty('next') && (paging[
+            'next'] !=
+          -1)) {
+        next = paging['next'];
+      }
+      if (paging.hasOwnProperty('previous') && (paging[
+            'previous'] !=
+          -1)) {
+        previous = paging['previous'];
+      }
+      res.json([{
+        friend: finalData,
+        next: next,
+        previous: previous
+      }]);
+    });
+  }
+  if (input.previous === '' && input.next === '') {
+    const secret = 'b3fe1de6674a29c50b98837e030ec15a';
+    // 3i7ca5ub8r6586ol5wpvyfm5b61om0hc live Token
+    // b3fe1de6674a29c50b98837e030ec15a staging Token
+    const hash = crypto.createHmac('sha256', secret).update(input.userToken)
+      .digest(
+        'hex');
+    var url =
+      `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%2850%29%29&access_token=${input.userToken}&appsecret_proof=${hash}`;
+    var options = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + input.myToken
+      }
+    };
+    request(url, options, res, (data) => {
+      res.set('Content-Type', 'application/json');
+      var finalData = data.context.all_mutual_friends.data;
+      var paging = data.context.all_mutual_friends.paging;
+      var next = '';
+      var previous = '';
+      if (paging.hasOwnProperty('next') && (paging[
+            'next'] !=
+          -1)) {
+        next = paging['next'];
+      }
+      if (paging.hasOwnProperty('previous') && (paging[
+            'previous'] !=
+          -1)) {
+        previous = paging['previous'];
+      }
+      res.json([{
+        friend: finalData,
+        next: next,
+        previous: previous
+      }]);
+    });
+  }
 });
 
 var request_function = function(url, options, res, callback) {
