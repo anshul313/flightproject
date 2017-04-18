@@ -633,6 +633,7 @@ app.post('/mutual-friends', (req, res) => {
       res.set('Content-Type', 'application/json');
       var finalData = data.data;
       var paging = data.paging;
+      var totalFriends = data.summary.total_count;
       var next = '';
       var previous = '';
       if (paging.hasOwnProperty('next') && (paging[
@@ -649,7 +650,8 @@ app.post('/mutual-friends', (req, res) => {
         data: {
           friends: finalData,
           next: next,
-          previous: previous
+          previous: previous,
+          totalFriends: totalFriends
         },
         error: {
           code: 200,
@@ -672,6 +674,7 @@ app.post('/mutual-friends', (req, res) => {
       res.set('Content-Type', 'application/json');
       var finalData = data.data;
       var paging = data.paging;
+      var totalFriends = data.summary.total_count;
       var next = '';
       var previous = '';
       if (paging.hasOwnProperty('next') && (paging[
@@ -688,7 +691,8 @@ app.post('/mutual-friends', (req, res) => {
         data: {
           friends: finalData,
           next: next,
-          previous: previous
+          previous: previous,
+          totalFriends: totalFriends
         },
         error: {
           code: 200,
@@ -718,6 +722,7 @@ app.post('/mutual-friends', (req, res) => {
       res.set('Content-Type', 'application/json');
       var finalData = data.context.all_mutual_friends.data;
       var paging = data.context.all_mutual_friends.paging;
+      var totalFriends = data.context.all_mutual_friends.summary.total_count;
       var next = '';
       var previous = '';
       if (paging.hasOwnProperty('next') && (paging[
@@ -734,7 +739,8 @@ app.post('/mutual-friends', (req, res) => {
         data: {
           friends: finalData,
           next: next,
-          previous: previous
+          previous: previous,
+          totalFriends: totalFriends
         },
         error: {
           code: 200,
