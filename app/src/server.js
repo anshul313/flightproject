@@ -651,7 +651,7 @@ app.post('/mutual-friends', (req, res) => {
           friends: finalData,
           next: next,
           previous: previous,
-          totalFriends: totalFriends
+          total_friends: totalFriends
         },
         error: {
           code: 200,
@@ -692,7 +692,7 @@ app.post('/mutual-friends', (req, res) => {
           friends: finalData,
           next: next,
           previous: previous,
-          totalFriends: totalFriends
+          total_friends: totalFriends
         },
         error: {
           code: 200,
@@ -710,7 +710,7 @@ app.post('/mutual-friends', (req, res) => {
       .digest(
         'hex');
     var url =
-      `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%2850%29%29&access_token=${input.userToken}&appsecret_proof=${hash}`;
+      `https://graph.facebook.com/v2.8/${input.otherId}?fields=context.fields%28all_mutual_friends.limit%28200%29%29&access_token=${input.userToken}&appsecret_proof=${hash}`;
     var options = {
       method: 'GET',
       headers: {
@@ -740,7 +740,7 @@ app.post('/mutual-friends', (req, res) => {
           friends: finalData,
           next: next,
           previous: previous,
-          totalFriends: totalFriends
+          total_friends: totalFriends
         },
         error: {
           code: 200,
