@@ -416,7 +416,8 @@ app.post('/like', (req, res) => {
         objects: [{
           user1: user.from,
           user2: user.to,
-          is_liked: true
+          is_liked: true,
+          timestamp: (new Date()).toISOString()
         }]
       });
     } else {
