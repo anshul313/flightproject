@@ -31,7 +31,7 @@ var routesVersioning = require('express-routes-versioning')();
 var moment = require('moment-timezone');
 var production_database_url = 'https://data.ailment92.hasura-app.io/';
 var development_database_url = 'https://data.stellar60.hasura-app.io/';
-var production_authToken = 'Bearer da6oyc1i8v5g8jbnlwxgmhf2fp67bx9x';
+var production_authToken = 'Bearer 0aig5rjoomehkdy3zo48ndr8a9atkwqv';
 var development_authToken = 'Bearer 4d1dk0weagjzs7i2afg9lczpq4n80g5g';
 var _ = require('lodash');
 var fs = require('fs');
@@ -862,13 +862,13 @@ var find_data = function(flight_details_object, res, callback) {
     where: flight_details_object
   };
 
-  const url = development_database_url +
+  const url = production_database_url +
     'api/1/table/flights/select';
   const options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -888,7 +888,7 @@ var find_data = function(flight_details_object, res, callback) {
 };
 
 var insert_data = function(flight_details_object, res, callback) {
-  var insertUrl = development_database_url +
+  var insertUrl = production_database_url +
     'api/1/table/flights/insert';
   var insertOpts = {
     method: 'POST',
@@ -898,7 +898,7 @@ var insert_data = function(flight_details_object, res, callback) {
     }),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -1072,12 +1072,12 @@ function frequent_fliers_function(req, res, next) {
 
   var finalresult = [];
   var ids = [];
-  var getUrl = development_database_url + 'v1/query';
+  var getUrl = production_database_url + 'v1/query';
   // var getoptions = {
   //   method: 'POST',
   //   headers: {
   //     'x-hasura-role': 'admin',
-  //     'authorization': development_authToken,
+  //     'authorization': production_authToken,
   //     'content-type': 'application/json'
   //   },
   //   body: JSON.stringify({
@@ -1103,7 +1103,7 @@ function frequent_fliers_function(req, res, next) {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -1212,13 +1212,13 @@ function frequent_fliers_function(req, res, next) {
 
 var update_data = function(updateData, url, res, callback) {
 
-  const updateUrl = development_database_url + url;
+  const updateUrl = production_database_url + url;
   const updateOpts = {
     method: 'POST',
     body: updateData,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin'
     }
   };
@@ -1360,13 +1360,13 @@ var s3Upload = function(readStream, fileName, req, res) {
 
 var find = function(checkData, url, res, callback) {
 
-  var req_url = development_database_url + url;
+  var req_url = production_database_url + url;
   console.log('req_url : ', req_url);
   var options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': development_authToken,
+      'Authorization': production_authToken,
       'X-Hasura-Role': 'admin',
       'X-Hasura-User-Id': 1
     },
@@ -1632,12 +1632,12 @@ function airport_user_enter_function(req, res, next) {
         }
       });
     }
-    var getUrl = development_database_url + 'v1/query';
+    var getUrl = production_database_url + 'v1/query';
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': development_authToken,
+        'authorization': production_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -1653,7 +1653,7 @@ function airport_user_enter_function(req, res, next) {
     };
     request(getUrl, getoptions, res, (resData6) => {
       // console.log('response data 6 : ', resData6);
-      var insertUrl = development_database_url +
+      var insertUrl = production_database_url +
         'api/1/table/airport_user/insert';
 
       var user_airport_details_object = new Object({
@@ -1670,7 +1670,7 @@ function airport_user_enter_function(req, res, next) {
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': development_authToken,
+          'Authorization': production_authToken,
           'X-Hasura-Role': 'admin'
         }
       };
@@ -1751,12 +1751,12 @@ function airport_user_exit_function(req, res, next) {
       });
     }
     if (data.length > 0) {
-      var getUrl = development_database_url + 'v1/query';
+      var getUrl = production_database_url + 'v1/query';
       var getoptions = {
         method: 'POST',
         headers: {
           'x-hasura-role': 'admin',
-          'authorization': development_authToken,
+          'authorization': production_authToken,
           'content-type': 'application/json'
         },
         body: JSON.stringify({
@@ -1943,14 +1943,14 @@ function airport_user_profile_function(req, res, next) {
                   unlike_ids);
                 final_ids = _.differenceBy(other, temp);
 
-                var getUrl = development_database_url +
+                var getUrl = production_database_url +
                   'v1/query';
 
                 var getoptions = {
                   method: 'POST',
                   headers: {
                     'x-hasura-role': 'admin',
-                    'authorization': development_authToken,
+                    'authorization': production_authToken,
                     'content-type': 'application/json'
                   },
                   body: JSON.stringify({
@@ -2176,12 +2176,12 @@ function airport_user_profile_function(req, res, next) {
 
 var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
   var currentTime = new Date().getTime() - (3600000 * 4);
-  var getUrl = development_database_url + 'v1/query';
+  var getUrl = production_database_url + 'v1/query';
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -2239,13 +2239,13 @@ function send_notification_function(req, res, next) {
     }
 
     // console.log('data1 : ', data1);
-    var getUrl = development_database_url + 'v1/query';
+    var getUrl = production_database_url + 'v1/query';
 
     var getoptions = {
       method: 'POST',
       headers: {
         'x-hasura-role': 'admin',
-        'authorization': development_authToken,
+        'authorization': production_authToken,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -2281,7 +2281,7 @@ function send_notification_function(req, res, next) {
             method: 'POST',
             headers: {
               'x-hasura-role': 'admin',
-              'authorization': development_authToken,
+              'authorization': production_authToken,
               'content-type': 'application/json'
             },
             body: JSON.stringify({
@@ -2311,7 +2311,7 @@ function send_notification_function(req, res, next) {
               method: 'POST',
               headers: {
                 'x-hasura-role': 'admin',
-                'authorization': development_authToken,
+                'authorization': production_authToken,
                 'content-type': 'application/json'
               },
               body: JSON.stringify({
@@ -2352,7 +2352,7 @@ function send_notification_function(req, res, next) {
                     method: 'POST',
                     headers: {
                       'x-hasura-role': 'admin',
-                      'authorization': development_authToken,
+                      'authorization': production_authToken,
                       'content-type': 'application/json'
                     },
                     body: JSON.stringify({
@@ -2391,7 +2391,7 @@ function send_notification_function(req, res, next) {
                         method: 'POST',
                         headers: {
                           'x-hasura-role': 'admin',
-                          'authorization': development_authToken,
+                          'authorization': production_authToken,
                           'content-type': 'application/json'
                         },
                         body: JSON.stringify({
@@ -2847,12 +2847,12 @@ function add_flight_function(req, res, next) {
     asyncTasks.push(function(callback) {
       // console.log('flight_id : ', parseInt(data.flight_id));
       // console.log('user_id : ', parseInt(data.user_id));
-      var getUrl = development_database_url + 'v1/query';
+      var getUrl = production_database_url + 'v1/query';
       var getoptions = {
         method: 'POST',
         headers: {
           'x-hasura-role': 'admin',
-          'authorization': development_authToken,
+          'authorization': production_authToken,
           'content-type': 'application/json'
         },
         body: JSON.stringify({
@@ -2873,7 +2873,7 @@ function add_flight_function(req, res, next) {
           callback(null, finalresult);
         } else {
 
-          var insertUrl = development_database_url +
+          var insertUrl = production_database_url +
             'api/1/table/user_flight/insert';
           var user_airport_details_object = new Object({
             user_id: parseInt(data.user_id),
@@ -2892,7 +2892,7 @@ function add_flight_function(req, res, next) {
             }),
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': development_authToken,
+              'Authorization': production_authToken,
               'X-Hasura-Role': 'admin'
             }
           };
@@ -2963,12 +2963,12 @@ function get_user_flight_function(req, res, next) {
       });
     _.forEach(result, function(data) {
       asyncTasks.push(function(callback) {
-        var getUrl = development_database_url + 'v1/query';
+        var getUrl = production_database_url + 'v1/query';
         var getoptions = {
           method: 'POST',
           headers: {
             'x-hasura-role': 'admin',
-            'authorization': development_authToken,
+            'authorization': production_authToken,
             'content-type': 'application/json'
           },
           body: JSON.stringify({
@@ -3013,12 +3013,12 @@ app.post('/remove-user-flight', routesVersioning({
 }, NoMatchFoundCallback));
 
 function remove_user_flight_function(req, res, next) {
-  var getUrl = development_database_url + 'v1/query';
+  var getUrl = production_database_url + 'v1/query';
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -3083,12 +3083,12 @@ function user_flight_exit_function(req, res, next) {
       });
     }
     if (data.length > 0) {
-      var getUrl = development_database_url + 'v1/query';
+      var getUrl = production_database_url + 'v1/query';
       var getoptions = {
         method: 'POST',
         headers: {
           'x-hasura-role': 'admin',
-          'authorization': development_authToken,
+          'authorization': production_authToken,
           'content-type': 'application/json'
         },
         body: JSON.stringify({
@@ -3132,14 +3132,14 @@ app.get('/get-user-details', routesVersioning({
 }, NoMatchFoundCallback));
 
 function get_user_detail_function(req, res, next) {
-  var getUrl = development_database_url +
+  var getUrl = production_database_url +
     'v1/query';
 
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -3262,14 +3262,14 @@ app.get('/get-all-cities', routesVersioning({
 }, NoMatchFoundCallback));
 
 function get_all_cities_function(req, res, next) {
-  var getUrl = development_database_url +
+  var getUrl = production_database_url +
     'v1/query';
 
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
@@ -3302,14 +3302,14 @@ app.get('/get-all-interest', routesVersioning({
 }, NoMatchFoundCallback));
 
 function get_all_interest_function(req, res, next) {
-  var getUrl = development_database_url +
+  var getUrl = production_database_url +
     'v1/query';
 
   var getoptions = {
     method: 'POST',
     headers: {
       'x-hasura-role': 'admin',
-      'authorization': development_authToken,
+      'authorization': production_authToken,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
