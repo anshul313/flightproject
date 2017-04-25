@@ -1065,7 +1065,7 @@ app.post('/flight-check', (req, res) => {
 
 app.get('/frequent-fliers', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": frequent_fliers_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": frequent_fliers_function
 }, NoMatchFoundCallback));
 
@@ -1234,7 +1234,7 @@ var update_data = function(updateData, url, res, callback) {
 
 app.post('/image-upload', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": image_upload_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": image_upload_function
 }, NoMatchFoundCallback));
 
@@ -1386,7 +1386,7 @@ var find = function(checkData, url, res, callback) {
 
 app.get('/all-airports', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": all_airports_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": all_airports_function
 }, NoMatchFoundCallback));
 
@@ -1442,7 +1442,7 @@ function NoMatchFoundCallback(req, res, next) {
 
 app.get('/airport-by-code', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": airport_by_code_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": airport_by_code_function
 }, NoMatchFoundCallback));
 
@@ -1609,7 +1609,7 @@ function airport_by_code_function(req, res, next) {
 
 app.post('/airport-user-enter', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": airport_user_enter_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": airport_user_enter_function
 }, NoMatchFoundCallback));
 
@@ -1730,7 +1730,7 @@ function airport_user_enter_function(req, res, next) {
 
 app.post('/airport-user-exit', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": airport_user_exit_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": airport_user_exit_function
 }, NoMatchFoundCallback));
 
@@ -1803,7 +1803,7 @@ function airport_user_exit_function(req, res, next) {
 
 app.post('/airport-user-profile', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": airport_user_profile_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": airport_user_profile_function
 }, NoMatchFoundCallback));
 
@@ -2212,7 +2212,7 @@ var j = schedule.scheduleJob('30 * * * * *', function(req, res) {
 
 app.post('/send-notification', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": send_notification_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": send_notification_function
 }, NoMatchFoundCallback));
 
@@ -2844,7 +2844,7 @@ function send_notification_function(req, res, next) {
 
 app.post('/add-flight', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": add_flight_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": add_flight_function
 }, NoMatchFoundCallback));
 
@@ -2946,7 +2946,7 @@ function add_flight_function(req, res, next) {
 
 app.get('/get-user-flight', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": get_user_flight_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": get_user_flight_function
 }, NoMatchFoundCallback));
 
@@ -3019,7 +3019,7 @@ function get_user_flight_function(req, res, next) {
 
 app.post('/remove-user-flight', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": remove_user_flight_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": remove_user_flight_function
 }, NoMatchFoundCallback));
 
@@ -3062,7 +3062,7 @@ function remove_user_flight_function(req, res, next) {
 
 app.post('/user-flight-exit', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": user_flight_exit_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": user_flight_exit_function
 }, NoMatchFoundCallback));
 
@@ -3140,7 +3140,7 @@ function user_flight_exit_function(req, res, next) {
 
 app.get('/get-user-details', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": get_user_detail_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": get_user_detail_function
 }, NoMatchFoundCallback));
 
@@ -3271,7 +3271,7 @@ function get_user_detail_function(req, res, next) {
 
 app.get('/get-all-cities', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": get_all_cities_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": get_all_cities_function
 }, NoMatchFoundCallback));
 
@@ -3312,7 +3312,7 @@ function get_all_cities_function(req, res, next) {
 
 app.get('/get-all-interest', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": get_all_interest_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": get_all_interest_function
 }, NoMatchFoundCallback));
 
@@ -3354,7 +3354,7 @@ function get_all_interest_function(req, res, next) {
 
 app.get('/update-flight-time', routesVersioning({
   "~1.0.0": versionavailable,
-  "~2.0.0": update_flight_time_function,
+  "~2.0.0": versionavailable,
   "~3.0.0": update_flight_time_function
 }, NoMatchFoundCallback));
 
