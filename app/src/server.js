@@ -3380,7 +3380,7 @@ function update_flight_time_function(req, res, next) {
       });
     }
 
-    console.log('result : ', result);
+    // console.log('result : ', result);
     _.forEach(result, function(data) {
       asyncTasks.push(function(callback) {
         var origin_code_data = airportTimezone.filter(function(
